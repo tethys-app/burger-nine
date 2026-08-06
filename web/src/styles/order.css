@@ -172,6 +172,37 @@
 }
 .modal .on-site input { width: auto; margin: 0; accent-color: var(--fg); }
 
+/* Service choice — first step of checkout, since it moves the total. */
+.modal .service-choice { border: 0; margin: 0 0 4px; padding: 0; }
+.modal .service-choice legend {
+  padding: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.modal .service-choice > div { display: flex; gap: 8px; }
+.modal .service-choice label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.modal .service-choice label:hover { border-color: var(--pink); }
+.modal .service-choice label[data-on='true'] {
+  border-color: var(--pink);
+  background: color-mix(in srgb, var(--pink) 12%, transparent);
+}
+/* The radio itself is redundant once the card reads as selected. */
+.modal .service-choice input { position: absolute; opacity: 0; pointer-events: none; }
+.modal .service-choice .label { font-size: 13px; font-weight: 700; color: var(--fg); }
+.modal .service-choice .hint { font-size: 11px; color: var(--muted); }
+
 .cart {
   position: sticky;
   top: 16px;

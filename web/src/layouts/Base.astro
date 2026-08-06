@@ -54,12 +54,14 @@ const { title, description } = Astro.props
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
       }
-      /* The order page follows the Neo app: headings in the rounded body face,
-         not the display face. Only prices use --display (set per component). */
-      h1, h2, h3 { font-family: inherit; letter-spacing: 0.01em; }
+      h1, h2, h3 { font-family: var(--display); font-weight: 800; letter-spacing: 0.01em; }
       /* No default border: the menu components are Tailwind-styled and set their
          own. A global border here lands on every nav item and card button. */
-      button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+      /* No `background: none` / `border` here: both have the same specificity as
+         a Tailwind utility and would silently beat `bg-gradient-to-br` and
+         `border-*` on every button in the menu components. Tailwind's preflight
+         already neutralises button chrome. */
+      button { font: inherit; color: inherit; cursor: pointer; }
       button:disabled { opacity: 0.4; cursor: not-allowed; }
       .primary {
         background: linear-gradient(180deg, var(--pink-hot), var(--pink-deep));

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { reopensAt, todayHours } from '../lib/hours'
 import type { Store } from '../lib/types'
 
 // Ported from the Neo app's mobile-hero.tsx. A tall hero that morphs into a
@@ -58,8 +59,6 @@ export default function MobileHero({ store, logo }: { store: Store; logo: string
     }
   }, [])
 
-  const label = (t: string) =>
-    t === 'delivery' ? '🛵 Livraison' : t === 'collection' ? '🥡 À emporter' : '🪑 Sur place'
   const address = store.address?.street
     ? `${store.address.street}, ${store.address.zipcode} ${store.address.city}`
     : ''
@@ -89,18 +88,23 @@ export default function MobileHero({ store, logo }: { store: Store; logo: string
             {address && (
               <span className="mt-0.5 block truncate text-[11px] font-semibold text-muted">{address}</span>
             )}
-            {store.services.length > 0 && (
-              <div className="mt-1.5 flex select-none flex-wrap items-center gap-1">
-                {store.services.map((svc) => (
-                  <span
-                    key={svc.type}
-                    className="inline-flex items-center gap-0.5 rounded-full border border-hairline bg-elevated/60 px-2 py-0.5 text-[10px] font-semibold text-muted"
-                  >
-                    {label(svc.type)}
-                  </span>
-                ))}
-              </div>
-            )}
+            {/* Open/closed, not the service pills — picking a service now
+                happens at checkout, where it affects the total. */}
+            <div className="mt-1.5 flex select-none flex-wrap items-center gap-1.5">
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                  store.isOpen ? 'bg-emerald/15 text-emerald' : 'bg-coral/15 text-coral'
+                }`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${store.isOpen ? 'bg-emerald' : 'bg-coral'}`} />
+                {store.isOpen ? 'Ouvert' : 'Fermé'}
+              </span>
+              {(store.isOpen ? todayHours(store) : reopensAt(store)) && (
+                <span className="text-[10px] font-semibold text-muted">
+                  {store.isOpen ? todayHours(store) : reopensAt(store)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

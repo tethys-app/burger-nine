@@ -84,8 +84,6 @@ export default function OrderIsland({ store: buildStore, catalog: buildCatalog, 
       <MenuLayout
         store={store}
         catalog={catalog}
-        serviceType={serviceType}
-        onServiceChange={setServiceType}
         entries={entries}
         quote={quote}
         stale={stale}
@@ -114,6 +112,7 @@ export default function OrderIsland({ store: buildStore, catalog: buildCatalog, 
           store={store}
           quote={quote}
           serviceType={serviceType}
+          onServiceChange={setServiceType}
           clientSecret={clientSecret}
           onClose={() => {
             setCheckoutOpen(false)
@@ -151,13 +150,11 @@ export default function OrderIsland({ store: buildStore, catalog: buildCatalog, 
 // Ported from the Neo app's menu-client.tsx: category rail + sticky left nav +
 // card grid + docked cart, with the same IntersectionObserver scroll-spy.
 function MenuLayout({
-  store, catalog, serviceType, onServiceChange, entries, quote, stale, cartError,
+  store, catalog, entries, quote, stale, cartError,
   onConfigure, onAdd, onCheckout,
 }: {
   store: Store
   catalog: Catalog
-  serviceType: ServiceType
-  onServiceChange: (next: ServiceType) => void
   entries: Entry[]
   quote?: Quote
   stale: boolean
@@ -202,7 +199,6 @@ function MenuLayout({
 
   return (
     <>
-      <ServicePills store={store} value={serviceType} onChange={onServiceChange} />
       <CategoryRail sections={sections} active={active} onSelect={scrollTo} />
 
       <div className="mx-auto flex w-full max-w-[1500px] gap-6 px-4 lg:px-6">
@@ -217,7 +213,9 @@ function MenuLayout({
                 className="mb-4 flex scroll-mt-[101px] flex-col gap-1 border-b border-hairline pb-2.5
                   lg:scroll-mt-[52px] lg:flex-row lg:items-baseline lg:gap-3"
               >
-                <h2 className="text-xl font-black text-ink lg:text-2xl">{section.title}</h2>
+                <h2 className="font-display text-xl font-black uppercase text-ink lg:text-2xl">
+                  {section.title}
+                </h2>
               </header>
               {/* Poster cards are squarer than row cards, so they pack more per
                   row — same breakpoints as the Neo app's `columns: auto`. */}
@@ -265,35 +263,8 @@ function MenuLayout({
   )
 }
 
-// Service picker, styled as the Neo header's pills.
-function ServicePills({
-  store, value, onChange,
-}: {
-  store: Store; value: ServiceType; onChange: (next: ServiceType) => void
-}) {
-  if (store.services.length < 2) return null
-  const label = (t: ServiceType) =>
-    t === 'delivery' ? '🛵 Livraison' : t === 'collection' ? '🥡 À emporter' : '🪑 Sur place'
-  // Sits directly under the store banner and scrolls away with it, so the header
-  // reads as one bar — as in the Neo app, where the pills are inline in the
-  // header. They stay interactive here because they drive the quote.
-  return (
-    <div className="mx-auto flex w-full max-w-[1500px] select-none items-center gap-1.5 px-4 pb-2 pt-2 lg:px-6">
-      {store.services.map((service) => (
-        <button
-          key={service.type}
-          onClick={() => onChange(service.type)}
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition
-            ${service.type === value
-              ? 'bg-gradient-to-br from-pink-hot to-pink-deep text-white shadow-md'
-              : 'border border-hairline bg-elevated/50 text-muted hover:text-ink'}`}
-        >
-          {label(service.type)}
-        </button>
-      ))}
-    </div>
-  )
-}
+export const serviceLabel = (t: ServiceType) =>
+  t === 'delivery' ? '🛵 Livraison' : t === 'collection' ? '🥡 À emporter' : '🪑 Sur place'
 
 function useQuote(slug: string, lines: CartLine[], serviceType: ServiceType) {
   const [quote, setQuote] = useState<Quote>()
@@ -483,6 +454,7 @@ function CheckoutModal({
   store,
   quote,
   serviceType,
+  onServiceChange,
   clientSecret,
   onCheckout,
   onClose,
@@ -490,6 +462,7 @@ function CheckoutModal({
   store: Store
   quote?: Quote
   serviceType: ServiceType
+  onServiceChange: (next: ServiceType) => void
   clientSecret?: string
   onCheckout: (
     customer: { name: string; email: string; phone: string },
@@ -562,6 +535,35 @@ function CheckoutModal({
               }
             }}
           >
+            {/* How you get the order is decided here, not in the header: it
+                changes the delivery fee and the minimum, so it belongs with
+                the other order details. Re-quotes on change. */}
+            {store.services.length > 1 && (
+              <fieldset className="service-choice">
+                <legend>Comment récupérer votre commande&nbsp;?</legend>
+                <div>
+                  {store.services.map((service) => (
+                    <label key={service.type} data-on={service.type === serviceType}>
+                      <input
+                        type="radio"
+                        name="service"
+                        value={service.type}
+                        checked={service.type === serviceType}
+                        onChange={() => onServiceChange(service.type)}
+                      />
+                      <span className="label">{serviceLabel(service.type)}</span>
+                      <span className="hint">
+                        {service.preparationTimeMinutes
+                          ? `≈ ${service.preparationTimeMinutes} min`
+                          : 'Dès que prêt'}
+                        {service.feeCents ? ` · ${money(service.feeCents, currency)}` : ' · offert'}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+
             <input
               required
               autoFocus
