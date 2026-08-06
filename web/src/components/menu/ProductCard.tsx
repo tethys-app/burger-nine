@@ -107,7 +107,7 @@ function PosterCard({ item, sectionName, currency, showImage, showCategoryLabel 
   return (
     <div
       data-qty={qty}
-      className={`group relative flex h-full flex-col overflow-hidden rounded-[22px] border border-[#3a1230] bg-surface-depth
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[22px] border border-[#2b2130] bg-surface-depth
         transition-[border-color,box-shadow,transform] duration-200
         hover:-translate-y-[5px] hover:border-pink
         ${qty > 0 ? '!translate-y-0 border-pink/40' : ''}

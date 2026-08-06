@@ -20,12 +20,19 @@
         font-display: swap;
       }
 
+      /* box-sizing is safe globally. The margin/padding reset is NOT: it has the
+         same specificity as a Tailwind utility, so on the order page it silently
+         killed `mx-auto` (breaking the centred 1500px column) and `px-6`
+         (removing the gutters). Tailwind's own preflight already zeroes these,
+         so scope this to the landing page's own markup. */
       *,
       *::before,
       *::after {
+        box-sizing: border-box;
+      }
+      body:not(.order-page) :is(h1, h2, h3, h4, p, figure, blockquote, dl, dd, ul, ol) {
         margin: 0;
         padding: 0;
-        box-sizing: border-box;
       }
       :root {
         /* ROSE PÉTANT — palette dominante (itération 2, wordmark-driven) */
