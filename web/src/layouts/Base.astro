@@ -1,4 +1,9 @@
 ---
+// Layout for the ordering pages. It loads the brand stylesheet so the palette,
+// fonts and chrome are the site's, then remaps the handful of tokens order.css
+// is written against onto brand variables. The order UI keeps its own dense
+// layout — only the skin changes.
+import '../styles/brand.css'
 import '../styles/order.css'
 
 interface Props {
@@ -15,35 +20,67 @@ const { title, description } = Astro.props
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    <link rel="icon" type="image/png" href="/assets/4f5b8c7fd0603355.png" />
     <slot name="head" />
   </head>
   <body>
+    <div class="grain" aria-hidden="true"></div>
     <slot />
     <style is:global>
       :root {
         color-scheme: dark;
-        --bg: #0b0b0c;
-        --fg: #e7e7e9;
-        --muted: #8a8a92;
-        --line: #232327;
-        --accent: #e7e7e9;
-        --danger: #ff6b6b;
-        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+        /* order.css and the islands are written against these five tokens.
+           Pointing them at the brand palette re-skins the whole order UI
+           without touching its layout. */
+        --fg: var(--txt);
+        --accent: var(--pink);
+        --danger: #ff5c7a;
+        /* Panel surfaces, replacing order.css's hardcoded near-blacks. */
+        --surface: var(--panel);
+        --surface-raised: #351433;
+        font-family: var(--body);
       }
       * { box-sizing: border-box; }
+      /* The marquee and hero glows are deliberately wider than the viewport.
+         brand.css clips them on `body`, which just moves the scrollbar to
+         `html` — clip here too so there is no horizontal scroll. */
+      html { overflow-x: hidden; }
       body {
         margin: 0;
         background: var(--bg);
-        color: var(--fg);
-        font-size: 14px;
-        line-height: 1.45;
+        color: var(--txt);
+        font-size: 15px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
       }
-      h1, h2, h3 { font-weight: 600; letter-spacing: -0.01em; }
-      h2 { font-size: 13px; text-transform: uppercase; color: var(--muted); margin: 24px 0 8px; }
+      h1, h2, h3 { font-family: var(--display); font-weight: 800; letter-spacing: 0.01em; }
       button { font: inherit; color: inherit; background: none; border: 1px solid var(--line); cursor: pointer; }
       button:disabled { opacity: 0.4; cursor: not-allowed; }
-      .primary { background: var(--accent); color: var(--bg); border: none; padding: 10px 14px; width: 100%; }
-      input { font: inherit; background: transparent; color: var(--fg); border: 1px solid var(--line); padding: 8px; width: 100%; }
+      .primary {
+        background: linear-gradient(180deg, var(--pink-hot), var(--pink-deep));
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        padding: 13px 18px;
+        width: 100%;
+        font-family: var(--display);
+        font-weight: 800;
+        font-size: 15px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        transition: transform 0.2s, filter 0.2s;
+      }
+      .primary:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.08); }
+      input {
+        font: inherit;
+        background: rgba(0, 0, 0, 0.25);
+        color: var(--txt);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 11px 13px;
+        width: 100%;
+      }
+      input:focus-visible { outline: 2px solid var(--pink); outline-offset: 1px; }
       .price { color: var(--muted); font-variant-numeric: tabular-nums; }
       .error, .blocker { color: var(--danger); }
       /* Totals dim rather than disappear while a quote is in flight, so the

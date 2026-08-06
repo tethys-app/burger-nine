@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro'
+import Nav from '../components/Nav.astro'
 import OrderStatus from '../components/OrderStatus.tsx'
 
 // A static page that reads ?id=&token= at runtime. Order ids do not exist at
@@ -9,20 +10,41 @@ import OrderStatus from '../components/OrderStatus.tsx'
 
 <Base title="Votre commande">
   <meta slot="head" name="robots" content="noindex" />
+  <Nav />
   <main>
     <OrderStatus client:load />
   </main>
 
   <style>
-    main { max-width: 560px; margin: 0 auto; padding: 48px 16px; }
-    :global(.status h1) { font-size: 18px; margin: 0 0 4px; }
+    /* Clears the fixed site nav. */
+    main { max-width: 620px; margin: 0 auto; padding: 130px 22px 90px; }
+    :global(.status) {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 26px;
+    }
+    :global(.status h1) {
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: clamp(24px, 3.4vw, 34px);
+      text-transform: uppercase;
+      line-height: 1.05;
+      margin: 0 0 6px;
+    }
     :global(.status .store) { color: var(--muted); margin: 0 0 24px; }
     :global(.status ol) { list-style: none; padding: 0; margin: 0; }
     :global(.status li) {
       display: grid; grid-template-columns: 1fr auto;
-      border-bottom: 1px solid var(--line); padding: 8px 0;
+      border-bottom: 1px solid var(--line); padding: 10px 0;
     }
-    :global(.status .options) { color: var(--muted); grid-column: 1 / -1; }
-    :global(.status .total) { text-align: right; margin-top: 16px; }
+    :global(.status .options) { color: var(--muted); grid-column: 1 / -1; font-size: 12.5px; }
+    :global(.status .total) {
+      text-align: right;
+      margin-top: 18px;
+      font-family: var(--display);
+      font-weight: 800;
+      font-size: 20px;
+    }
   </style>
 </Base>

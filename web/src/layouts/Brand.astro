@@ -28,7 +28,14 @@ const { title, description, canonical } = Astro.props
     <slot name="head" />
   </head>
   <body>
+    <div class="grain" aria-hidden="true"></div>
     <slot />
+    <style is:global>
+      /* The marquee and hero glows are deliberately wider than the viewport.
+         brand.css clips them on `body`, which just moves the scrollbar to
+         `html` — clip here too so there is no horizontal scroll. */
+      html { overflow-x: hidden; }
+    </style>
     <script>
       // Scroll reveal, lifted from the POC. Degrades to "everything visible"
       // when reduced motion is requested or IO is unavailable.

@@ -1,31 +1,9 @@
 ---
 // Verbatim from poc-website/index.html — static brand content.
+import Nav from '../Nav.astro'
 ---
-  <body>
-    <div class="grain" aria-hidden="true"></div>
 
-    <!-- NAV -->
-    <header class="nav">
-      <div class="nav-in">
-        <div class="nav-side left">
-          <a class="lnk" href="#carte">La carte</a>
-          <a class="lnk" href="#hits">Les hits</a>
-        </div>
-        <a href="#top" class="nav-logo" aria-label="Burger Nine — accueil">
-          <img src="/assets/f4c82effa1f42578.png" alt="Burger Nine" />
-        </a>
-        <div class="nav-side right">
-          <a class="lnk" href="#restos">Nos restos</a>
-          <a class="lnk" href="#franchise">Franchise</a>
-          <a href="#commander" class="btn btn-solid">
-            COMMANDER
-            <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
-              <path d="M0 0l10 6-10 6z" />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </header>
+    <Nav home />
 
     <!-- HERO -->
     <section class="hero" id="top">

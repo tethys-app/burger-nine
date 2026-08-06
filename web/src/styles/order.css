@@ -1,57 +1,85 @@
-/* Styles for the hydrated order island. Dense, dark, monospace; the menu
-   scrolls inside its own column so the cart never leaves the viewport. */
+/* Styles for the hydrated order island. Dense; the menu scrolls inside its own
+   column so the cart never leaves the viewport. Skinned by the brand palette —
+   `.order-app`, not `.order`, because the landing page's commander section
+   already owns `.order`. */
 
-.order {
+.order-app {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 32px;
   align-items: start;
   margin-top: 16px;
 }
 
 @media (max-width: 860px) {
-  .order { grid-template-columns: minmax(0, 1fr); }
+  .order-app { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ── service picker ─────────────────────────────────────────── */
+/* Pills, matching the site's buttons. */
 .services {
   grid-column: 1 / -1;
   display: flex;
-  gap: 0;
+  gap: 6px;
+  padding: 5px;
   border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
   width: fit-content;
 }
 .services button {
   border: none;
-  border-right: 1px solid var(--line);
-  padding: 6px 14px;
+  border-radius: 999px;
+  padding: 8px 18px;
   color: var(--muted);
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s;
 }
-.services button:last-child { border-right: none; }
-.services button[data-active='true'] { background: var(--fg); color: var(--bg); }
+.services button:not([data-active='true']):hover { color: var(--txt); }
+.services button[data-active='true'] {
+  background: linear-gradient(180deg, var(--pink-hot), var(--pink-deep));
+  color: #fff;
+}
 
 /* ── menu ───────────────────────────────────────────────────── */
-.menu section { margin-bottom: 8px; }
+.menu section { margin-bottom: 22px; }
+.menu section > h2 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--txt);
+  margin: 0 0 10px;
+}
 .menu .product {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 16px;
   width: 100%;
-  border: none;
-  border-bottom: 1px solid var(--line);
-  padding: 9px 2px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin-bottom: 8px;
+  padding: 14px 16px;
   text-align: left;
+  transition: transform 0.2s, border-color 0.2s;
 }
-.menu .product:hover { background: #141417; }
-.menu .product .price { white-space: nowrap; }
+.menu .product:hover { transform: translateY(-1px); border-color: var(--pink); }
+.menu .product .title { font-weight: 600; }
+.menu .product .price { white-space: nowrap; color: var(--txt); font-weight: 600; }
 
 /* ── product sheet ──────────────────────────────────────────── */
 .sheet-backdrop {
   position: fixed;
   inset: 0;
   z-index: 20;
-  background: rgb(0 0 0 / 0.6);
+  background: rgb(12 4 12 / 0.72);
 }
 .sheet {
   position: fixed;
@@ -61,18 +89,19 @@
   width: min(480px, calc(100vw - 24px));
   max-height: min(78vh, 720px);
   overflow-y: auto;
-  background: #101013;
+  background: var(--surface-raised);
   border: 1px solid var(--line);
+  border-radius: 20px;
   /* No bottom padding: the sticky footer supplies it, so the last choice is
      never hidden behind the add button. */
-  padding: 16px 16px 0;
-  box-shadow: 0 24px 64px rgb(0 0 0 / 0.6);
+  padding: 18px 18px 0;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.55);
 }
 .sheet footer {
   position: sticky;
   bottom: 0;
   /* Opaque, so choices scroll behind it rather than showing through. */
-  background: #101013;
+  background: var(--surface-raised);
   padding: 12px 0 16px;
   margin-top: 8px;
 }
@@ -101,7 +130,7 @@
   position: fixed;
   inset: 0;
   z-index: 30;
-  background: rgb(0 0 0 / 0.6);
+  background: rgb(12 4 12 / 0.72);
   display: grid;
   place-items: center;
   padding: 12px;
@@ -110,10 +139,11 @@
   width: min(440px, calc(100vw - 24px));
   max-height: min(86vh, 780px);
   overflow-y: auto;
-  background: #101013;
+  background: var(--surface-raised);
   border: 1px solid var(--line);
-  padding: 16px;
-  box-shadow: 0 24px 64px rgb(0 0 0 / 0.6);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.55);
 }
 .modal header {
   display: flex;
@@ -145,8 +175,10 @@
 .cart {
   position: sticky;
   top: 16px;
+  background: var(--panel);
   border: 1px solid var(--line);
-  padding: 14px;
+  border-radius: 18px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;

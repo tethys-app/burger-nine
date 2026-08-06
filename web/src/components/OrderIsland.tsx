@@ -76,7 +76,7 @@ export default function OrderIsland({ store: buildStore, catalog: buildCatalog, 
   const remove = (index: number) => setLines((current) => current.filter((_, i) => i !== index))
 
   return (
-    <div className="order">
+    <div className="order-app">
       <ServicePicker store={store} value={serviceType} onChange={setServiceType} />
 
       <div className="menu">
@@ -85,7 +85,7 @@ export default function OrderIsland({ store: buildStore, catalog: buildCatalog, 
             <h2>{section.title}</h2>
             {section.products.map((product) => (
               <button key={product.ref} className="product" onClick={() => openProduct(product, add, setEditing)}>
-                <span>{product.title}</span>
+                <span className="title">{product.title}</span>
                 <span className="price">{money(product.price_cents, store.currency)}</span>
               </button>
             ))}
