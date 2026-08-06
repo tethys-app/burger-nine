@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro'
+import { getBrand } from '../lib/api'
+
+const brand = await getBrand()
+---
+
+<Base title={brand.name} description={`Commandez en ligne — ${brand.name}`}>
+  <main>
+    <h1>{brand.name}</h1>
+    <ul class="stores">
+      {brand.stores.map((store) => (
+        <li>
+          <a href={`/${store.slug}`}>
+            <strong>{store.name}</strong>
+            {store.address?.city && <span class="muted">{store.address.city}</span>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </main>
+
+  <style>
+    main { max-width: 720px; margin: 0 auto; padding: 48px 16px; }
+    h1 { font-size: 20px; margin-bottom: 24px; }
+    .stores { list-style: none; padding: 0; margin: 0; }
+    .stores li { border-bottom: 1px solid var(--line); }
+    .stores a {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 12px 0; color: inherit; text-decoration: none;
+    }
+    .stores a:hover strong { text-decoration: underline; }
+    .muted { color: var(--muted); }
+  </style>
+</Base>

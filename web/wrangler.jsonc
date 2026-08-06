@@ -1,0 +1,9 @@
+{
+  // Assets only. There is deliberately no `main` — a Worker script here would
+  // mean this site grew server-side code. See CLAUDE.md.
+  "name": "burger-nine",
+  "compatibility_date": "2025-06-05",
+  "assets": {
+    "directory": "./dist"
+  }
+}

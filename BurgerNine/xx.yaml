@@ -1,0 +1,4 @@
+appId: com.burgernine.app.debug
+---
+- launchApp
+- scrollUntilVisible: "Tex"

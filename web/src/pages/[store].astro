@@ -1,0 +1,84 @@
+---
+import Base from '../layouts/Base.astro'
+import OrderIsland from '../components/OrderIsland.tsx'
+import { getBrand, getCatalog, getStore } from '../lib/api'
+import { restaurantJsonLd } from '../lib/jsonld'
+import { money } from '../lib/format'
+import type { Catalog, Store } from '../lib/types'
+
+// Build-time fetch. This snapshot exists for two things only: HTML a crawler
+// can read, and an instant first paint. It is allowed to be days stale —
+// correctness comes from /quote at order time, never from this.
+export async function getStaticPaths() {
+  const brand = await getBrand()
+  return Promise.all(
+    brand.stores.map(async (entry) => ({
+      params: { store: entry.slug },
+      props: {
+        store: await getStore(entry.slug),
+        catalog: await getCatalog(entry.slug),
+      },
+    })),
+  )
+}
+
+const { store, catalog } = Astro.props as { store: Store; catalog: Catalog }
+const siteUrl = import.meta.env.PUBLIC_SITE_URL ?? ''
+const description = `Commandez en ligne chez ${store.name}${store.address?.city ? ` à ${store.address.city}` : ''}.`
+---
+
+<Base title={`${store.name} — Commander en ligne`} description={description}>
+  <script
+    is:inline
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify(restaurantJsonLd(store, catalog, siteUrl))}
+  />
+
+  <main>
+    <header class="store-header">
+      <h1>{store.name}</h1>
+      {store.address?.street && (
+        <p class="muted">{store.address.street}, {store.address.zipcode} {store.address.city}</p>
+      )}
+      {store.phone && <p class="muted">{store.phone}</p>}
+    </header>
+
+    <!--
+      Static, indexable copy of the menu. It ships zero JS and is what Google
+      reads. The island below renders the interactive version and replaces it.
+    -->
+    <div class="static-menu">
+      {catalog.sections.map((section) => (
+        <section>
+          <h2>{section.title}</h2>
+          <ul>
+            {section.products.map((product) => (
+              <li>
+                <h3>{product.title}</h3>
+                {product.description && <p>{product.description}</p>}
+                <span class="price">{money(product.price_cents, store.currency)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+
+    <OrderIsland client:load store={store} catalog={catalog} siteUrl={siteUrl} />
+  </main>
+
+  <style>
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+    .store-header { border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+    .store-header h1 { margin: 0 0 4px; font-size: 20px; }
+    .muted { color: var(--muted); margin: 0; }
+    .static-menu ul { list-style: none; padding: 0; margin: 0; }
+    .static-menu li { border-bottom: 1px solid var(--line); padding: 8px 0; }
+    .static-menu h3 { margin: 0; font-size: 14px; font-weight: 500; }
+    .static-menu p { margin: 2px 0; color: var(--muted); }
+    /* The island hides this on mount (see OrderIsland). It stays in the HTML
+       for crawlers and for visitors without JS. */
+    .static-menu[hidden] { display: none; }
+  </style>
+</Base>

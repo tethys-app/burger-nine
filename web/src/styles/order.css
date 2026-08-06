@@ -1,0 +1,179 @@
+/* Styles for the hydrated order island. Dense, dark, monospace; the menu
+   scrolls inside its own column so the cart never leaves the viewport. */
+
+.order {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+@media (max-width: 860px) {
+  .order { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── service picker ─────────────────────────────────────────── */
+.services {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--line);
+  width: fit-content;
+}
+.services button {
+  border: none;
+  border-right: 1px solid var(--line);
+  padding: 6px 14px;
+  color: var(--muted);
+}
+.services button:last-child { border-right: none; }
+.services button[data-active='true'] { background: var(--fg); color: var(--bg); }
+
+/* ── menu ───────────────────────────────────────────────────── */
+.menu section { margin-bottom: 8px; }
+.menu .product {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  padding: 9px 2px;
+  text-align: left;
+}
+.menu .product:hover { background: #141417; }
+.menu .product .price { white-space: nowrap; }
+
+/* ── product sheet ──────────────────────────────────────────── */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgb(0 0 0 / 0.6);
+}
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 21;
+  margin: auto;
+  width: min(480px, calc(100vw - 24px));
+  max-height: min(78vh, 720px);
+  overflow-y: auto;
+  background: #101013;
+  border: 1px solid var(--line);
+  /* No bottom padding: the sticky footer supplies it, so the last choice is
+     never hidden behind the add button. */
+  padding: 16px 16px 0;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.6);
+}
+.sheet footer {
+  position: sticky;
+  bottom: 0;
+  /* Opaque, so choices scroll behind it rather than showing through. */
+  background: #101013;
+  padding: 12px 0 16px;
+  margin-top: 8px;
+}
+.sheet header { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.sheet header h3 { margin: 0; font-size: 15px; }
+.sheet header button { border: none; font-size: 20px; line-height: 1; padding: 0 4px; color: var(--muted); }
+.sheet .description { color: var(--muted); margin: 4px 0 12px; }
+
+.sheet fieldset { border: none; border-top: 1px solid var(--line); padding: 10px 0 4px; margin: 0; }
+.sheet legend {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px; width: 100%; padding: 0; font-size: 12px; text-transform: uppercase;
+}
+.sheet .requirement { color: var(--muted); text-transform: none; font-size: 11px; }
+.sheet label {
+  display: grid; grid-template-columns: auto 1fr auto;
+  align-items: center; gap: 8px; padding: 5px 0; cursor: pointer;
+}
+.sheet input[type='radio'], .sheet input[type='checkbox'] { width: auto; margin: 0; accent-color: var(--fg); }
+
+/* ── cart ───────────────────────────────────────────────────── */
+/* ── checkout modal ─────────────────────────────────────────── */
+/* Details then Stripe, in one dialog. Payment stays inline so the cart is still
+   there behind it and closing does not lose it. */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgb(0 0 0 / 0.6);
+  display: grid;
+  place-items: center;
+  padding: 12px;
+}
+.modal {
+  width: min(440px, calc(100vw - 24px));
+  max-height: min(86vh, 780px);
+  overflow-y: auto;
+  background: #101013;
+  border: 1px solid var(--line);
+  padding: 16px;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.6);
+}
+.modal header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.modal header h2 { margin: 0; font-size: 15px; }
+.modal header .close {
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 4px;
+  color: var(--muted);
+}
+.modal header .close:hover { color: var(--fg); }
+.modal form { display: flex; flex-direction: column; gap: 8px; }
+.modal .error { margin: 0; font-size: 12px; }
+.modal .on-site {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.modal .on-site input { width: auto; margin: 0; accent-color: var(--fg); }
+
+.cart {
+  position: sticky;
+  top: 16px;
+  border: 1px solid var(--line);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cart.empty { color: var(--muted); }
+.cart ol { list-style: none; padding: 0; margin: 0; }
+.cart li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: baseline;
+  border-bottom: 1px solid var(--line);
+  padding: 7px 0;
+}
+.cart li .options { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+.cart li button { border: none; color: var(--muted); padding: 0 2px; }
+.cart li button:hover { color: var(--danger); }
+
+.cart .totals {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  margin: 0;
+  transition: opacity 120ms ease;
+}
+.cart .totals dt { color: var(--muted); }
+.cart .totals dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.cart .totals dt:last-of-type, .cart .totals dd:last-of-type { font-weight: 600; color: var(--fg); }
+
+.cart .blocker, .cart .error { margin: 0; font-size: 12px; }

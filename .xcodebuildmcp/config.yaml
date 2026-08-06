@@ -1,0 +1,23 @@
+schemaVersion: 1
+enabledWorkflows:
+  - debugging
+  - device
+  - project-discovery
+  - simulator
+  - simulator-management
+  - swift-package
+  - ui-automation
+  - utilities
+debug: true
+sentryDisabled: true
+sessionDefaults:
+  projectPath: /Volumes/dev/Neo/api/burger-nine/BurgerNine.xcodeproj
+  scheme: BurgerNine
+  simulatorName: iPhone 17 Pro
+  simulatorPlatform: iOS Simulator
+  preferXcodebuild: true
+  bundleId: com.burgernine.app.debug
+  simulatorId: 7B8E719A-72C5-44AC-84A3-E77B61A2DB95
+setupPreferences:
+  platforms:
+    - iOS

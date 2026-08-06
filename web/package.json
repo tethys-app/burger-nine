@@ -1,0 +1,26 @@
+{
+  "name": "storefront-template",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "bun scripts/check-invariants.mjs && astro build",
+    "preview": "astro preview",
+    "check": "bun scripts/check-invariants.mjs && astro check"
+  },
+  "dependencies": {
+    "@tethys/api-types": "file:../../packages/api-types",
+    "@astrojs/react": "^4.2.0",
+    "@stripe/react-stripe-js": "^3.1.1",
+    "@stripe/stripe-js": "^5.5.0",
+    "astro": "^5.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0"
+  }
+}

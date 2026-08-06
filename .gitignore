@@ -1,0 +1,10 @@
+.DS_Store
+DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+.env
+.env.local
+.env.*.local
+

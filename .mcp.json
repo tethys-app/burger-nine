@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "XcodeBuildMCP": {
+      "command": "xcodebuildmcp",
+      "args": [
+        "mcp"
+      ],
+      "env": {
+        "INCREMENTAL_BUILDS_ENABLED": "true",
+        "XCODEBUILDMCP_SENTRY_DISABLED": "true",
+        "XCODEBUILDMCP_DYNAMIC_TOOLS": "true"
+      }
+    }
+  }
+}

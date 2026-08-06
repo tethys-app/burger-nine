@@ -1,0 +1,54 @@
+---
+import '../styles/order.css'
+
+interface Props {
+  title: string
+  description?: string
+}
+const { title, description } = Astro.props
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+    <style is:global>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0b0c;
+        --fg: #e7e7e9;
+        --muted: #8a8a92;
+        --line: #232327;
+        --accent: #e7e7e9;
+        --danger: #ff6b6b;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      h1, h2, h3 { font-weight: 600; letter-spacing: -0.01em; }
+      h2 { font-size: 13px; text-transform: uppercase; color: var(--muted); margin: 24px 0 8px; }
+      button { font: inherit; color: inherit; background: none; border: 1px solid var(--line); cursor: pointer; }
+      button:disabled { opacity: 0.4; cursor: not-allowed; }
+      .primary { background: var(--accent); color: var(--bg); border: none; padding: 10px 14px; width: 100%; }
+      input { font: inherit; background: transparent; color: var(--fg); border: 1px solid var(--line); padding: 8px; width: 100%; }
+      .price { color: var(--muted); font-variant-numeric: tabular-nums; }
+      .error, .blocker { color: var(--danger); }
+      /* Totals dim rather than disappear while a quote is in flight, so the
+         layout never shifts. */
+      .totals[data-stale='true'] { opacity: 0.55; }
+    </style>
+  </body>
+</html>
