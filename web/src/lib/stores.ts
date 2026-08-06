@@ -1,4 +1,5 @@
 import type { Brand } from './types'
+import { STORE_COORDS } from './coords'
 
 // The POC hardcoded a département label per card. The API only gives us an
 // address, so derive it: the first two digits of a French zipcode are the
@@ -16,14 +17,28 @@ const DEPT_NAMES: Record<string, string> = {
 
 export type BrandStore = Brand['stores'][number]
 
-export function deptOf(store: BrandStore) {
+/** A store the map can plot: anything with a slug and an address. */
+export type Located = Pick<BrandStore, 'slug' | 'name' | 'address'>
+
+// The API has latitude/longitude on every address but currently returns null
+// for all of them, so fall back to the commune centre looked up from the
+// zipcode. Prefer the API the moment it has real values.
+export function coordsFor(store: Located) {
+  const { latitude, longitude } = store.address ?? {}
+  if (typeof latitude === 'number' && typeof longitude === 'number') {
+    return { lat: latitude, lon: longitude }
+  }
+  return STORE_COORDS[store.slug] ?? null
+}
+
+export function deptOf(store: Located) {
   const code = store.address?.zipcode?.slice(0, 2)
   if (!code) return null
   return { code, name: DEPT_NAMES[code] ?? null }
 }
 
 /** `RHÔNE · 69`, or just the code when the name is unknown. */
-export function deptLabel(store: BrandStore) {
+export function deptLabel(store: Located) {
   const dept = deptOf(store)
   if (!dept) return null
   return dept.name ? `${dept.name} · ${dept.code}` : dept.code
@@ -32,7 +47,7 @@ export function deptLabel(store: BrandStore) {
 // Title-case: the API returns cities shouted ("ROUSSILLON"), and the card CSS
 // already uppercases. Storing the shouted form would lose the accents' casing
 // for anything that doesn't.
-export function cityOf(store: BrandStore) {
+export function cityOf(store: Located) {
   const city = store.address?.city
   if (!city) return store.name
   return city

@@ -2,6 +2,7 @@
 import Brand from '../layouts/Brand.astro'
 import Top from '../components/landing/Top.astro'
 import Bottom from '../components/landing/Bottom.astro'
+import StoreMap from '../components/StoreMap.astro'
 import { getBrand } from '../lib/api'
 import { byDepartment, cityOf, deptLabel } from '../lib/stores'
 
@@ -33,6 +34,10 @@ const deptCount = groups.length
         <p class="side">
           {groups.map((g) => g.name ?? g.code).join(', ')} — et la famille s'agrandit.
         </p>
+      </div>
+
+      <div class="map-wrap rv">
+        <StoreMap stores={brand.stores} />
       </div>
 
       <div class="resto-grid rv">
@@ -80,6 +85,17 @@ const deptCount = groups.length
 </Brand>
 
 <style>
+  .map-wrap {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 26px 30px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 640px) {
+    .map-wrap { padding: 14px; border-radius: 16px; }
+  }
+
   /* The POC's resto cards were inert divs; they are links now. */
   a.resto { text-decoration: none; color: inherit; }
   a.resto .note { color: var(--pink); font-weight: 600; }
