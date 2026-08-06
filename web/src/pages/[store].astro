@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro'
 import OrderIsland from '../components/OrderIsland.tsx'
+import MobileHero from '../components/MobileHero.tsx'
 import { getBrand, getCatalog, getStore } from '../lib/api'
 import { restaurantJsonLd } from '../lib/jsonld'
 import { money } from '../lib/format'
@@ -36,32 +37,35 @@ const description = `Commandez en ligne chez ${store.name}${store.address?.city 
   />
 
   <main class="tasty-bg min-h-dvh">
-    {/* Sticky store banner, ported from the Neo app's [slug]/page.tsx. */}
-    <div class="sticky top-0 z-40 border-b border-hairline bg-surface/85 backdrop-blur-xl">
-      <div class="mx-auto flex max-w-[1500px] items-center gap-4 px-4 py-3 lg:gap-5 lg:px-6">
+    {/* Mobile: tall hero that morphs into a compact sticky bar on scroll. */}
+    <MobileHero client:load store={store} logo="/assets/4f5b8c7fd0603355.png" />
+
+    {/* Desktop banner, ported from the Neo app's [slug]/page.tsx. */}
+    <div class="sticky top-0 z-40 hidden border-b border-hairline bg-surface/85 backdrop-blur-xl lg:block">
+      <div class="mx-auto flex max-w-[1500px] items-center gap-5 px-6 py-3 pop-in">
         <a
           href="/"
-          class="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl bg-elevated transition hover:opacity-80 lg:h-14 lg:w-14"
+          class="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl transition hover:opacity-80"
           aria-label="Tous nos restos"
         >
           <img src="/assets/4f5b8c7fd0603355.png" alt="Burger Nine" class="h-full w-full object-contain" />
         </a>
 
-        <div class="min-w-0 flex-1">
-          <h1 class="truncate font-display text-base font-black uppercase leading-tight text-ink lg:text-lg">
-            {store.name}
-          </h1>
+        <div class="min-w-0">
+          <h1 class="text-lg font-black text-ink">{store.name}</h1>
           {store.address?.street && (
-            <span class="block truncate text-[12px] font-semibold text-muted">
+            <span class="block text-[12px] font-semibold text-muted">
               {store.address.street}, {store.address.zipcode} {store.address.city}
             </span>
           )}
         </div>
 
+        <div class="flex-1"></div>
+
         {store.phone && (
           <a
             href={`tel:${store.phone.replace(/\s/g, '')}`}
-            class="hidden shrink-0 rounded-full border border-hairline bg-elevated/50 px-3.5 py-1.5 text-[12px] font-semibold text-muted transition hover:text-ink sm:block"
+            class="shrink-0 rounded-full border border-hairline bg-elevated/50 px-3.5 py-1.5 text-[12px] font-semibold text-muted transition hover:text-ink"
           >
             {store.phone}
           </a>

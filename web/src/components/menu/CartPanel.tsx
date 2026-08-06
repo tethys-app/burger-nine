@@ -50,7 +50,7 @@ export function CartPanel({ entries, currency, quote, stale, error, onCheckout, 
       <aside className="sticky top-20 hidden h-[calc(100dvh-6rem)] w-[340px] shrink-0 flex-col
         rounded-[28px] border border-hairline theme-border theme-panel lg:flex">
         <div className="border-b border-hairline theme-border px-5 py-4">
-          <h2 className="font-display text-lg font-black text-ink">Votre panier</h2>
+          <h2 className="text-lg font-black text-ink">Votre panier</h2>
           <p className="text-xs font-bold text-muted">{count} article{count > 1 ? 's' : ''}</p>
         </div>
         {body}
@@ -84,7 +84,7 @@ export function CartPanel({ entries, currency, quote, stale, error, onCheckout, 
           <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className="relative flex max-h-[85dvh] w-full flex-col rounded-t-[32px] border border-hairline theme-border theme-surface-depth sm:max-w-md sm:rounded-[32px] pop-in">
             <div className="flex items-center justify-between border-b border-hairline theme-border px-5 py-4">
-              <h2 className="font-display text-lg font-black text-ink">Votre panier</h2>
+              <h2 className="text-lg font-black text-ink">Votre panier</h2>
               <button onClick={() => setOpen(false)} aria-label="Fermer" className="grid h-9 w-9 place-items-center rounded-full theme-elevated text-muted">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
               </button>

@@ -16,6 +16,8 @@ type Props = {
   currency: string
   style: CardStyle
   showImage: boolean
+  /** Off by default, as in the Neo app — the section heading already says it. */
+  showCategoryLabel?: boolean
   unavailable?: boolean
   onConfigure: (item: Product) => void
   onAdd: (item: Product) => void
@@ -101,14 +103,17 @@ function RowCard({ item, sectionName, currency, showImage, qty, hasOptions, add,
 }
 
 /* ── Poster layout: flat card, image top, text below ────────────────────── */
-function PosterCard({ item, sectionName, currency, showImage, qty, hasOptions, add, pulse }: CardProps) {
+function PosterCard({ item, sectionName, currency, showImage, showCategoryLabel = false, qty, hasOptions, add, pulse }: CardProps) {
   return (
     <div
       data-qty={qty}
-      className={`group relative flex h-full flex-col overflow-hidden rounded-[22px] border bg-surface-depth
-        transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-[5px] hover:border-pink
-        ${qty > 0 ? '!translate-y-0 border-pink/60' : 'border-hairline'}
-        ${pulse ? 'shadow-[0_0_0_4px_rgb(255_45_158/0.18)]' : ''}`}
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[22px] border border-[#3a1230] bg-surface-depth
+        transition-[border-color,box-shadow,transform] duration-200
+        hover:-translate-y-[5px] hover:border-pink
+        ${qty > 0 ? '!translate-y-0 border-pink/40' : ''}
+        ${pulse
+          ? 'shadow-[0_18px_40px_-12px] shadow-pink/30'
+          : 'shadow-[0_14px_34px_-16px] shadow-pink/20'}`}
     >
       {showImage && (
         <button
@@ -128,20 +133,23 @@ function PosterCard({ item, sectionName, currency, showImage, qty, hasOptions, a
           aria-label={hasOptions ? `Choisir les options de ${item.title}` : `Ajouter ${item.title}`}
           className="flex min-w-0 flex-1 flex-col text-left outline-none"
         >
-          <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-pink">
-            {sectionName}
-          </span>
-          <span className="block min-h-[42px] text-[17px] font-bold leading-tight text-ink">
-            {item.title}
-          </span>
-          {item.description && (
-            <span className="line-clamp-2 block text-xs font-semibold text-muted">
-              {stripHtml(item.description)}
+          {showCategoryLabel && (
+            <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-pink">
+              {sectionName}
             </span>
           )}
+          <span className="line-clamp-2 block min-h-[42px] text-[17px] font-bold leading-tight text-ink">
+            {item.title}
+          </span>
+          {/* Reserved height even when empty, so cards in a row stay aligned. */}
+          <span className="mt-[5px] line-clamp-2 block min-h-[36px] text-[13px] font-medium leading-[1.45] text-muted">
+            {item.description ? stripHtml(item.description) : ''}
+          </span>
         </button>
-        <div className="mt-[14px] flex items-center justify-between gap-2">
-          <span className="text-[22px] font-black text-ink">{money(item.price_cents, currency)}</span>
+        <div className="mt-[14px] flex min-w-0 items-center justify-between gap-2">
+          <span className="shrink-0 font-display text-[22px] leading-none text-ink">
+            {money(item.price_cents, currency)}
+          </span>
           {qty === 0 ? (
             <PosterAddButton onClick={add} />
           ) : (
@@ -243,27 +251,42 @@ function Stepper({
 
 function Thumb({ item, qty, fill = false }: { item: Product; qty: number; fill?: boolean }) {
   const src = item.image_uri
-  const box = fill ? 'aspect-square w-full' : 'h-[100px] w-[100px]'
   return (
-    <div className={`relative overflow-hidden ${fill ? '' : 'rounded-[20px]'} ${box} bg-elevated`}>
-      {src ? (
-        <img
-          src={src}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-        />
-      ) : (
-        <div className="grid h-full w-full place-items-center text-muted/40">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6" /></svg>
-        </div>
-      )}
+    <span className={`relative block ${fill ? 'h-[150px] w-full' : 'h-[100px] w-[100px]'}`}>
+      {/* Poster mode centres the dish at its natural size in a fixed 150px band
+          on a gradient backdrop — it is not cropped edge-to-edge. Row mode uses
+          a bordered square. Both match the Neo app's Thumb. */}
+      <span
+        className={
+          fill
+            ? 'flex h-full w-full items-center justify-center overflow-hidden'
+            : 'block h-full w-full overflow-hidden rounded-[24px] border border-hairline'
+        }
+        style={fill ? { background: 'linear-gradient(135deg,#2a1420,#241525)' } : undefined}
+      >
+        {src ? (
+          <img
+            src={src}
+            alt={item.title}
+            loading="lazy"
+            decoding="async"
+            className={
+              fill
+                ? 'max-h-full max-w-full object-contain p-3 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]'
+                : 'h-full w-full object-contain p-1 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]'
+            }
+          />
+        ) : (
+          <span className={`grid h-full w-full place-items-center text-white/10 ${fill ? '' : 'bg-white/[0.04]'}`}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2M8.5 13.5l2.5 3L14.5 12l4.5 6H5z" /></svg>
+          </span>
+        )}
+      </span>
       {qty > 0 && (
-        <span className="absolute left-2 top-2 grid h-6 min-w-6 place-items-center rounded-full bg-pink px-1.5 text-[11px] font-black text-white">
-          {qty}
+        <span className={`absolute ${fill ? 'right-2 top-2' : '-right-1.5 -top-1.5'} grid min-w-7 place-items-center rounded-full bg-yellow px-1.5 py-1 text-xs font-black text-surface shadow`}>
+          ×{qty}
         </span>
       )}
-    </div>
+    </span>
   )
 }

@@ -217,18 +217,18 @@ function MenuLayout({
                 className="mb-4 flex scroll-mt-[101px] flex-col gap-1 border-b border-hairline pb-2.5
                   lg:scroll-mt-[52px] lg:flex-row lg:items-baseline lg:gap-3"
               >
-                <h2 className="font-display text-xl font-black uppercase text-ink lg:text-2xl">
-                  {section.title}
-                </h2>
+                <h2 className="text-xl font-black text-ink lg:text-2xl">{section.title}</h2>
               </header>
-              <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
+              {/* Poster cards are squarer than row cards, so they pack more per
+                  row — same breakpoints as the Neo app's `columns: auto`. */}
+              <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 2xl:grid-cols-4">
                 {section.products.map((product) => (
                   <ProductCard
                     key={product.ref}
                     item={product}
                     sectionName={section.title}
                     currency={store.currency}
-                    style="row"
+                    style="poster"
                     showImage
                     onConfigure={onConfigure}
                     onAdd={onAdd}
@@ -274,13 +274,16 @@ function ServicePills({
   if (store.services.length < 2) return null
   const label = (t: ServiceType) =>
     t === 'delivery' ? '🛵 Livraison' : t === 'collection' ? '🥡 À emporter' : '🪑 Sur place'
+  // Sits directly under the store banner and scrolls away with it, so the header
+  // reads as one bar — as in the Neo app, where the pills are inline in the
+  // header. They stay interactive here because they drive the quote.
   return (
-    <div className="mx-auto flex w-full max-w-[1500px] gap-2 px-4 pt-4 lg:px-6">
+    <div className="mx-auto flex w-full max-w-[1500px] select-none items-center gap-1.5 px-4 pb-2 pt-2 lg:px-6">
       {store.services.map((service) => (
         <button
           key={service.type}
           onClick={() => onChange(service.type)}
-          className={`rounded-full px-4 py-2 text-[13px] font-semibold transition
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition
             ${service.type === value
               ? 'bg-gradient-to-br from-pink-hot to-pink-deep text-white shadow-md'
               : 'border border-hairline bg-elevated/50 text-muted hover:text-ink'}`}
