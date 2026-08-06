@@ -1,0 +1,55 @@
+---
+// Layout for the marketing landing page. Deliberately separate from Base.astro:
+// the ordering pages are a dense mono UI, this is the brand site. They share
+// nothing but the API.
+import '../styles/brand.css'
+
+interface Props {
+  title: string
+  description?: string
+  canonical?: string
+}
+const { title, description, canonical } = Astro.props
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" type="image/png" href="/assets/4f5b8c7fd0603355.png" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:type" content="website" />
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+    <script>
+      // Scroll reveal, lifted from the POC. Degrades to "everything visible"
+      // when reduced motion is requested or IO is unavailable.
+      const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+      const els = document.querySelectorAll('.rv')
+      if (mq.matches || !('IntersectionObserver' in window)) {
+        els.forEach((e) => e.classList.add('in'))
+      } else {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((en) => {
+              if (en.isIntersecting) {
+                en.target.classList.add('in')
+                io.unobserve(en.target)
+              }
+            })
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -40px 0px' },
+        )
+        els.forEach((e) => io.observe(e))
+      }
+    </script>
+  </body>
+</html>
