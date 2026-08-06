@@ -1,6 +1,5 @@
 ---
 import Base from '../layouts/Base.astro'
-import Nav from '../components/Nav.astro'
 import OrderIsland from '../components/OrderIsland.tsx'
 import { getBrand, getCatalog, getStore } from '../lib/api'
 import { restaurantJsonLd } from '../lib/jsonld'
@@ -36,20 +35,39 @@ const description = `Commandez en ligne chez ${store.name}${store.address?.city 
     set:html={JSON.stringify(restaurantJsonLd(store, catalog, siteUrl))}
   />
 
-  <Nav />
+  <main class="tasty-bg min-h-dvh">
+    {/* Sticky store banner, ported from the Neo app's [slug]/page.tsx. */}
+    <div class="sticky top-0 z-40 border-b border-hairline bg-surface/85 backdrop-blur-xl">
+      <div class="mx-auto flex max-w-[1500px] items-center gap-4 px-4 py-3 lg:gap-5 lg:px-6">
+        <a
+          href="/"
+          class="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl bg-elevated transition hover:opacity-80 lg:h-14 lg:w-14"
+          aria-label="Tous nos restos"
+        >
+          <img src="/assets/4f5b8c7fd0603355.png" alt="Burger Nine" class="h-full w-full object-contain" />
+        </a>
 
-  <main>
-    <header class="store-header">
-      <a class="back" href="/">← Tous nos restos</a>
-      <div class="overline">Commander en ligne</div>
-      <h1>{store.name}</h1>
-      <p class="store-meta">
-        {store.address?.street && (
-          <span>{store.address.street}, {store.address.zipcode} {store.address.city}</span>
+        <div class="min-w-0 flex-1">
+          <h1 class="truncate font-display text-base font-black uppercase leading-tight text-ink lg:text-lg">
+            {store.name}
+          </h1>
+          {store.address?.street && (
+            <span class="block truncate text-[12px] font-semibold text-muted">
+              {store.address.street}, {store.address.zipcode} {store.address.city}
+            </span>
+          )}
+        </div>
+
+        {store.phone && (
+          <a
+            href={`tel:${store.phone.replace(/\s/g, '')}`}
+            class="hidden shrink-0 rounded-full border border-hairline bg-elevated/50 px-3.5 py-1.5 text-[12px] font-semibold text-muted transition hover:text-ink sm:block"
+          >
+            {store.phone}
+          </a>
         )}
-        {store.phone && <a class="tel" href={`tel:${store.phone.replace(/\s/g, '')}`}>{store.phone}</a>}
-      </p>
-    </header>
+      </div>
+    </div>
 
     <!--
       Static, indexable copy of the menu. It ships zero JS and is what Google
@@ -76,51 +94,12 @@ const description = `Commandez en ligne chez ${store.name}${store.address?.city 
   </main>
 
   <style>
-    /* Clears the fixed site nav. */
-    main { max-width: 1180px; margin: 0 auto; padding: 120px 22px 90px; }
-
-    .store-header { border-bottom: 1px solid var(--line); padding-bottom: 22px; }
-    .back {
-      display: inline-block;
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 13px;
-      margin-bottom: 14px;
-    }
-    .back:hover { color: var(--pink); }
-    .store-header .overline {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--pink);
-      margin-bottom: 6px;
-    }
-    .store-header h1 {
-      margin: 0 0 8px;
-      font-family: var(--display);
-      font-weight: 800;
-      font-size: clamp(30px, 4.4vw, 52px);
-      line-height: 1.02;
-      text-transform: uppercase;
-    }
-    .store-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px 18px;
-      margin: 0;
-      color: var(--muted);
-      font-size: 13.5px;
-    }
-    .store-meta .tel { color: var(--muted); text-decoration: none; }
-    .store-meta .tel:hover { color: var(--pink); }
-
+    /* The static crawlable menu only — the island replaces it on mount. */
+    .static-menu { max-width: 1180px; margin: 0 auto; padding: 24px 22px 64px; }
     .static-menu ul { list-style: none; padding: 0; margin: 0; }
     .static-menu li { border-bottom: 1px solid var(--line); padding: 8px 0; }
     .static-menu h3 { margin: 0; font-size: 14px; font-weight: 600; }
     .static-menu p { margin: 2px 0; color: var(--muted); }
-    /* The island hides this on mount (see OrderIsland). It stays in the HTML
-       for crawlers and for visitors without JS. */
     .static-menu[hidden] { display: none; }
   </style>
 </Base>

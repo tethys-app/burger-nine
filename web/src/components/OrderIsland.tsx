@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 import { ApiFailure, checkout, getCatalog, getQuote, getStore } from '../lib/api'
 import { livePollMs } from '../lib/live'
 import { money, requirementLabel } from '../lib/format'
-import type { Blocker, CartLine, Catalog, PaymentMethod, Product, Quote, ServiceType, Store } from '../lib/types'
+import { cart, toApiLines, useCartEntries, type Entry } from './menu/cart-store'
+import { ProductCard } from './menu/ProductCard'
+import { CategoryNav, CategoryRail } from './menu/CategoryRail'
+import { CartPanel } from './menu/CartPanel'
+import type { Blocker, CartLine, Catalog, PaymentMethod, Product, Quote, Section, ServiceType, Store } from '../lib/types'
 
 type Props = { store: Store; catalog: Catalog; siteUrl: string }
 
@@ -15,7 +19,10 @@ export default function OrderIsland({ store: buildStore, catalog: buildCatalog, 
   // Boots from the build-time snapshot, so there is no spinner on first paint.
   const [store, setStore] = useState(buildStore)
   const [catalog, setCatalog] = useState(buildCatalog)
-  const [lines, setLines] = useState<CartLine[]>([])
+  // The cart lives in a store (ported from the Neo app) so a product card deep
+  // in the grid can read its own quantity without the whole menu re-rendering.
+  const entries = useCartEntries()
+  const lines = useMemo(() => toApiLines(entries), [entries])
   const [serviceType, setServiceType] = useState<ServiceType>(
     store.services[0]?.type ?? 'collection',
   )
@@ -72,49 +79,35 @@ export default function OrderIsland({ store: buildStore, catalog: buildCatalog, 
 
   const { quote, stale, cartError } = useQuote(store.slug, lines, serviceType)
 
-  const add = (line: CartLine) => setLines((current) => [...current, line])
-  const remove = (index: number) => setLines((current) => current.filter((_, i) => i !== index))
-
   return (
-    <div className="order-app">
-      <ServicePicker store={store} value={serviceType} onChange={setServiceType} />
-
-      <div className="menu">
-        {catalog.sections.map((section) => (
-          <section key={section.id}>
-            <h2>{section.title}</h2>
-            {section.products.map((product) => (
-              <button key={product.ref} className="product" onClick={() => openProduct(product, add, setEditing)}>
-                <span className="title">{product.title}</span>
-                <span className="price">{money(product.price_cents, store.currency)}</span>
-              </button>
-            ))}
-          </section>
-        ))}
-      </div>
+    <>
+      <MenuLayout
+        store={store}
+        catalog={catalog}
+        serviceType={serviceType}
+        onServiceChange={setServiceType}
+        entries={entries}
+        quote={quote}
+        stale={stale}
+        cartError={cartError}
+        onConfigure={setEditing}
+        onAdd={(product) =>
+          cart.add(product, { productRef: product.ref, quantity: 1, choices: [] }, product.price_cents)
+        }
+        onCheckout={() => setCheckoutOpen(true)}
+      />
 
       {editing && (
         <ProductSheet
           product={editing}
           currency={store.currency}
           onCancel={() => setEditing(null)}
-          onAdd={(line) => {
-            add(line)
+          onAdd={(line, unitPriceCents) => {
+            cart.add(editing, line, unitPriceCents)
             setEditing(null)
           }}
         />
       )}
-
-      <Cart
-        lines={lines}
-        quote={quote}
-        stale={stale}
-        cartError={cartError}
-        store={store}
-        serviceType={serviceType}
-        onRemove={remove}
-        onCheckout={() => setCheckoutOpen(true)}
-      />
 
       {checkoutOpen && (
         <CheckoutModal
@@ -151,23 +144,152 @@ export default function OrderIsland({ store: buildStore, catalog: buildCatalog, 
           }}
         />
       )}
-    </div>
+    </>
   )
 }
 
-// A product with no required modifiers goes straight in; anything with choices
-// opens the sheet. The sheet is what guarantees a malformed line never reaches
-// the API — the server treats one as a bug and returns 422.
-function openProduct(
-  product: Product,
-  add: (line: CartLine) => void,
-  setEditing: (product: Product) => void,
-) {
-  if (product.modifiers.length === 0) {
-    add({ productRef: product.ref, quantity: 1, choices: [] })
-    return
-  }
-  setEditing(product)
+// Ported from the Neo app's menu-client.tsx: category rail + sticky left nav +
+// card grid + docked cart, with the same IntersectionObserver scroll-spy.
+function MenuLayout({
+  store, catalog, serviceType, onServiceChange, entries, quote, stale, cartError,
+  onConfigure, onAdd, onCheckout,
+}: {
+  store: Store
+  catalog: Catalog
+  serviceType: ServiceType
+  onServiceChange: (next: ServiceType) => void
+  entries: Entry[]
+  quote?: Quote
+  stale: boolean
+  cartError?: string
+  onConfigure: (product: Product) => void
+  onAdd: (product: Product) => void
+  onCheckout: () => void
+}) {
+  const sections = catalog.sections
+  const [active, setActive] = useState(sections[0]?.id ?? '')
+  const sectionRefs = useRef(new Map<string, HTMLElement>())
+  const tapScrolling = useRef(false)
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (list) => {
+        if (tapScrolling.current) return
+        const visible = list
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+        if (visible[0]) setActive(visible[0].target.id)
+      },
+      { rootMargin: '-102px 0px -65% 0px', threshold: 0 },
+    )
+    sectionRefs.current.forEach((el) => obs.observe(el))
+    return () => obs.disconnect()
+  }, [sections])
+
+  const scrollTo = useCallback((id: string) => {
+    const el = sectionRefs.current.get(id)
+    if (!el) return
+    setActive(id)
+    tapScrolling.current = true
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    window.setTimeout(() => (tapScrolling.current = false), 650)
+  }, [])
+
+  const register = useCallback((id: string, el: HTMLElement | null) => {
+    if (el) sectionRefs.current.set(id, el)
+    else sectionRefs.current.delete(id)
+  }, [])
+
+  return (
+    <>
+      <ServicePills store={store} value={serviceType} onChange={onServiceChange} />
+      <CategoryRail sections={sections} active={active} onSelect={scrollTo} />
+
+      <div className="mx-auto flex w-full max-w-[1500px] gap-6 px-4 lg:px-6">
+        <CategoryNav sections={sections} active={active} onSelect={scrollTo} />
+
+        <div className="min-w-0 flex-1 pb-32 pt-2 lg:pb-12">
+          {sections.map((section) => (
+            <section key={section.id} className="pt-8 first:pt-2">
+              <header
+                id={section.id}
+                ref={(el) => register(section.id, el)}
+                className="mb-4 flex scroll-mt-[101px] flex-col gap-1 border-b border-hairline pb-2.5
+                  lg:scroll-mt-[52px] lg:flex-row lg:items-baseline lg:gap-3"
+              >
+                <h2 className="font-display text-xl font-black uppercase text-ink lg:text-2xl">
+                  {section.title}
+                </h2>
+              </header>
+              <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
+                {section.products.map((product) => (
+                  <ProductCard
+                    key={product.ref}
+                    item={product}
+                    sectionName={section.title}
+                    currency={store.currency}
+                    style="row"
+                    showImage
+                    onConfigure={onConfigure}
+                    onAdd={onAdd}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+
+        <CartPanel
+          variant="sidebar"
+          entries={entries}
+          currency={store.currency}
+          quote={quote}
+          stale={stale}
+          error={cartError}
+          onCheckout={onCheckout}
+        />
+      </div>
+
+      <div className="lg:hidden">
+        <CartPanel
+          variant="floating"
+          entries={entries}
+          currency={store.currency}
+          quote={quote}
+          stale={stale}
+          error={cartError}
+          onCheckout={onCheckout}
+        />
+      </div>
+    </>
+  )
+}
+
+// Service picker, styled as the Neo header's pills.
+function ServicePills({
+  store, value, onChange,
+}: {
+  store: Store; value: ServiceType; onChange: (next: ServiceType) => void
+}) {
+  if (store.services.length < 2) return null
+  const label = (t: ServiceType) =>
+    t === 'delivery' ? '🛵 Livraison' : t === 'collection' ? '🥡 À emporter' : '🪑 Sur place'
+  return (
+    <div className="mx-auto flex w-full max-w-[1500px] gap-2 px-4 pt-4 lg:px-6">
+      {store.services.map((service) => (
+        <button
+          key={service.type}
+          onClick={() => onChange(service.type)}
+          className={`rounded-full px-4 py-2 text-[13px] font-semibold transition
+            ${service.type === value
+              ? 'bg-gradient-to-br from-pink-hot to-pink-deep text-white shadow-md'
+              : 'border border-hairline bg-elevated/50 text-muted hover:text-ink'}`}
+        >
+          {label(service.type)}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 function useQuote(slug: string, lines: CartLine[], serviceType: ServiceType) {
@@ -202,32 +324,6 @@ function useQuote(slug: string, lines: CartLine[], serviceType: ServiceType) {
   return { quote: quote ?? last.current, stale: quote === undefined, cartError }
 }
 
-function ServicePicker({
-  store,
-  value,
-  onChange,
-}: {
-  store: Store
-  value: ServiceType
-  onChange: (next: ServiceType) => void
-}) {
-  // Already resolved server-side to what the brand sells — no filtering or
-  // deduping needed, and no duplicates possible now that services are a record.
-  if (store.services.length < 2) return null
-  return (
-    <div className="services">
-      {store.services.map((service) => (
-        <button
-          key={service.type}
-          data-active={service.type === value}
-          onClick={() => onChange(service.type)}
-        >
-          {service.type === 'delivery' ? 'Livraison' : service.type === 'collection' ? 'À emporter' : 'Sur place'}
-        </button>
-      ))}
-    </div>
-  )
-}
 
 function ProductSheet({
   product,
@@ -237,7 +333,7 @@ function ProductSheet({
 }: {
   product: Product
   currency: string
-  onAdd: (line: CartLine) => void
+  onAdd: (line: CartLine, unitPriceCents: number) => void
   onCancel: () => void
 }) {
   const [selected, setSelected] = useState<Record<string, string[]>>({})
@@ -305,13 +401,16 @@ function ProductSheet({
           className="primary"
           disabled={!satisfied}
           onClick={() =>
-            onAdd({
-              productRef: product.ref,
-              quantity: 1,
-              choices: Object.entries(selected).flatMap(([modifierRef, refs]) =>
-                refs.map((choiceRef) => ({ modifierRef, choiceRef })),
-              ),
-            })
+            onAdd(
+              {
+                productRef: product.ref,
+                quantity: 1,
+                choices: Object.entries(selected).flatMap(([modifierRef, refs]) =>
+                  refs.map((choiceRef) => ({ modifierRef, choiceRef })),
+                ),
+              },
+              product.price_cents + extra,
+            )
           }
         >
           Ajouter — {money(product.price_cents + extra, currency)}
@@ -371,66 +470,6 @@ function checkoutFailureLabel(error: unknown) {
   }
 }
 
-function Cart({
-  lines,
-  quote,
-  stale,
-  cartError,
-  store,
-  serviceType,
-  onRemove,
-  onCheckout,
-}: {
-  lines: CartLine[]
-  quote?: Quote
-  stale: boolean
-  cartError?: string
-  store: Store
-  serviceType: ServiceType
-  onRemove: (index: number) => void
-  onCheckout: () => void
-}) {
-  const currency = store.currency
-
-  if (lines.length === 0) return <aside className="cart empty">Votre panier est vide.</aside>
-
-  return (
-    <aside className="cart">
-      <ol>
-        {(quote?.lines ?? []).map((item, index) => (
-          <li key={index}>
-            <span>{item.quantity}× {item.productName}</span>
-            <span className="options">{item.options.map((option) => option.optionName).join(', ')}</span>
-            <span className="price">{money(item.subtotalCents, currency)}</span>
-            <button onClick={() => onRemove(index)} aria-label="Retirer">×</button>
-          </li>
-        ))}
-      </ol>
-
-      {quote?.blockers.map((blocker) => (
-        <p key={blocker.code + blocker.line} className="blocker">{blockerLabel(blocker, quote, store, serviceType)}</p>
-      ))}
-      {cartError && <p className="error">Erreur de configuration du menu : {cartError}</p>}
-
-      <dl className="totals" data-stale={stale}>
-        <dt>Sous-total</dt>
-        <dd>{money(quote?.totals.subtotalCents, currency)}</dd>
-        {quote && quote.totals.deliveryFeeCents > 0 && (
-          <>
-            <dt>Livraison</dt>
-            <dd>{money(quote.totals.deliveryFeeCents, currency)}</dd>
-          </>
-        )}
-        <dt>Total</dt>
-        <dd>{money(quote?.totals.totalCents, currency)}</dd>
-      </dl>
-
-      <button className="primary" type="button" disabled={!quote?.valid} onClick={onCheckout}>
-        Commander — {money(quote?.totals.totalCents, currency)}
-      </button>
-    </aside>
-  )
-}
 
 /**
  * Customer details, then Stripe, in one dialog. Payment stays inline rather than

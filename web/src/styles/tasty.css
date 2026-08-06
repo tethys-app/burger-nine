@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* Ported from the Neo app's globals.css — same token names, same structure, so
+   the layout classes copied from its components work unchanged. The palette is
+   Burger Nine's (rose pétant, Baloo 2) rather than Neo's magenta/violet + Anton,
+   so the order page matches the rest of this site. */
+@theme {
+  --color-surface: #1e0b1a;
+  --color-surface-depth: #170815;
+  --color-elevated: #2a0f26;
+  --color-elevated-soft: #351433;
+  --color-ink: #ffffff;
+  --color-muted: #f2cfe4;
+  --color-hairline: rgb(255 255 255 / 0.14);
+
+  --color-pink: #ff2d9e;
+  --color-pink-hot: #ff52b4;
+  --color-pink-deep: #c90e6e;
+  --color-magenta: #e31250;
+  --color-yellow: #ffd84d;
+  --color-coral: #ff5c7a;
+
+  --font-rounded: "Fredoka", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --font-display: "Baloo 2", "Fredoka", system-ui, sans-serif;
+}
+
+:root {
+  --theme-card-bg: linear-gradient(135deg, var(--color-elevated), var(--color-elevated-soft));
+  --theme-panel-bg: linear-gradient(180deg, var(--color-elevated), var(--color-elevated-soft));
+  --theme-elevated-bg: var(--color-elevated);
+  --theme-surface-depth: var(--color-surface-depth);
+  --theme-line: rgb(255 255 255 / 0.08);
+  --theme-hairline: var(--color-hairline);
+  --theme-floating-cart-bg: linear-gradient(135deg, #2a0f26, #3d1533);
+  --theme-glow: rgb(255 45 158 / 0.35);
+}
+
+/* Ambient blurred colour blobs behind the content, as in the Neo app —
+   retinted to the brand pink. */
+.tasty-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(60% 50% at 85% -10%, rgb(255 45 158 / 0.18), transparent 70%),
+    radial-gradient(55% 45% at 0% 35%, rgb(201 14 110 / 0.12), transparent 70%),
+    radial-gradient(65% 55% at 95% 80%, rgb(255 45 158 / 0.2), transparent 70%),
+    linear-gradient(180deg, var(--color-surface), var(--color-surface-depth));
+}
+
+.theme-card { background: var(--theme-card-bg); }
+.theme-panel { background: var(--theme-panel-bg); }
+.theme-surface-depth { background: var(--theme-surface-depth); }
+.theme-elevated { background: var(--theme-elevated-bg); }
+.theme-border { border-color: var(--theme-hairline); }
+.theme-floating-cart {
+  background: var(--theme-floating-cart-bg);
+  box-shadow: 0 24px 48px -12px var(--theme-glow);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pop-in { animation: pop-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Hide scrollbars on the horizontal category rail. */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

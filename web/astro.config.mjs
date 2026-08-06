@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config'
 import react from '@astrojs/react'
+import tailwind from '@tailwindcss/vite'
 
 // `output: 'static'` is not optional here — it is the invariant that keeps this
 // repo safe to hand to an LLM. No server, no secrets, nothing to leak.
@@ -10,4 +11,5 @@ export default defineConfig({
   server: { port: 4322 },
   site: process.env.PUBLIC_SITE_URL,
   build: { inlineStylesheets: 'auto' },
+  vite: { plugins: [tailwind()] },
 })
