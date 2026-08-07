@@ -12,7 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Pinned: bun.lock is lockfileVersion 2, which older bun cannot parse.
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
 
       # The site lives in web/, not the repo root — the reason the Cloudflare
       # build failed with "Could not detect a directory containing static files".
