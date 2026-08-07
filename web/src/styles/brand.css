@@ -1615,33 +1615,53 @@
         .hero .bn-cta { width: auto; min-width: 240px; min-height: 58px; padding: 0 32px; }
         .hero-micro { display: none; }
         .bn-bar { transform: translateY(0); }
-        /* City is an absolute layer tucked behind the copy, not a stacked
-           block — it starts under the CTA and the gradient on top of it
-           does the actual blending, so there is no seam between the CSS
-           background and the photo. */
+        /* City is an absolute layer tucked behind the copy — never a
+           stacked block. The photo itself stays fully bright (no opacity,
+           no filter, no overlay across it); only a short band at the very
+           top of the layer fades from the CSS background into it, so the
+           seam disappears without dimming the billboard. Sized/positioned
+           as an oversized <img> (not object-fit:cover) so the crop is a
+           deliberate window onto the source rather than an aspect-driven
+           guess — skyline occupies the left, the billboard enters from the
+           right and may run past the edge. */
         .hero-city {
           position: absolute;
           left: -20px;
           right: -20px;
-          top: 260px;
-          height: 420px;
-          z-index: 1;
+          top: 300px;
+          height: 300px;
+          z-index: 0;
+          overflow: hidden;
           pointer-events: none;
         }
-        .hero-city img { object-position: 94% center; }
+        .hero-city img {
+          position: absolute;
+          top: 0;
+          left: auto;
+          right: -10%;
+          width: 155%;
+          max-width: none;
+          height: auto;
+          object-fit: unset;
+          object-position: unset;
+          opacity: 1;
+          filter: none;
+        }
         .hero-city::before {
-          /* Opaque through the CTA's lower edge, then eases open — the sky
-             underneath progressively takes over from the CSS gradient. */
+          /* Short localized fade — 160px tall, not the whole layer — so it
+             blends the top edge into the CSS gradient without ever passing
+             over the billboard below. */
+          top: 0;
+          bottom: auto;
+          height: 160px;
+          z-index: 1;
           background: linear-gradient(
             180deg,
             #2a0a1f 0%,
-            rgba(58, 12, 44, .95) 14%,
-            rgba(120, 22, 92, .68) 30%,
-            rgba(160, 35, 130, .3) 46%,
-            transparent 64%
+            rgba(58, 12, 44, .85) 20%,
+            rgba(90, 18, 68, .35) 55%,
+            transparent 100%
           );
         }
-        .hero-city::after {
-          background: linear-gradient(180deg, transparent 72%, rgba(3,0,6,.5) 100%);
-        }
+        .hero-city::after { content: none; }
       }
