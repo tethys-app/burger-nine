@@ -14,16 +14,21 @@ const { storeCount = 0 } = Astro.props
     <!-- HERO -->
     <section class="hero" id="top">
       <div class="hero-copy">
-        <h1>C'est vraiment de la frappe !</h1>
-        <p class="hero-lede">À emporter · Livraison</p>
+        <span class="hero-kicker">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.6 4.4L18 8l-4.4 1.6L12 14l-1.6-4.4L6 8l4.4-1.6L12 2z" /></svg>
+          Smash burger · fait minute
+        </span>
+        <h1>Smashé.<br />Grillé.<br />Dévoré.</h1>
+        <p class="hero-lede">Steak écrasé sur plancha brûlante, cheddar qui dégouline, pain toasté. À emporter ou livré, sans détour.</p>
         <div class="hero-act">
           <a class="btn bn-cta" href="#restos">Commander <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg></a>
+          <a href="#carte" class="hero-menu-link">Voir la carte <span>→</span></a>
         </div>
-        <p class="hero-micro"><a href="#franchise">Ouvrir un Burger Nine</a></p>
+        <p class="hero-micro"><a href="#franchise">Envie d'ouvrir un Burger Nine ?</a></p>
       </div>
       <div class="hero-product">
         <img src="/assets/generated/burger-hero-cutout-v1.png" alt="Double smash burger Burger Nine, bacon et cheddar fondu" fetchpriority="high" width="1254" height="1254" />
-        <span class="hero-product-label">Chaque bouchée<br />c'est une boucherie !</span>
+        <span class="hero-product-label">Attention,<br />ça dégouline.</span>
       </div>
     </section>
     <div class="bn-bar" id="bnBar">
@@ -47,11 +52,11 @@ const { storeCount = 0 } = Astro.props
           <div>
             <div class="overline">01 · La carte</div>
             <h2>
-              La carte
+              Quatre formats,
               <br />
-              du Nine
+              zéro chichi
             </h2>
-            <a href="#restos" class="hero-menu-link cat-link">Découvrir le catalogue <span>→</span></a>
+            <a href="#restos" class="hero-menu-link cat-link">Voir le catalogue complet <span>→</span></a>
           </div>
         </div>
         <div class="cards">
@@ -66,6 +71,7 @@ const { storeCount = 0 } = Astro.props
             </div>
             <div class="card-body">
               <h3>Burgers</h3>
+              <p>Steak smashé, cheddar fondu, pain toasté au beurre.</p>
             </div>
           </article>
           <article class="card rv">
@@ -78,6 +84,7 @@ const { storeCount = 0 } = Astro.props
             </div>
             <div class="card-body">
               <h3>Tacos</h3>
+              <p>La sauce fromagère qui déborde, comme il faut.</p>
             </div>
           </article>
           <article class="card rv">
@@ -90,6 +97,7 @@ const { storeCount = 0 } = Astro.props
             </div>
             <div class="card-body">
               <h3>Riz Crousty</h3>
+              <p>Poulet croustillant, riz parfumé, sauce généreuse.</p>
             </div>
           </article>
           <article class="card rv">
@@ -102,6 +110,7 @@ const { storeCount = 0 } = Astro.props
             </div>
             <div class="card-body">
               <h3>Bowls</h3>
+              <p>Tout le smash, sans le pain — frais et généreux.</p>
             </div>
           </article>
         </div>
@@ -127,13 +136,13 @@ const { storeCount = 0 } = Astro.props
             <div>
               <div class="overline">02 · Les hits</div>
               <h2>
-                Les hits
+                Ceux qu'on
                 <br />
-                du moment
+                recommande
               </h2>
             </div>
             <p class="side">
-              La sélection qui tourne fort en ce moment chez le Nine.
+              Les recettes qui reviennent commande après commande.
             </p>
           </div>
           <div class="hits-row">
@@ -192,7 +201,7 @@ const { storeCount = 0 } = Astro.props
         <div class="spot-grid">
           <div class="spot-txt rv">
             <div class="overline">03 · Le spot</div>
-            <span class="neon-quote">« Y'a le kho, c'est cher bon »</span>
+            <span class="neon-quote">« Askip c'est le meilleur spot du coin »</span>
             <h2
               style="
                 font-family: var(--display);
@@ -203,9 +212,9 @@ const { storeCount = 0 } = Astro.props
                 margin-bottom: 22px;
               "
             >
-              Un spot taillé
+              Le spot où
               <br />
-              pour le kiff
+              t'as ta place
             </h2>
             <div class="feat">
               <div class="feat-item">
@@ -218,8 +227,8 @@ const { storeCount = 0 } = Astro.props
                   </svg>
                 </div>
                 <div>
-                  <b>Customer</b>
-                  <span>Viens seul entre deux réunions, après les cours, ou en famille.</span>
+                  <b>Solo ou en bande</b>
+                  <span>Entre deux cours, en pause déj', ou toute la bande le soir : t'as ta table.</span>
                 </div>
               </div>
               <div class="feat-item">
@@ -229,8 +238,8 @@ const { storeCount = 0 } = Astro.props
                   </svg>
                 </div>
                 <div>
-                  <b>Team</b>
-                  <span>Une équipe disponible et boostée pour vous régaler.</span>
+                  <b>Une équipe à fond</b>
+                  <span>Rapide, disponible, et toujours partante pour un sourire en plus.</span>
                 </div>
               </div>
               <div class="feat-item">
@@ -241,8 +250,8 @@ const { storeCount = 0 } = Astro.props
                   </svg>
                 </div>
                 <div>
-                  <b>Déco</b>
-                  <span>La D.A a changé — entre snack authentique et street food néon, plonge dans un univers flambant neuf !</span>
+                  <b>Un décor repensé</b>
+                  <span>Néon, brique et bois brut — entre snack de quartier et street food assumée.</span>
                 </div>
               </div>
             </div>
@@ -272,7 +281,7 @@ const { storeCount = 0 } = Astro.props
         <!-- FRANCHISE: le détail vit sur sa propre page, pas de doublon ici -->
         <div class="franchise-cta rv" id="franchise">
           <a href="/franchise" class="btn bn-cta">
-            Se franchiser
+            Ouvrir mon Burger Nine
             <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
               <path d="M0 0l10 6-10 6z" />
             </svg>

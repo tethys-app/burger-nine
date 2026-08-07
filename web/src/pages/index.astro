@@ -47,7 +47,7 @@ const count = allStores.length
 ---
 
 <Brand
-  title={`${brand.name} — T'es à un croc du kiff`}
+  title={`${brand.name} — Smashé. Grillé. Dévoré.`}
   description={`Smash burgers, tacos, bowls & sandwichs. ${count} restaurant${count > 1 ? 's' : ''} en Auvergne-Rhône-Alpes.`}
   canonical={brand.siteUrl ?? undefined}
 >
@@ -60,14 +60,14 @@ const count = allStores.length
       <div class="sec-head rv">
         <div>
           <div class="overline">04 · Nos restaurants</div>
-          <h2>Le Nine frappe à ta porte !</h2>
-          <span class="resto-quote">Bientôt 20 villes</span>
+          <h2>Trouve ton Nine</h2>
+          <span class="resto-quote">Bientôt 20 spots</span>
         </div>
       </div>
 
       <div class="map-wrap rv">
         <div class="map-topline">
-          <span class="map-help">Survole un point pour voir le restaurant</span>
+          <span class="map-help">Passe la souris sur un point pour repérer un resto</span>
         </div>
         <StoreMap stores={allStores} liveSlugs={liveSlugs} />
       </div>

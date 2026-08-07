@@ -35,20 +35,24 @@
         padding: 0;
       }
       :root {
-        /* ROSE PÉTANT — palette dominante (itération 2, wordmark-driven) */
-        --bg: #1e0b1a;
-        --pink: #ff2d9e;
-        --pink-hot: #ff52b4;
-        --pink-deep: #c90e6e;
-        --panel: #2a0f26;
+        /* REDESIGN — deux couleurs qui font le boulot : rose franc pour le
+           smash, ambre pour le contraste chaud. Avant, --yellow pointait sur
+           un magenta sombre presque invisible à côté du rose ; c'est
+           maintenant un vrai ambre, donc les CTA/badges qui dégradent
+           pink-deep → yellow → violet gagnent enfin un vrai deuxième temps. */
+        --bg: #1b0a1f;
+        --pink: #ff2e93;
+        --pink-hot: #ff5cae;
+        --pink-deep: #c00f66;
+        --panel: #260f2a;
         --line: rgba(255, 255, 255, 0.14);
         --txt: #ffffff;
-        --muted: #f2cfe4;
-        --magenta: #e31250;
-        --violet: #3d1a4a;
-        --violet-deep: #2a1233;
-        --yellow: #8A135E;
-        --night: #0b0a0e;
+        --muted: #f0cfe2;
+        --magenta: #d81c68;
+        --violet: #47184f;
+        --violet-deep: #29101f;
+        --yellow: #ffb020;
+        --night: #0b0710;
         --display: "Baloo 2", "Fredoka", sans-serif;
         --display2: "Fredoka", "Baloo 2", sans-serif;
         --script: "Mr Dafoe", cursive;
@@ -1447,7 +1451,7 @@
         gap: clamp(22px, 6vw, 94px);
         padding: 108px max(28px, calc((100vw - 1150px) / 2)) 52px;
         overflow: hidden;
-        background: radial-gradient(75% 115% at 93% 44%, #ff4db0 0%, #d71473 33%, transparent 65%), linear-gradient(116deg, #12080f 0%, #260b20 48%, #7d0b46 100%);
+        background: radial-gradient(60% 90% at 96% 20%, rgba(255, 176, 32, 0.55) 0%, transparent 55%), radial-gradient(75% 115% at 93% 44%, #ff4db0 0%, #d71473 33%, transparent 65%), linear-gradient(116deg, #12080f 0%, #260b20 48%, #7d0b46 100%);
       }
       .hero::before {
         content: '';
