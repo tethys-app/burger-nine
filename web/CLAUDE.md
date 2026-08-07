@@ -105,16 +105,19 @@ fails if the two are from different Stripe modes.
 
 ## Types
 
-`src/lib/types.ts` defines nothing. It re-exports `@tethys/api-types`, which
+`src/lib/types.ts` defines nothing. It re-exports `@tethysapp/sdk`, which
 derives every type from the server implementation — `Quote` and `Blocker` from
 the pricer, `Store`/`Brand`/`Order` from the queries that return them. There is
 one source of truth, so renaming a field server-side breaks this build rather
 than a customer's browser.
 
-While the template lives in the API repo the dependency is
-`file:../../packages/api-types`. When the template is copied into its own repo,
-change that to a published version range — no source change, because the import
-specifier is already the package name.
+The dependency is a published version range, so this template works unchanged
+whether it lives in the API repo or its own. The package ships a single bundled
+`.d.ts` with no imports, so consumers do not need the API source or `convex`.
+
+It is published from `packages/api-types` in the API repo: bump `version`, then
+`bun publish`. `prepublishOnly` regenerates the bundle, so a server-side rename
+that breaks the contract shows up at publish time.
 
 Do not hand-write a response type. If something is missing, export it from the
 package.

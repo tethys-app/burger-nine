@@ -9,7 +9,7 @@
     "check": "bun scripts/check-invariants.mjs && astro check"
   },
   "dependencies": {
-    "@tethys/api-types": "file:../../packages/api-types",
+    "@tethysapp/sdk": "^0.1.0",
     "@astrojs/react": "^4.2.0",
     "@stripe/react-stripe-js": "^3.1.1",
     "@stripe/stripe-js": "^5.5.0",
