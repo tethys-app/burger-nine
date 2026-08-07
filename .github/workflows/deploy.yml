@@ -1,0 +1,29 @@
+name: deploy storefront
+
+on:
+  push:
+    branches: [master]
+    paths: ['web/**', '.github/workflows/deploy.yml']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      # The site lives in web/, not the repo root — the reason the Cloudflare
+      # build failed with "Could not detect a directory containing static files".
+      - run: bun install --frozen-lockfile
+        working-directory: web
+
+      # Produces web/dist, which is gitignored and so never exists on a clone.
+      - run: bun run build
+        working-directory: web
+
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: web
