@@ -8,7 +8,7 @@ import { cart, toApiLines, useCartEntries, type Entry } from './menu/cart-store'
 import { ProductCard } from './menu/ProductCard'
 import { CategoryNav, CategoryRail } from './menu/CategoryRail'
 import { CartPanel } from './menu/CartPanel'
-import type { Blocker, CartLine, Catalog, PaymentMethod, Product, Quote, Section, ServiceType, Store } from '../lib/types'
+import type { CartLine, Catalog, PaymentMethod, Product, Quote, ServiceType, Store } from '../lib/types'
 
 type Props = { store: Store; catalog: Catalog; siteUrl: string }
 
@@ -498,38 +498,6 @@ function ProductSheet({
       </div>
     </div>
   )
-}
-
-// Blockers arrive with both a `code` and a developer-facing English `message`.
-// Localise on the code; fall back to the message only for codes we don't know.
-function blockerLabel(blocker: Blocker, quote: Quote, store: Store, serviceType: ServiceType) {
-  const currency = store.currency
-  switch (blocker.code) {
-    case 'below_minimum': {
-      // Per service now, so read the one being ordered rather than a flat value.
-      const minimum = store.services.find((service) => service.type === serviceType)?.minimumOrderCents ?? 0
-      const missing = minimum - quote.totals.subtotalCents
-      return missing > 0
-        ? `Ajoutez ${money(missing, currency)} pour atteindre le minimum de ${money(minimum, currency)}.`
-        : `Commande minimum de ${money(minimum, currency)} non atteinte.`
-    }
-    case 'store_closed':
-      return 'Le restaurant est fermé pour le moment.'
-    case 'accepting_paused':
-      return `Le restaurant a suspendu les commandes${blocker.message ? ` — ${blocker.message}` : ''}.`
-    case 'service_unavailable':
-      return 'Ce mode de commande n’est pas proposé par ce restaurant.'
-    case 'item_unavailable':
-      return 'Un article de votre panier n’est plus disponible.'
-    case 'payment_method_unavailable':
-      return 'Ce mode de paiement n’est pas accepté par ce restaurant.'
-    case 'no_brand':
-      // Misconfiguration rather than drift, but the customer can only be told
-      // that ordering is unavailable.
-      return 'La commande en ligne n’est pas encore disponible pour ce restaurant.'
-    default:
-      return blocker.message
-  }
 }
 
 function checkoutFailureLabel(error: unknown) {

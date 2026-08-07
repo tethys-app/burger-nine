@@ -23,4 +23,4 @@ export type {
   CheckoutRequest,
   CheckoutResponse,
   ApiError,
-} from '@tethysapp/sdk'
+} from 'tethysapp-sdk'

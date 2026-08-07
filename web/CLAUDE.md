@@ -105,7 +105,7 @@ fails if the two are from different Stripe modes.
 
 ## Types
 
-`src/lib/types.ts` defines nothing. It re-exports `@tethysapp/sdk`, which
+`src/lib/types.ts` defines nothing. It re-exports `tethysapp-sdk`, which
 derives every type from the server implementation — `Quote` and `Blocker` from
 the pricer, `Store`/`Brand`/`Order` from the queries that return them. There is
 one source of truth, so renaming a field server-side breaks this build rather

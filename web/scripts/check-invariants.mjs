@@ -76,6 +76,19 @@ for (const file of files.filter((f) => !/\.(png|jpe?g|webp|avif|ico|woff2?)$/.te
   }
 }
 
+// 5. A production build must not ship a placeholder API URL. `.env.production`
+// is committed, so an unreplaced value would build fine and then fail on every
+// visitor's first fetch. Fail here instead.
+if (process.env.NODE_ENV === 'production' || process.argv.includes('--production')) {
+  const apiUrl = process.env.PUBLIC_NEO_API_URL ?? ''
+  if (apiUrl.includes('REPLACE-ME') || apiUrl.includes('127.0.0.1') || apiUrl.includes('localhost')) {
+    failures.push(
+      `PUBLIC_NEO_API_URL is "${apiUrl}" in a production build. ` +
+        'Set the real deployment URL in .env.production.',
+    )
+  }
+}
+
 if (failures.length > 0) {
   console.error('\n✗ Storefront invariants violated:\n')
   for (const failure of failures) console.error(`  • ${failure}`)
