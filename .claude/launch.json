@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "burger-nine",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd /Users/elyashamadache/dev/burger-nine/web && export NVM_DIR=$HOME/.nvm && source $NVM_DIR/nvm.sh && nvm use 24.19.0 && npm run dev"],
+      "port": 4322
+    }
+  ]
+}

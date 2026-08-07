@@ -1628,6 +1628,13 @@
         }
         .hero-city picture,
         .hero-city img {
+          /* The shared/desktop rule makes .hero-city img position:absolute
+             with inset:0 — never reset here, it took the image out of flow,
+             so height:auto resolved to 0 and overflow:hidden clipped the
+             whole hero away. This is the fix: put it back in normal flow so
+             its native aspect ratio drives the hero's height. */
+          position: static;
+          inset: auto;
           display: block;
           width: 100%;
           height: auto;
