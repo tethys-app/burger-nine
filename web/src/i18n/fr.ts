@@ -13,8 +13,9 @@ export const fr = {
     homeAria: 'Burger Nine — accueil',
   },
   hero: {
-    headlineLead: 'Viens goûter la ',
+    headlineLead: 'Viens tester la ',
     headlineHighlight: 'frappe',
+    headlineTrail: ' du Nine',
     headlineLines: ["C'est testé.", "C'est validé."],
     cta: 'Commander',
     menuLink: 'Voir la carte',

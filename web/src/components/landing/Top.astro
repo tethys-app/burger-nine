@@ -15,7 +15,7 @@ const { storeCount = 0 } = Astro.props
     <!-- HERO -->
     <section class="hero" id="top">
       <div class="hero-copy">
-        <h1>{t.hero.headlineLead}<span class="hl-frappe">{t.hero.headlineHighlight}</span>.</h1>
+        <h1>{t.hero.headlineLead}<span class="hl-frappe">{t.hero.headlineHighlight}</span>{t.hero.headlineTrail}.</h1>
         <p class="hero-tagline">{t.hero.headlineLines[0]} {t.hero.headlineLines[1]}</p>
         <div class="hero-act">
           <a class="btn bn-cta" href="#restos">{t.hero.cta} <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg></a>
