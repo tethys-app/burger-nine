@@ -1590,17 +1590,14 @@
       }
       @media (max-width: 760px) {
         .hero {
-          min-height: auto;
-          display: flex;
-          flex-direction: column;
-          align-items: stretch;
-          justify-content: flex-start;
-          gap: 4px;
+          min-height: 700px;
+          display: block;
           padding: 108px 20px 0;
           background:
             radial-gradient(90% 55% at 50% 82%, #ff8fd6 0%, #ff2d9e 24%, #c0136a 44%, #6e0e40 66%, transparent 86%),
             linear-gradient(180deg, #030006 0%, #0d0512 20%, #2a0a1f 48%, #5c0d38 76%, #9c1560 100%);
           position: relative;
+          overflow: hidden;
         }
         .hero::before { opacity: .12; mask-image: none; }
         .hero::after {
@@ -1610,30 +1607,41 @@
           background-blend-mode: normal, overlay;
           mix-blend-mode: normal;
         }
-        .hero-copy { justify-content: flex-start; padding: 0; }
+        .hero-copy { position: relative; z-index: 3; justify-content: flex-start; padding: 0; }
         .hero h1 { max-width: 320px; margin-bottom: 0; font-size: clamp(32px, 9.5vw, 44px); }
         .hero-tagline { margin: 24px 0 0; font-size: clamp(15px, 4.4vw, 19px); }
         .hero-lede { display: none; }
-        .hero-act { width: 100%; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 32px; margin-bottom: 4px; }
+        .hero-act { width: 100%; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 28px; margin-bottom: 4px; }
         .hero .bn-cta { width: auto; min-width: 240px; min-height: 58px; padding: 0 32px; }
         .hero-micro { display: none; }
         .bn-bar { transform: translateY(0); }
-        /* Full-bleed city shot filling the lower half of the screen — no
-           card, no side padding, so the skyline reads as the floor the copy
-           block is standing on rather than a boxed-in photo. */
+        /* City is an absolute layer tucked behind the copy, not a stacked
+           block — it starts under the CTA and the gradient on top of it
+           does the actual blending, so there is no seam between the CSS
+           background and the photo. */
         .hero-city {
-          width: calc(100% + 40px);
-          height: 56vh;
-          min-height: 400px;
-          max-height: 600px;
-          margin: 28px -20px 0;
+          position: absolute;
+          left: -20px;
+          right: -20px;
+          top: 260px;
+          height: 420px;
+          z-index: 1;
           pointer-events: none;
         }
-        .hero-city img { object-position: 76% 42%; }
+        .hero-city img { object-position: 94% center; }
         .hero-city::before {
-          background: linear-gradient(180deg, #2a0a1f 0%, rgba(42,10,31,.5) 16%, transparent 34%);
+          /* Opaque through the CTA's lower edge, then eases open — the sky
+             underneath progressively takes over from the CSS gradient. */
+          background: linear-gradient(
+            180deg,
+            #2a0a1f 0%,
+            rgba(58, 12, 44, .95) 14%,
+            rgba(120, 22, 92, .68) 30%,
+            rgba(160, 35, 130, .3) 46%,
+            transparent 64%
+          );
         }
         .hero-city::after {
-          background: linear-gradient(180deg, transparent 70%, rgba(3,0,6,.55) 100%);
+          background: linear-gradient(180deg, transparent 72%, rgba(3,0,6,.5) 100%);
         }
       }
