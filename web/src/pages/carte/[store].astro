@@ -1,0 +1,277 @@
+---
+// The real, full catalogue — every sellable product Burger Nine actually
+// sells, at the real price, fetched at build time exactly the way
+// `[store].astro` fetches it for the order page. Nothing here is hand-typed:
+// change a price or add a product in the POS and the next build picks it up.
+import Brand from '../../layouts/Brand.astro'
+import Nav from '../../components/Nav.astro'
+import Bottom from '../../components/landing/Bottom.astro'
+import { getBrand, getCatalog, getStore } from '../../lib/api'
+import { money } from '../../lib/format'
+import { cityOf, deptLabel } from '../../lib/stores'
+import type { Catalog, Store } from '../../lib/types'
+
+export async function getStaticPaths() {
+  const brand = await getBrand()
+  return Promise.all(
+    brand.stores.map(async (entry) => ({
+      params: { store: entry.slug },
+      props: {
+        store: await getStore(entry.slug),
+        catalog: await getCatalog(entry.slug),
+        otherStores: brand.stores.filter((s) => s.slug !== entry.slug),
+      },
+    })),
+  )
+}
+
+const { store, catalog, otherStores } = Astro.props as {
+  store: Store
+  catalog: Catalog
+  otherStores: { slug: string; name: string }[]
+}
+
+// A handful of rows in the raw catalog are base "choose your everything"
+// placeholders priced at 0 (they only make sense once modifiers are picked in
+// app) — not something a browsing customer should see as a real menu item.
+const sections = catalog.sections
+  .map((section) => ({
+    ...section,
+    products: section.products.filter((p) => p.price_cents > 0),
+  }))
+  .filter((section) => section.products.length > 0)
+
+const totalCount = sections.reduce((n, s) => n + s.products.length, 0)
+const city = store.address?.city ? cityOf({ slug: store.slug, name: store.name, address: store.address }) : store.name
+---
+
+<Brand
+  title={`La carte ${city} — Burger Nine`}
+  description={`Toute la carte de ${store.name} : ${totalCount} produits, vrais prix, mis à jour à chaque build.`}
+>
+  <Nav />
+
+  <section class="menu-hero">
+    <div class="wrap">
+      <div class="overline">La carte · {city}</div>
+      <h1 class="menu-h1">Tout ce qu'on fait,<br />rien de caché.</h1>
+      <p class="menu-lede">
+        {totalCount} produits, les vrais prix de {city}.
+        {otherStores.length > 0 && (
+          <>
+            {' '}Un autre resto ? <a href="/carte">Change de carte →</a>
+          </>
+        )}
+      </p>
+    </div>
+  </section>
+
+  <div class="menu-toolbar" id="menuToolbar">
+    <div class="wrap menu-toolbar-in">
+      <div class="menu-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
+        </svg>
+        <input id="menuSearch" type="search" placeholder="Chercher un produit…" aria-label="Chercher dans la carte" />
+      </div>
+      <div class="menu-chips" id="menuChips" role="tablist" aria-label="Catégories">
+        <button class="chip2 chip-active" data-cat="all" type="button">Tout</button>
+        {sections.map((s) => (
+          <button class="chip2" data-cat={s.id} type="button">{s.title}</button>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <section class="sec menu-body">
+    <div class="wrap">
+      {sections.map((section) => (
+        <div class="menu-section" data-cat={section.id}>
+          <h2 class="menu-section-h">{section.title}</h2>
+          <div class="menu-grid">
+            {section.products.map((product) => (
+              <article class="prod" data-search={`${product.title} ${product.description ?? ''} ${product.ingredients?.join(' ') ?? ''}`.toLowerCase()}>
+                {product.image_uri && (
+                  <div class="prod-img">
+                    <img src={product.image_uri} alt="" loading="lazy" width="200" height="200" />
+                  </div>
+                )}
+                <div class="prod-body">
+                  <div class="prod-top">
+                    <h3>{product.title}</h3>
+                    <span class="prod-price">{money(product.price_cents, store.currency)}</span>
+                  </div>
+                  {product.description ? (
+                    <p>{product.description}</p>
+                  ) : product.ingredients?.length ? (
+                    <p class="prod-ing">{product.ingredients.map((i) => i.charAt(0) + i.slice(1).toLowerCase()).join(' · ')}</p>
+                  ) : null}
+                  {product.modifiers?.length > 0 && (
+                    <p class="prod-mod">{product.modifiers.length > 1 ? `${product.modifiers.length} choix personnalisables` : '1 choix personnalisable'}</p>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ))}
+      <p class="menu-empty" id="menuEmpty" hidden>Rien ne correspond à ta recherche. Essaie un autre mot, ou <button type="button" id="menuReset">réinitialise</button>.</p>
+    </div>
+  </section>
+
+  <section class="sec menu-cta">
+    <div class="wrap menu-cta-in">
+      <div>
+        <h2>Ça donne faim, non&nbsp;?</h2>
+        <p>Commande en ligne chez {city}, prête en quelques minutes.</p>
+      </div>
+      <a href={`/${store.slug}`} class="btn bn-cta">
+        Commander
+        <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg>
+      </a>
+    </div>
+  </section>
+
+  <Bottom />
+</Brand>
+
+<style>
+  .menu-hero { padding: 148px 0 28px; background: radial-gradient(90% 140% at 15% 0%, rgba(255, 45, 158, .16), transparent 55%); }
+  .menu-h1 { font-family: var(--display); font-weight: 800; font-size: clamp(34px, 5.6vw, 60px); line-height: 1.02; text-transform: uppercase; margin-bottom: 14px; }
+  .menu-lede { color: var(--muted); font-size: 16px; max-width: 560px; }
+  .menu-lede a { color: var(--pink); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+  .menu-toolbar {
+    position: sticky;
+    top: 66px;
+    z-index: 40;
+    background: rgba(20, 8, 17, 0.92);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  @media (min-width: 641px) { .menu-toolbar { top: 76px; } }
+  .menu-toolbar-in { display: flex; flex-direction: column; gap: 12px; }
+  .menu-search { position: relative; max-width: 360px; }
+  .menu-search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--muted); pointer-events: none; }
+  .menu-search input {
+    width: 100%;
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 10px 16px 10px 40px;
+    color: var(--txt);
+    font-size: 14px;
+    font-family: var(--body);
+  }
+  .menu-search input:focus-visible { outline: 2px solid var(--pink); outline-offset: 1px; }
+  .menu-search input::placeholder { color: var(--muted); }
+  .menu-chips { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .menu-chips::-webkit-scrollbar { display: none; }
+  .menu-chips .chip2 { flex: none; background: transparent; cursor: pointer; }
+  .menu-chips .chip2.chip-active { background: linear-gradient(120deg, var(--magenta), var(--pink)); border-color: transparent; color: #fff; }
+
+  .menu-body { padding-top: 48px; }
+  .menu-section + .menu-section { margin-top: 56px; }
+  .menu-section-h {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(22px, 2.6vw, 30px);
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .prod {
+    display: flex;
+    gap: 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 12px;
+    transition: border-color .2s, transform .2s;
+  }
+  .prod:hover { border-color: rgba(255, 45, 158, .4); transform: translateY(-2px); }
+  .prod-img { flex: none; width: 68px; height: 68px; border-radius: 12px; overflow: hidden; background: var(--violet-deep); }
+  .prod-img img { width: 100%; height: 100%; object-fit: cover; }
+  .prod-body { min-width: 0; flex: 1; }
+  .prod-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .prod-top h3 { font-family: var(--display); font-weight: 700; font-size: 14.5px; letter-spacing: .01em; line-height: 1.25; }
+  .prod-price { flex: none; font-family: var(--display); font-weight: 800; font-size: 14.5px; color: var(--yellow); white-space: nowrap; }
+  .prod-body p { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+  .prod-ing { text-transform: capitalize; }
+  .prod-mod { color: var(--pink-hot) !important; font-weight: 700; font-size: 11px !important; text-transform: uppercase; letter-spacing: .04em; }
+
+  .menu-empty { text-align: center; padding: 60px 0; color: var(--muted); font-size: 15px; }
+  .menu-empty button { color: var(--pink); text-decoration: underline; font: inherit; background: none; border: 0; cursor: pointer; }
+
+  .menu-cta { padding: 20px 0 100px; }
+  .menu-cta-in {
+    background: linear-gradient(120deg, var(--pink-deep), var(--violet));
+    border-radius: 26px;
+    padding: 40px 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .menu-cta-in h2 { font-family: var(--display); font-weight: 800; font-size: clamp(24px, 3vw, 34px); text-transform: uppercase; margin-bottom: 6px; }
+  .menu-cta-in p { color: rgba(255,255,255,.85); font-size: 14.5px; }
+
+  @media (max-width: 640px) {
+    .menu-hero { padding: 108px 0 24px; }
+    .menu-grid { grid-template-columns: 1fr; }
+    .menu-cta-in { padding: 28px 24px; }
+  }
+</style>
+
+<script>
+  // Client-side filter over a build-time-rendered grid: no fetch, no cart
+  // dependency — just show/hide the 100+ static cards already in the DOM.
+  const search = document.getElementById('menuSearch') as HTMLInputElement | null
+  const chips = document.querySelectorAll<HTMLButtonElement>('#menuChips .chip2')
+  const sections = document.querySelectorAll<HTMLElement>('.menu-section')
+  const empty = document.getElementById('menuEmpty')
+  const resetBtn = document.getElementById('menuReset')
+  let activeCat = 'all'
+
+  function apply() {
+    const q = (search?.value ?? '').trim().toLowerCase()
+    let visibleTotal = 0
+    sections.forEach((section) => {
+      const cat = section.dataset.cat
+      const catMatch = activeCat === 'all' || cat === activeCat
+      let visibleInSection = 0
+      section.querySelectorAll<HTMLElement>('.prod').forEach((card) => {
+        const text = card.dataset.search ?? ''
+        const match = catMatch && (q === '' || text.includes(q))
+        card.hidden = !match
+        if (match) visibleInSection++
+      })
+      section.hidden = visibleInSection === 0
+      visibleTotal += visibleInSection
+    })
+    if (empty) empty.hidden = visibleTotal > 0
+  }
+
+  search?.addEventListener('input', apply)
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      chips.forEach((c) => c.classList.remove('chip-active'))
+      chip.classList.add('chip-active')
+      activeCat = chip.dataset.cat ?? 'all'
+      apply()
+    })
+  })
+  resetBtn?.addEventListener('click', () => {
+    if (search) search.value = ''
+    chips.forEach((c) => c.classList.remove('chip-active'))
+    chips[0]?.classList.add('chip-active')
+    activeCat = 'all'
+    apply()
+  })
+</script>

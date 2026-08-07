@@ -1,0 +1,193 @@
+---
+import Brand from '../layouts/Brand.astro'
+import Nav from '../components/Nav.astro'
+import Bottom from '../components/landing/Bottom.astro'
+
+const roles = [
+  {
+    title: 'Équipier·ère polyvalent·e',
+    desc: 'Plancha, comptoir, drive : tu tournes sur tous les postes et tu apprends vite. Premier job ou reconversion, la formation se fait sur place.',
+  },
+  {
+    title: 'Chef·fe de partie plancha',
+    desc: "Le smash, c'est une question de timing et de geste. Tu tiens le poste steak aux heures de rush sans jamais perdre la cadence.",
+  },
+  {
+    title: "Team leader / manager d'équipe",
+    desc: "Tu encadres une équipe de service, tu gères les stocks et les plannings, et tu portes l'ambiance du resto au quotidien.",
+  },
+]
+
+const perks = [
+  {
+    title: 'On forme, vraiment',
+    desc: "Personne n'arrive en sachant faire un smash parfait. Tu apprends sur plancha, avec l'équipe en place, pas dans une vidéo.",
+  },
+  {
+    title: 'Ça bouge, jamais deux services pareils',
+    desc: 'Rush du midi, coup de feu du soir, drive qui déborde le week-end — le rythme est vivant, jamais monotone.',
+  },
+  {
+    title: 'Une équipe avant un CV',
+    desc: "La motivation et l'envie de bien faire comptent plus que l'expérience sur le papier.",
+  },
+  {
+    title: 'Ça évolue',
+    desc: 'Le réseau grandit — équipier aujourd\'hui, chef de partie ou team leader demain, dans ce resto ou dans le prochain qui ouvre.',
+  },
+]
+
+const mailSubject = encodeURIComponent('Candidature Burger Nine')
+const mailBody = encodeURIComponent(
+  "Bonjour,\n\nJe souhaite candidater chez Burger Nine.\n\nResto visé : \nPoste visé : \nDisponibilité : \n\nMon CV est en pièce jointe.\n\nMerci !",
+)
+---
+
+<Brand
+  title="Carrières — Burger Nine"
+  description="Burger Nine recrute en équipe : plancha, comptoir, management. Découvre les postes et postule directement."
+>
+  <Nav />
+
+  <section class="sec" id="carrieres-hero" style="padding-top: 140px; padding-bottom: 40px">
+    <div class="wrap">
+      <div class="overline">Carrières</div>
+      <h1 class="jobs-h1">
+        On recrute des gens
+        <br />
+        <span class="jobs-grad">qui aiment le rush.</span>
+      </h1>
+      <p class="jobs-lede">
+        Pas de costume, pas de blabla RH interminable : chez Burger Nine on cherche des gens motivés pour tenir
+        la plancha, le comptoir ou l'équipe — et on les forme.
+      </p>
+    </div>
+  </section>
+
+  <section class="sec" id="pourquoi" style="padding-top: 0; padding-bottom: 40px">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <div>
+          <div class="overline">Pourquoi bosser chez B9</div>
+          <h2>Ce que tu trouves ici</h2>
+        </div>
+      </div>
+      <div class="jobs-perks rv">
+        {perks.map((p) => (
+          <div class="jobs-perk">
+            <h3>{p.title}</h3>
+            <p>{p.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="postes" style="padding-top: 20px; padding-bottom: 40px">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <div>
+          <div class="overline">Les postes</div>
+          <h2>À quoi ça ressemble</h2>
+        </div>
+        <p class="side">Pas d'offre ouverte tout le temps partout : ce sont les types de postes qu'on recrute selon les restos.</p>
+      </div>
+      <div class="jobs-roles rv">
+        {roles.map((r) => (
+          <div class="jobs-role">
+            <h3>{r.title}</h3>
+            <p>{r.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="postuler" style="padding-top: 20px">
+    <div class="wrap">
+      <div class="jobs-apply rv">
+        <div>
+          <div class="overline">Postuler</div>
+          <h2>Deux minutes, pas plus</h2>
+          <p class="jobs-apply-lede">
+            Dis-nous quel resto t'intéresse et ce que tu cherches — équipier, plancha, management — avec ton CV.
+            On répond direct, sans process à rallonge.
+          </p>
+        </div>
+        <div class="jobs-apply-actions">
+          <a
+            class="btn bn-cta"
+            href={`mailto:carrieres@bnine.fr?subject=${mailSubject}&body=${mailBody}`}
+          >
+            Envoyer mon CV par mail
+            <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg>
+          </a>
+          <a
+            class="btn btn-ghost"
+            href="https://www.instagram.com/b9.burgernine/"
+            target="_blank"
+            rel="noopener"
+          >
+            Ou en DM sur Instagram
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Bottom />
+</Brand>
+
+<style>
+  .jobs-h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(36px, 5.6vw, 66px);
+    line-height: 1.02;
+    text-transform: uppercase;
+    max-width: 780px;
+    margin-bottom: 22px;
+  }
+  .jobs-grad {
+    background: linear-gradient(90deg, var(--pink-deep), var(--yellow) 55%, var(--violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .jobs-lede { color: var(--muted); font-size: 17px; max-width: 560px; }
+
+  .jobs-perks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .jobs-perk { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 24px; }
+  .jobs-perk h3 { font-family: var(--display); font-weight: 800; font-size: 16px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: .02em; }
+  .jobs-perk p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+  .jobs-roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .jobs-role {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 24px;
+    background: linear-gradient(160deg, rgba(255, 45, 158, .06), transparent 60%);
+  }
+  .jobs-role h3 { font-family: var(--display); font-weight: 800; font-size: 17px; text-transform: uppercase; margin-bottom: 10px; }
+  .jobs-role p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+  .jobs-apply {
+    background: linear-gradient(120deg, var(--pink-deep), var(--violet));
+    border-radius: 26px;
+    padding: 48px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+    gap: 32px;
+    align-items: center;
+  }
+  .jobs-apply h2 { font-family: var(--display); font-weight: 800; font-size: clamp(26px, 3.4vw, 40px); text-transform: uppercase; margin: 8px 0 14px; }
+  .jobs-apply-lede { color: rgba(255,255,255,.85); font-size: 15.5px; max-width: 460px; }
+  .jobs-apply-actions { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  .jobs-apply .btn-ghost { border-color: rgba(255,255,255,.5); }
+
+  @media (max-width: 1020px) {
+    .jobs-perks { grid-template-columns: minmax(0, 1fr); }
+    .jobs-roles { grid-template-columns: minmax(0, 1fr); }
+    .jobs-apply { grid-template-columns: minmax(0, 1fr); padding: 32px 26px; }
+  }
+</style>

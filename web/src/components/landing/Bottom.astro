@@ -1,5 +1,12 @@
 ---
-// Verbatim from poc-website/index.html — franchise + footer.
+// Footer, shared across the landing page and every standalone page (/franchise,
+// /carte, /carrieres). The section anchors (#hits, #spot…) only exist on the
+// homepage, so off-home they need the `/` prefix to resolve there first.
+interface Props {
+  home?: boolean
+}
+const { home = false } = Astro.props
+const to = (hash: string) => (home ? hash : `/${hash}`)
 ---
     <!-- FOOTER -->
     <footer>
@@ -11,12 +18,13 @@
         />
         <div class="ftag">Smashé. Grillé. Dévoré.</div>
         <nav aria-label="Pied de page">
-          <a href="#carte">La carte</a>
-          <a href="#hits">Les hits</a>
-          <a href="#spot">Le spot</a>
-          <a href="#restos">Nos restos</a>
-          <a href="#franchise">Franchise</a>
-          <a href="#restos">Commander</a>
+          <a href="/carte">La carte</a>
+          <a href={to('#hits')}>Les hits</a>
+          <a href={to('#spot')}>Le spot</a>
+          <a href={to('#restos')}>Nos restos</a>
+          <a href="/franchise">Franchise</a>
+          <a href="/carrieres">Carrières</a>
+          <a href={to('#restos')}>Commander</a>
         </nav>
         <div class="socials">
           <a
