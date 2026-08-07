@@ -1647,8 +1647,8 @@
           flex-direction: column;
           align-items: stretch;
           justify-content: flex-start;
-          gap: 16px;
-          padding: 72px 20px 24px;
+          gap: 4px;
+          padding: 72px 20px 20px;
           background:
             radial-gradient(85% 55% at 50% 66%, #ff6bcb 0%, #ff2d9e 26%, #d4137a 44%, #7d0b46 64%, transparent 84%),
             linear-gradient(180deg, #1c0616 0%, #2a0a22 60%, #1c0616 100%);
@@ -1663,27 +1663,26 @@
           mix-blend-mode: normal;
         }
         .hero-copy { justify-content: flex-start; padding: 0; }
-        .hero h1 { max-width: 360px; font-size: clamp(47px, 14vw, 68px); }
+        .hero h1 { max-width: 360px; margin-bottom: 22px; font-size: clamp(47px, 14vw, 68px); }
         .hero-lede { display: none; }
-        .hero-act { width: 100%; flex-direction: column; align-items: flex-start; gap: 10px; }
+        .hero-act { width: 100%; flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
         .hero .bn-cta { width: auto; min-width: 240px; min-height: 58px; padding: 0 32px; }
         .hero-micro { display: none; }
         .bn-bar { transform: translateY(0); }
         .hero-product {
           position: relative;
-          /* Sized to land inside a single mobile screen alongside the
-             headline and CTA — was 78vw/320px, tall enough on its own to
-             push the product below the fold on a 667px-tall viewport. */
-          width: min(58vw, 230px);
+          /* Fills the void left below the CTA instead of floating as a small
+             medallion — the product is the point of the hero on mobile too. */
+          width: min(84vw, 360px);
           aspect-ratio: 1;
           height: auto;
-          margin: 4px auto 0;
+          margin: 0 auto;
           pointer-events: none;
         }
         .hero-product::before { width: 100%; left: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 14px rgba(255,255,255,.06), 0 0 0 28px rgba(255,255,255,.04); }
-        .hero-product img { left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-4deg); width: 88%; height: auto; }
+        .hero-product img { left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-4deg); width: 94%; height: auto; }
         .hero-product-label { right: 2%; bottom: 2%; font-size: clamp(18px, 5vw, 26px); }
-        .hero-steam { top: -6%; width: 76px; height: 76px; }
-        .hero-steam .wisp { width: 14px; height: 26px; }
-        .hero-steam .w2 { width: 16px; height: 30px; }
+        .hero-steam { top: 2%; width: 90px; height: 90px; }
+        .hero-steam .wisp { width: 16px; height: 30px; }
+        .hero-steam .w2 { width: 18px; height: 34px; }
       }
