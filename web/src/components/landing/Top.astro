@@ -23,7 +23,10 @@ const { storeCount = 0 } = Astro.props
         <p class="hero-micro"><a href="#franchise">{t.hero.micro}</a></p>
       </div>
       <div class="hero-city">
-        <img src="/assets/generated/hero-city-v1.jpg" alt={t.hero.cityAlt} fetchpriority="high" width="3136" height="1344" />
+        <picture>
+          <source media="(max-width: 760px)" srcset="/assets/generated/hero-city-mobile-v1.jpg" />
+          <img src="/assets/generated/hero-city-v1.jpg" alt={t.hero.cityAlt} fetchpriority="high" width="3136" height="1344" />
+        </picture>
       </div>
     </section>
     <div class="bn-bar" id="bnBar">
