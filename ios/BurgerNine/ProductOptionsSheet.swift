@@ -143,19 +143,7 @@ struct ProductOptionsSheet: View {
     }
 
     private var composerBackground: some View {
-        ZStack {
-            TastyTheme.surface
-            LinearGradient(
-                colors: [
-                    accent.opacity(0.16),
-                    TastyTheme.surface.opacity(0.86),
-                    TastyTheme.surface
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-        .ignoresSafeArea()
+        TastyTheme.surface.ignoresSafeArea()
     }
 
     private var composerHeader: some View {
@@ -163,11 +151,6 @@ struct ProductOptionsSheet: View {
             RemoteProductImage(url: item.image)
                 .frame(width: 66, height: 66)
                 .clipShape(RoundedRectangle(cornerRadius: 18))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 18)
-                        .stroke(.white.opacity(0.70), lineWidth: 1.5)
-                }
-                .shadow(color: accent.opacity(0.22), radius: 18, y: 10)
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(item.name.trimmingCharacters(in: .whitespaces).uppercased())
@@ -187,9 +170,8 @@ struct ProductOptionsSheet: View {
                     .font(.headline.weight(.black))
                     .foregroundStyle(TastyTheme.ink)
                     .frame(width: 42, height: 42)
-                    .background(.ultraThinMaterial, in: Circle())
-                    .overlay(Circle().stroke(.white.opacity(0.58), lineWidth: 1))
-                    .shadow(color: .black.opacity(0.12), radius: 12, y: 7)
+                    .background(TastyTheme.elevatedSoft, in: Circle())
+                    .overlay(Circle().stroke(TastyTheme.hairline, lineWidth: 1))
             }
             .buttonStyle(.bouncy)
         }
@@ -198,15 +180,7 @@ struct ProductOptionsSheet: View {
         .padding(.bottom, 14)
         .background {
             ZStack(alignment: .bottom) {
-                Rectangle().fill(.ultraThinMaterial)
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.white.opacity(0.36), accent.opacity(0.18), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                Rectangle().fill(TastyTheme.elevated)
                 Rectangle()
                     .fill(TastyTheme.hairline)
                     .frame(height: 1)
@@ -319,8 +293,6 @@ struct ProductOptionsSheet: View {
                 .stroke(invalidGroupID == group.id ? TastyTheme.coral : TastyTheme.hairline,
                         lineWidth: invalidGroupID == group.id ? 2 : 1)
         )
-        .shadow(color: invalidGroupID == group.id ? TastyTheme.coral.opacity(0.3) : TastyTheme.violet.opacity(0.045),
-                radius: 10, y: 5)
         .clipShape(RoundedRectangle(cornerRadius: TastyTheme.controlRadius))
         .id(group.id)
         .animation(.snappy(duration: 0.2), value: invalidGroupID)
@@ -415,19 +387,17 @@ struct ProductOptionsSheet: View {
                     .contentTransition(.identity)
             }
             .font(.headline.weight(.black))
-            .foregroundStyle(canAdd ? TastyTheme.ink : TastyTheme.muted.opacity(0.72))
+            .foregroundStyle(canAdd ? Color.black : TastyTheme.muted.opacity(0.72))
             .padding(18)
             .background(canAdd ? TastyTheme.gold : TastyTheme.muted.opacity(0.14), in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
-            .overlay(RoundedRectangle(cornerRadius: TastyTheme.cardRadius).stroke(.white.opacity(canAdd ? 0.72 : 0.28), lineWidth: 1))
-            .shadow(color: canAdd ? TastyTheme.gold.opacity(0.24) : .clear, radius: 18, y: 9)
         }
-        .buttonStyle(.bouncy)
+        .buttonStyle(.plain)
         .padding(.horizontal, 18)
         .padding(.top, 12)
         .padding(.bottom, 14)
         .background {
             Rectangle()
-                .fill(.ultraThinMaterial)
+                .fill(TastyTheme.elevated)
                 .overlay(alignment: .top) {
                     Rectangle()
                         .fill(TastyTheme.hairline)
@@ -548,12 +518,6 @@ private struct SingleChoiceOptionRow: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(isSelected ? TastyTheme.gold.opacity(0.70) : Color.clear, lineWidth: 1)
         }
-        .scaleEffect(isPressed ? 0.97 : (isSelected ? 1.012 : 1))
-        .animation(
-            isPressed ? .easeOut(duration: 0.08) : .spring(response: 0.28, dampingFraction: 0.65),
-            value: isPressed
-        )
-        .animation(.snappy(duration: 0.12, extraBounce: 0), value: isSelected)
         .contentShape(RoundedRectangle(cornerRadius: 14))
         .overlay {
             InstantPressGesture(
@@ -619,12 +583,6 @@ private struct QuantityOptionRow: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(quantity > 0 ? TastyTheme.gold.opacity(0.70) : Color.clear, lineWidth: 1)
         }
-        .scaleEffect(isPressed ? 0.97 : 1)
-        .animation(
-            isPressed ? .easeOut(duration: 0.08) : .spring(response: 0.28, dampingFraction: 0.65),
-            value: isPressed
-        )
-        .animation(.snappy(duration: 0.16), value: quantity)
         .contentShape(RoundedRectangle(cornerRadius: 14))
         .overlay {
             InstantPressGesture(

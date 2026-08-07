@@ -83,10 +83,15 @@ struct RemoteProductImage: View {
                     .scaledToFill()
                     .transition(.opacity.combined(with: .scale(scale: 1.015)))
             } else {
-                LinearGradient(colors: [TastyTheme.orange, TastyTheme.coral, TastyTheme.violet], startPoint: .topLeading, endPoint: .bottomTrailing)
-                Image(systemName: "photo")
-                    .font(.title2.bold())
-                    .foregroundStyle(.white)
+                ZStack {
+                    TastyTheme.elevatedSoft
+                    DiagonalStripeFill()
+                        .stroke(TastyTheme.violet.opacity(0.13), style: StrokeStyle(lineWidth: 7))
+                    Text("photo\nproduit")
+                        .font(.caption2.weight(.bold))
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(TastyTheme.muted.opacity(0.7))
+                }
             }
         }
         .animation(.smooth(duration: 0.18), value: image)
@@ -167,12 +172,6 @@ struct ProductCard: View {
 
     private func textColumn(titleLines: Int, scale: CGFloat = 1) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            if !item.tag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Text(item.tag.uppercased())
-                    .font(.caption2.weight(.black))
-                    .tracking(1.1)
-                    .foregroundStyle(TastyTheme.orange)
-            }
             Text(item.name.trimmingCharacters(in: .whitespaces).uppercased())
                 .font(.system(.headline, design: .rounded, weight: .black))
                 .foregroundStyle(TastyTheme.ink)
@@ -294,12 +293,8 @@ struct ProductCard: View {
 
     private var productImage: some View {
         RemoteProductImage(url: item.image)
-            .frame(width: 92, height: 92)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .overlay {
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(TastyTheme.hairline, lineWidth: 1)
-            }
+            .frame(width: 64, height: 64)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(alignment: .topTrailing) {
                 if quantity > 0 {
                     Text("×\(quantity)")
@@ -332,46 +327,37 @@ struct ProductCard: View {
     private var plusBadge: some View {
         Image(systemName: "plus")
             .font(.title3.weight(.black))
-            .foregroundStyle(plusFilled ? TastyTheme.ink : TastyTheme.gold)
+            .foregroundStyle(plusFilled ? Color.black : TastyTheme.gold)
             .frame(width: 52, height: 52)
             .background(Circle().fill(plusFilled ? TastyTheme.gold : TastyTheme.gold.opacity(0.12)))
-            .overlay(Circle().stroke(.white.opacity(plusFilled ? 0.7 : 0.18), lineWidth: 1))
+            .overlay(Circle().stroke(.black.opacity(0.06), lineWidth: 1))
     }
 
 }
 
 private extension View {
     func productCardSurface(pressed: Bool = false, highlighted: Bool = false) -> some View {
-        padding(13)
-            .background(
-                TastyTheme.surfaceGradient,
-                in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius)
-            )
+        padding(14)
+            .background(TastyTheme.elevated, in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
             .overlay {
                 RoundedRectangle(cornerRadius: TastyTheme.cardRadius)
-                    .fill(TastyTheme.violet.opacity(highlighted ? 0.13 : 0))
+                    .stroke(highlighted ? TastyTheme.violet.opacity(0.52) : TastyTheme.hairline,
+                            lineWidth: highlighted ? 1.5 : 1)
             }
-            .overlay {
-                RoundedRectangle(cornerRadius: TastyTheme.cardRadius)
-                    .stroke(
-                        LinearGradient(
-                            colors: [
-                                highlighted ? TastyTheme.violet.opacity(0.52) : TastyTheme.hairline,
-                                .white.opacity(highlighted ? 0.24 : 0.08)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: highlighted ? 1.5 : 1
-                    )
-            }
-            .compositingGroup()
-            .shadow(
-                color: .black.opacity(pressed ? 0.28 : (highlighted ? 0.22 : 0.16)),
-                radius: pressed ? 24 : (highlighted ? 18 : 14),
-                y: pressed ? 12 : (highlighted ? 10 : 8)
-            )
+            .opacity(pressed ? 0.86 : 1)
             .contentShape(RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
+    }
+}
+
+private struct DiagonalStripeFill: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let spacing: CGFloat = 16
+        for offset in stride(from: -rect.height, through: rect.width, by: spacing) {
+            path.move(to: CGPoint(x: offset, y: 0))
+            path.addLine(to: CGPoint(x: offset + rect.height, y: rect.height))
+        }
+        return path
     }
 }
 
@@ -432,65 +418,24 @@ private struct DecreaseBadge: View {
     }
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            (decreasePressed ? pressedFill : fillBase).opacity(tone == .ink ? 0.96 : 0.90),
-                            accent.opacity(decreasePressed ? 0.30 : 0.11)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .overlay {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(
-                            LinearGradient(
-                                colors: [
-                                    accent.opacity(decreasePressed ? 0.72 : 0.42),
-                                    TastyTheme.violet.opacity(0.16)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: decreasePressed ? 1.7 : 1.2
-                        )
-                }
-
-            Image(systemName: icon.systemName)
-                .font(.headline.weight(.black))
-                .foregroundStyle(iconColor)
-                .symbolEffect(.bounce, value: decreasePressed)
-        }
-            .frame(width: buttonSize.width, height: buttonSize.height)
-            .shadow(color: accent.opacity(decreasePressed ? 0.20 : 0.11), radius: decreasePressed ? 10 : 14, y: decreasePressed ? 4 : 7)
-            .scaleEffect(appeared ? (decreasePressed ? 0.90 : 1) : 0.72, anchor: .trailing)
-            .rotationEffect(.degrees(decreasePressed ? -5 : 0))
-            .animation(
-                decreasePressed
-                    ? .easeOut(duration: 0.08)
-                    : .spring(response: 0.32, dampingFraction: 0.70),
-                value: decreasePressed
-            )
-            .animation(.spring(response: 0.42, dampingFraction: 0.64), value: appeared)
+        Image(systemName: "minus")
+            .font(.headline.weight(.black))
+            .foregroundStyle(.black)
+            .frame(width: 48, height: 48)
+            .background(TastyTheme.gold, in: Circle())
+            .overlay(Circle().stroke(.black.opacity(0.06), lineWidth: 1))
+            .scaleEffect(decreasePressed ? 0.92 : 1)
+            .animation(.easeOut(duration: 0.08), value: decreasePressed)
             .overlay {
-                // Hit zone extends well beyond the 52pt visual so the small
-                // minus button is comfortable to tap.
                 InstantPressGesture(
                     onPressingChanged: { decreasePressed = $0 },
                     action: action
                 )
-                .padding(.vertical, -18)
-                .padding(.trailing, -18)
-                .padding(.leading, -4)
+                .padding(8)
                 .contentShape(Rectangle())
             }
             .accessibilityLabel("Retirer du panier")
             .accessibilityIdentifier(UITestID.productDecrease(productID: productID))
-            .onAppear { appeared = true }
-            .onDisappear { appeared = false }
     }
 }
 

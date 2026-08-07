@@ -51,10 +51,10 @@ struct ProductFunnelSheet: View {
         return totalQuantity(in: group) >= group.min
     }
 
-    // Single required pick auto-advances on tap — no CTA button needed.
+    // Every step keeps an explicit CTA so required choices visibly explain why
+    // progression is disabled before a selection has been made.
     private var needsCTA: Bool {
-        guard let group = currentGroup else { return false }
-        return group.allowsMultiple || group.min == 0 || (group.max ?? 2) > 1
+        currentGroup != nil
     }
 
     var body: some View {
@@ -84,7 +84,7 @@ struct ProductFunnelSheet: View {
             ForEach(Array(steps.enumerated()), id: \.offset) { idx, _ in
                 let done = idx <= safeStepIndex
                 Rectangle()
-                    .fill(done ? TastyTheme.ink : TastyTheme.hairline)
+                    .fill(done ? TastyTheme.brandPink : TastyTheme.elevatedSoft)
                     .frame(height: 3)
                     .animation(.snappy(duration: 0.25), value: safeStepIndex)
             }
@@ -154,7 +154,7 @@ struct ProductFunnelSheet: View {
             }
         }
         .animation(.snappy(duration: 0.24, extraBounce: 0.03), value: safeStepIndex)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     // MARK: – Footer
@@ -185,33 +185,30 @@ struct ProductFunnelSheet: View {
                         Text(itemTotal, format: .currency(code: "EUR")).contentTransition(.numericText())
                     }
                     .font(.headline.weight(.black))
-                    .foregroundStyle(canFinish ? TastyTheme.ink : TastyTheme.muted.opacity(0.72))
+                    .foregroundStyle(canFinish ? Color.black : TastyTheme.muted.opacity(0.72))
                     .padding(.horizontal, 18).padding(.vertical, 14)
                     .frame(maxWidth: .infinity)
                     .background(canFinish ? TastyTheme.gold : TastyTheme.muted.opacity(0.14), in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
-                    .overlay(RoundedRectangle(cornerRadius: TastyTheme.cardRadius).stroke(.white.opacity(canFinish ? 0.72 : 0.28), lineWidth: 1))
-                    .shadow(color: canFinish ? TastyTheme.gold.opacity(0.22) : .clear, radius: 12, y: 6)
                 }
-                .buttonStyle(.bouncy)
+                .buttonStyle(.plain)
                 .disabled(!canFinish)
             } else if stepSatisfied && needsCTA {
-                let label = steps[safe: safeStepIndex + 1]?.name ?? "Suivant"
-
                 Button { advance(by: 1) } label: {
                     HStack {
-                        Text(label)
+                        Text("Continuer")
                         Spacer()
                         Image(systemName: "chevron.right")
                     }
                     .font(.headline.weight(.black))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(stepSatisfied ? Color.black : TastyTheme.muted.opacity(0.72))
                     .padding(.horizontal, 18).padding(.vertical, 14)
                     .frame(maxWidth: .infinity)
-                    .background(TastyTheme.primaryGradient, in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
-                    .overlay(RoundedRectangle(cornerRadius: TastyTheme.cardRadius).stroke(.white.opacity(0.18), lineWidth: 1))
-                    .shadow(color: TastyTheme.violet.opacity(0.28), radius: 10, y: 5)
+                    .background(stepSatisfied ? TastyTheme.gold : TastyTheme.elevatedSoft,
+                                in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
                 }
-                .buttonStyle(.bouncy)
+                .buttonStyle(.plain)
+                .disabled(!stepSatisfied)
+                .accessibilityLabel("Étape suivante")
                 .transition(.scale(scale: 0.92, anchor: .bottom).combined(with: .opacity))
             }
         }
@@ -246,12 +243,6 @@ struct ProductFunnelSheet: View {
         }
         HapticFeedback.add()
 
-        let isRequiredSingle = group.min == 1 && group.max == 1 && !group.allowsMultiple
-        if isRequiredSingle && !wasSelected && !isLastStep {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
-                advance(by: 1)
-            }
-        }
     }
 
     private func selectedOptions(in group: MenuOptionGroup) -> [MenuOptionItem] {
@@ -294,14 +285,7 @@ struct ProductFunnelSheet: View {
     }
 
     private var composerBackground: some View {
-        ZStack {
-            TastyTheme.surface
-            LinearGradient(
-                colors: [accent.opacity(0.12), TastyTheme.surfaceDepth.opacity(0.75), TastyTheme.surface],
-                startPoint: .topLeading, endPoint: .bottomTrailing
-            )
-        }
-        .ignoresSafeArea()
+        TastyTheme.surface.ignoresSafeArea()
     }
 }
 
@@ -317,7 +301,7 @@ private struct FunnelSingleRow: View {
         HStack(spacing: 14) {
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.title2.weight(.bold))
-                .foregroundStyle(isSelected ? accent : TastyTheme.muted.opacity(0.4))
+                .foregroundStyle(isSelected ? TastyTheme.brandPink : TastyTheme.muted.opacity(0.4))
                 .frame(width: 30)
 
             Text(option.name)
@@ -328,13 +312,12 @@ private struct FunnelSingleRow: View {
             if option.price > 0 {
                 Text("+ " + option.price.formatted(.currency(code: "EUR")))
                     .font(.subheadline.weight(.black))
-                    .foregroundStyle(isSelected ? TastyTheme.ink : TastyTheme.orange)
+                    .foregroundStyle(isSelected ? TastyTheme.brandPink : TastyTheme.orange)
             }
         }
         .padding(.horizontal, 16).padding(.vertical, 14)
-        .background(isSelected ? accent.opacity(0.12) : TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(isSelected ? accent.opacity(0.45) : TastyTheme.hairline))
-        .animation(.snappy(duration: 0.12), value: isSelected)
+        .background(TastyTheme.elevated, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(isSelected ? TastyTheme.brandPink : TastyTheme.hairline))
         .contentShape(RoundedRectangle(cornerRadius: 14))
         .onTapGesture { onTap() }
     }
@@ -358,7 +341,7 @@ private struct FunnelQuantityRow: View {
                 if option.price > 0 {
                     Text("+ " + option.price.formatted(.currency(code: "EUR")))
                         .font(.subheadline.weight(.black))
-                        .foregroundStyle(quantity > 0 ? TastyTheme.ink : TastyTheme.orange)
+                        .foregroundStyle(quantity > 0 ? TastyTheme.brandPink : TastyTheme.orange)
                 }
             }
             if quantity > 0 {
@@ -367,17 +350,15 @@ private struct FunnelQuantityRow: View {
             } else {
                 Image(systemName: "plus")
                     .font(.headline.weight(.black))
-                    .foregroundStyle(canIncrease ? TastyTheme.ink : TastyTheme.muted.opacity(0.4))
+                    .foregroundStyle(canIncrease ? Color.black : TastyTheme.muted.opacity(0.4))
                     .frame(width: 38, height: 38)
-                    .background(canIncrease ? accent.opacity(0.18) : TastyTheme.muted.opacity(0.08), in: Circle())
-                    .overlay(Circle().stroke(.white.opacity(0.5), lineWidth: 1))
+                    .background(canIncrease ? TastyTheme.gold : TastyTheme.muted.opacity(0.08), in: Circle())
                     .transition(.scale(scale: 0.85, anchor: .trailing).combined(with: .opacity))
             }
         }
         .padding(.horizontal, 16).padding(.vertical, 13)
-        .background(quantity > 0 ? TastyTheme.gold.opacity(0.16) : TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(quantity > 0 ? TastyTheme.gold.opacity(0.55) : TastyTheme.hairline))
-        .animation(.snappy(duration: 0.12), value: quantity)
+        .background(TastyTheme.elevated, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(quantity > 0 ? TastyTheme.brandPink : TastyTheme.hairline))
         .contentShape(RoundedRectangle(cornerRadius: 14))
         .onTapGesture { if canIncrease { onIncrease() } }
     }

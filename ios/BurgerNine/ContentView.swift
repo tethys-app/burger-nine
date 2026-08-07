@@ -11,6 +11,9 @@ import UIKit
 final class MenuScrollSync {
     var selectedSection: MenuSection.ID?
     var isPinned = false
+    /// Once the customer enters ordering, the compact navigation remains
+    /// visible even when a pull-to-refresh temporarily moves section headers.
+    var locksPinnedNavigation = false
     var railTarget: String?
     /// One-shot: set on tap, the view scrolls to it then clears it.
     var scrollRequest: MenuSection.ID?
@@ -61,6 +64,10 @@ final class MenuScrollSync {
 
     /// Reveal the sticky category bar once the first section header nears the top.
     func updateCategoryBarVisibility(firstHeaderMinY: CGFloat, showAt: CGFloat, hideAt: CGFloat) {
+        if locksPinnedNavigation {
+            if !isPinned { isPinned = true }
+            return
+        }
         guard ContinuousClock.now >= spyMutedUntil else { return }
         let shouldShow = isPinned ? firstHeaderMinY <= hideAt : firstHeaderMinY <= showAt
         guard shouldShow != isPinned else { return }
@@ -95,6 +102,10 @@ struct ContentView: View {
     @State private var showSettings = false
     @State private var showTrackingPreview = false
     @State private var logExport: URL?
+    @State private var showBrandSplash = true
+    @State private var showStoreEntry = true
+    @State private var selectedFulfillmentMode: FulfillmentMode = .delivery
+    @State private var locationService = LocationService()
     @AppStorage("rowLayout_v2") private var rowLayoutRaw = RowLayout.tapToAdd.rawValue
     @AppStorage("funnelMode_v2") private var funnelMode = true
     @AppStorage("clearButtonPreset_v2") private var clearButtonPresetRaw = ClearButtonPreset.inkPlate.rawValue
@@ -130,10 +141,17 @@ struct ContentView: View {
     private var cartCount: Int { currentCart.values.reduce(0, +) }
     private var total: Double { currentCart.reduce(0) { $0 + $1.key.totalPrice * Double($1.value) } }
     private var storeAccent: Color { TastyTheme.violet }
-    private let pinnedRailHeight: CGFloat = 56
+    private let pinnedRailHeight: CGFloat = 104
     private let pillScrollInset: CGFloat = 8
     private var productImageURLs: [String] {
         menuSections.flatMap(\.items).map(\.image).filter { !$0.isEmpty }
+    }
+
+    /// Temporary product decision while the API does not expose restaurant
+    /// coordinates. This prefers Roussillon and keeps the later distance-based
+    /// ranking behind the same entry-screen contract.
+    private var entryStore: StoreLocation {
+        appStore.locations.first(where: isRoussillon) ?? selectedStore
     }
 
     private var isDebugBuild: Bool {
@@ -164,9 +182,11 @@ struct ContentView: View {
                         Color.clear
                             .frame(height: 0)
                             .id(topScrollID)
-                        header
-                            .offset(y: appear ? 0 : -14).opacity(appear ? 1 : 0)
-                            .padding(.bottom, 6)
+                        if showStoreEntry {
+                            header
+                                .offset(y: appear ? 0 : -14).opacity(appear ? 1 : 0)
+                                .padding(.bottom, 6)
+                        }
 
                         ForEach(menuSections) { section in
                             Section {
@@ -217,7 +237,14 @@ struct ContentView: View {
                     for: .scrollContent
                 )
                 .overlay(alignment: .top) {
-                    PinnedCategoryBar(sync: scrollSync, sections: menuSections, accent: storeAccent)
+                    PinnedCategoryBar(
+                        sync: scrollSync,
+                        sections: menuSections,
+                        accent: storeAccent,
+                        store: selectedStore,
+                        chooseStore: { showStoreSwitcher = true },
+                        returnHome: returnToEntry
+                    )
                 }
                 .onChange(of: scrollSync.scrollRequest) { _, target in
                     guard let target else { return }
@@ -228,6 +255,14 @@ struct ContentView: View {
                 }
                 .onChange(of: selectedLocationID) { _, _ in
                     scrollSync.reset(to: menuSections)
+                    if !showStoreEntry { scrollSync.isPinned = true }
+                    proxy.scrollTo(topScrollID, anchor: .top)
+                }
+                .onChange(of: showStoreEntry) { _, returningHome in
+                    if returningHome {
+                        scrollSync.locksPinnedNavigation = false
+                        scrollSync.reset(to: menuSections)
+                    }
                     proxy.scrollTo(topScrollID, anchor: .top)
                 }
                 .refreshable {
@@ -242,15 +277,15 @@ struct ContentView: View {
         }
         .task {
             await refreshCatalog()
+            try? await Task.sleep(for: .milliseconds(1_100))
+            withAnimation(.easeOut(duration: 0.32)) { showBrandSplash = false }
         }
         .task(id: selectedStore.id) {
             await ProductImageCache.shared.prefetch(productImageURLs)
         }
-        .confirmationDialog("Changer de point de vente", isPresented: $showStoreSwitcher, titleVisibility: .visible) {
-            ForEach(appStore.locations) { location in
-                Button(location.displayName) {
-                    selectLocation(location.id)
-                }
+        .sheet(isPresented: $showStoreSwitcher) {
+            StoreLocationPicker(locations: appStore.locations, selectedID: selectedLocationID) { location in
+                selectLocation(location.id)
             }
         }
         .sheet(item: $configuringItem) { item in
@@ -265,7 +300,12 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showCheckout) {
-            CheckoutFlow(cart: currentCart, store: selectedStore, total: total) {
+            CheckoutFlow(
+                cart: currentCart,
+                store: selectedStore,
+                total: total,
+                preferredMode: selectedFulfillmentMode
+            ) {
                 cartsByStore[selectedStore.id] = [:]
             }
         }
@@ -327,7 +367,29 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
-                    .zIndex(100)
+                .zIndex(100)
+            }
+        }
+        .overlay {
+            if showStoreEntry {
+                StoreEntryView(
+                    store: entryStore,
+                    isLocating: locationService.isRequesting,
+                    locationEnabled: locationService.location != nil,
+                    locationMessage: locationService.errorMessage,
+                    chooseStore: { showStoreSwitcher = true },
+                    requestLocation: { locationService.requestPreciseLocation() },
+                    startOrder: beginOrdering
+                )
+                .transition(.opacity.combined(with: .scale(scale: 1.03)))
+                .zIndex(90)
+            }
+        }
+        .overlay {
+            if showBrandSplash {
+                BrandSplashView()
+                    .transition(.opacity.combined(with: .scale(scale: 1.04)))
+                    .zIndex(110)
             }
         }
     }
@@ -342,18 +404,13 @@ struct ContentView: View {
         // the previous selection disappeared. This keeps a pull gesture from
         // unexpectedly moving the customer to another restaurant.
         if appStore.locations.first(where: { $0.id == selectedLocationID }) == nil {
-            selectedLocationID = appStore.locations.first?.id
-            scrollSync.reset(to: appStore.locations.first?.actionableSections ?? [])
+            selectedLocationID = appStore.locations.first(where: isRoussillon)?.id ?? appStore.locations.first?.id
+            scrollSync.reset(to: appStore.location(id: selectedLocationID)?.actionableSections ?? [])
         }
     }
 
     private var background: some View {
-        ZStack {
-            LinearGradient(colors: [TastyTheme.surface, TastyTheme.surfaceDepth], startPoint: .topLeading, endPoint: .bottomTrailing)
-            Circle().fill(storeAccent.opacity(0.19)).blur(radius: 92).offset(x: 155, y: -260)
-            Circle().fill(TastyTheme.orange.opacity(0.10)).blur(radius: 86).offset(x: -150, y: 180)
-            Circle().fill(TastyTheme.neonViolet.opacity(0.10)).blur(radius: 112).offset(x: 140, y: 420)
-        }.ignoresSafeArea()
+        TastyTheme.surface.ignoresSafeArea()
     }
 
     private var brandInitials: String {
@@ -376,30 +433,33 @@ struct ContentView: View {
         return trimmed.isEmpty ? display : trimmed
     }
 
-    private let brandMarkWidth: CGFloat = 52
-    private let brandMarkSpacing: CGFloat = 12
+    private let brandMarkWidth: CGFloat = 58
+    private let brandMarkSpacing: CGFloat = 14
 
     private var header: some View {
         let isOpen = !selectedStore.isClosed && !selectedStore.todaySlots.isEmpty
         let closingTime = selectedStore.todaySlots.last.flatMap { $0.components(separatedBy: "-").last }
 
-        return VStack(alignment: .leading, spacing: 10) {
+        return VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .center, spacing: brandMarkSpacing) {
                 brandMark
 
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(headerSubtitle?.uppercased() ?? "COMMANDE EN LIGNE")
+                        .font(.caption2.weight(.black))
+                        .tracking(1.4)
+                        .foregroundStyle(TastyTheme.orange)
+
                     Text(selectedStore.brand.appName.uppercased())
-                        .font(.system(size: 26, weight: .black, design: .rounded))
+                        .font(.system(size: 27, weight: .black, design: .rounded))
                         .foregroundStyle(TastyTheme.ink)
-                        .lineLimit(2)
+                        .lineLimit(1)
                         .minimumScaleFactor(0.9)
 
-                    if let headerSubtitle {
-                        Text(headerSubtitle)
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(TastyTheme.muted)
-                            .lineLimit(1)
-                    }
+                    Text("FAIT À LA COMMANDE")
+                        .font(.caption2.weight(.bold))
+                        .tracking(0.8)
+                        .foregroundStyle(TastyTheme.muted)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -412,9 +472,31 @@ struct ContentView: View {
                 preparationTime: selectedStore.preparationTime,
                 hasDelivery: selectedStore.orderTypes.contains("delivery")
             )
-            .padding(.leading, brandMarkWidth + brandMarkSpacing)
         }
-        .padding(.top, 18)
+        .padding(16)
+        .background {
+            ZStack {
+                TastyTheme.surfaceGradient
+                LinearGradient(
+                    colors: [storeAccent.opacity(0.24), .clear, TastyTheme.orange.opacity(0.10)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: TastyTheme.sheetRadius, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: TastyTheme.sheetRadius, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [.white.opacity(0.22), TastyTheme.violet.opacity(0.20), .clear],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        }
+        .shadow(color: .black.opacity(0.24), radius: 20, y: 12)
+        .padding(.top, 12)
     }
 
     private var hasBrandLogo: Bool {
@@ -440,9 +522,9 @@ struct ContentView: View {
                 }
             }
             .frame(width: brandMarkWidth, height: brandMarkWidth)
-            .background(TastyTheme.surfaceGradient, in: RoundedRectangle(cornerRadius: TastyTheme.controlRadius, style: .continuous))
+            .background(TastyTheme.surfaceGradient, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: TastyTheme.controlRadius, style: .continuous)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .stroke(TastyTheme.hairline, lineWidth: 1)
             }
         } else {
@@ -462,11 +544,11 @@ struct ContentView: View {
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 ),
-                in: RoundedRectangle(cornerRadius: TastyTheme.controlRadius, style: .continuous)
+                in: RoundedRectangle(cornerRadius: 20, style: .continuous)
             )
             .overlay {
-                RoundedRectangle(cornerRadius: TastyTheme.controlRadius, style: .continuous)
-                    .stroke(TastyTheme.hairline, lineWidth: 1)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(.white.opacity(0.26), lineWidth: 1)
             }
     }
 
@@ -510,20 +592,20 @@ struct ContentView: View {
             Divider()
             Section("Build \(buildTimestamp)") { }
         } label: {
-            Image(systemName: "ellipsis")
-                .font(.system(size: 15, weight: .bold))
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 14, weight: .black))
                 .foregroundStyle(TastyTheme.ink)
-                .frame(width: 38, height: 38)
+                .frame(width: 42, height: 42)
                 .background {
-                    Circle()
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(
                             TastyTheme.surfaceGradient
                         )
                         .overlay {
-                            Circle()
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
                                 .stroke(
                                     LinearGradient(
-                                        colors: [TastyTheme.hairline, TastyTheme.violet.opacity(0.18)],
+                                        colors: [.white.opacity(0.16), TastyTheme.violet.opacity(0.28)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     ),
@@ -534,6 +616,7 @@ struct ContentView: View {
                 }
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Plus d’options")
     }
 
     private func sectionHeader(_ section: MenuSection) -> some View {
@@ -559,20 +642,16 @@ struct ContentView: View {
             HStack(spacing: 14) {
                 Text("\(cartCount)").font(.headline.bold()).foregroundStyle(TastyTheme.surface).frame(width: 40, height: 40).background(TastyTheme.gold, in: Circle())
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Panier").font(.headline.bold()).foregroundStyle(.white)
-                    Text("\(cartCount) article\(cartCount > 1 ? "s" : "") · " + total.formatted(.currency(code: "EUR"))).font(.caption.bold()).foregroundStyle(.white.opacity(0.72))
+                    Text("Panier").font(.headline.bold()).foregroundStyle(TastyTheme.ink)
+                    Text("\(cartCount) article\(cartCount > 1 ? "s" : "") · " + total.formatted(.currency(code: "EUR"))).font(.caption.bold()).foregroundStyle(TastyTheme.muted)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.headline.bold()).foregroundStyle(.white)
+                Image(systemName: "chevron.right").font(.headline.bold()).foregroundStyle(TastyTheme.ink)
             }
             .padding(14)
-            .background(
-                TastyTheme.primaryGradient,
-                in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius)
-            )
-            .overlay(RoundedRectangle(cornerRadius: TastyTheme.cardRadius).stroke(.white.opacity(0.22)))
+            .background(TastyTheme.elevated, in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
+            .overlay(RoundedRectangle(cornerRadius: TastyTheme.cardRadius).stroke(TastyTheme.hairline))
             .padding(.horizontal, 16)
-            .shadow(color: storeAccent.opacity(0.22), radius: 24, y: 12)
         }
         .accessibilityIdentifier(UITestID.cartBar)
         .buttonStyle(.bouncy)
@@ -671,6 +750,34 @@ struct ContentView: View {
         }
         scrollSync.reset(to: appStore.location(id: id)?.actionableSections ?? [])
     }
+
+    private func beginOrdering(_ mode: FulfillmentMode) {
+        selectedFulfillmentMode = mode
+        if entryStore.id != "fallback" {
+            selectedLocationID = entryStore.id
+        }
+        scrollSync.reset(to: entryStore.actionableSections)
+        withAnimation(.snappy(duration: 0.42, extraBounce: 0)) {
+            scrollSync.locksPinnedNavigation = true
+            scrollSync.isPinned = true
+            showStoreEntry = false
+        }
+    }
+
+    private func returnToEntry() {
+        withAnimation(.snappy(duration: 0.36, extraBounce: 0)) {
+            scrollSync.locksPinnedNavigation = false
+            scrollSync.isPinned = false
+            showStoreEntry = true
+        }
+    }
+
+    private func isRoussillon(_ location: StoreLocation) -> Bool {
+        let searchableText = [location.displayName, location.city, location.addressLine]
+            .compactMap { $0 }
+            .joined(separator: " ")
+        return searchableText.localizedCaseInsensitiveContains("roussillon")
+    }
 }
 
 /// Searchable franchise picker. Filters by name, sorts the current one to the
@@ -742,6 +849,9 @@ private struct PinnedCategoryBar: View {
     let sync: MenuScrollSync
     let sections: [MenuSection]
     let accent: Color
+    let store: StoreLocation
+    let chooseStore: () -> Void
+    let returnHome: () -> Void
 
     var body: some View {
         // Always mounted; we animate visibility instead of inserting/removing.
@@ -750,27 +860,67 @@ private struct PinnedCategoryBar: View {
         // horizontal content offset → the "everything shifted right" bug that
         // only cleared on a sheet dismissal (full re-layout). Keeping it in the
         // tree and toggling opacity/offset removes that compositor thrash.
-        CategoryRail(sync: sync, sections: sections, accent: accent, compact: true)
-            .padding(.top, 8)
-            .padding(.bottom, 8)
+        VStack(spacing: 3) {
+            CompactStoreNav(store: store, chooseStore: chooseStore, returnHome: returnHome)
+                .padding(.horizontal, 18)
+                .padding(.top, 6)
+            CategoryRail(sync: sync, sections: sections, accent: accent, compact: true)
+                .padding(.bottom, 8)
+        }
             .background {
                 ZStack(alignment: .bottom) {
-                    LinearGradient(
-                        colors: [TastyTheme.surface.opacity(0.98), TastyTheme.surfaceDepth.opacity(0.94)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    Rectangle()
-                        .fill(LinearGradient(colors: [TastyTheme.orange.opacity(0.0), TastyTheme.orange.opacity(0.45), accent.opacity(0.28)], startPoint: .leading, endPoint: .trailing))
-                        .frame(height: 1)
+                    TastyTheme.surface
+                    Rectangle().fill(TastyTheme.hairline).frame(height: 1)
                 }
-                .shadow(color: .black.opacity(0.08), radius: 12, y: 6)
                 .ignoresSafeArea(edges: .top)
             }
             .opacity(sync.isPinned ? 1 : 0)
-            .offset(y: sync.isPinned ? 0 : -64)
+            .offset(y: sync.isPinned ? 0 : -140)
             .allowsHitTesting(sync.isPinned)
             .animation(.snappy(duration: 0.22), value: sync.isPinned)
+    }
+}
+
+private struct CompactStoreNav: View {
+    let store: StoreLocation
+    let chooseStore: () -> Void
+    let returnHome: () -> Void
+
+    private var name: String { store.city ?? store.displayName }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button(action: returnHome) {
+                Image("BurgerNineLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 66, height: 38)
+            }
+            .buttonStyle(.bouncy)
+            .accessibilityLabel("Burger Nine")
+            .accessibilityHint("Retourne à l’accueil")
+
+            Spacer(minLength: 8)
+
+            Button(action: chooseStore) {
+                HStack(spacing: 7) {
+                    Circle().fill(store.isClosed ? TastyTheme.coral : TastyTheme.cyan)
+                        .frame(width: 8, height: 8)
+                    Text(name)
+                        .font(.subheadline.weight(.black))
+                        .lineLimit(1)
+                    Image(systemName: "chevron.down")
+                        .font(.caption.weight(.black))
+                }
+                .foregroundStyle(TastyTheme.ink)
+                .padding(.horizontal, 13)
+                .padding(.vertical, 10)
+                .background(TastyTheme.elevated, in: Capsule())
+                .overlay(Capsule().stroke(.white.opacity(0.08)))
+            }
+            .buttonStyle(.bouncy)
+            .accessibilityHint("Change le restaurant sélectionné")
+        }
     }
 }
 
@@ -812,15 +962,14 @@ private struct CategoryRail: View {
                     // matched frame resolved inside a vanishing hierarchy → bad
                     // horizontal frame / freeze. A per-pill crossfade is robust.
                     Capsule()
-                        .fill(LinearGradient(colors: [accent, TastyTheme.neonViolet], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .fill(TastyTheme.brandPink)
                         .opacity(isSelected ? 1 : 0)
                         .background {
                             Capsule()
                                 .fill(TastyTheme.elevated)
-                                .overlay(Capsule().strokeBorder(TastyTheme.ink.opacity(0.08), lineWidth: 1.5))
+                                .overlay(Capsule().strokeBorder(.white.opacity(0.08), lineWidth: 1))
                                 .opacity(isSelected ? 0 : 1)
                         }
-                        .shadow(color: isSelected ? accent.opacity(0.28) : .black.opacity(0.04), radius: isSelected ? 10 : 6, y: isSelected ? 4 : 3)
                 }
                 .id(MenuScrollSync.pillID(section.id))
         }
@@ -829,7 +978,8 @@ private struct CategoryRail: View {
     }
 }
 
-/// Store facts as inline metadata — typographic, not pill-shaped like category nav.
+/// Store facts are grouped in one compact strip, keeping the storefront hero
+/// scannable while avoiding a pile of unrelated badges.
 private struct StoreMetaBar: View {
     let isOpen: Bool
     let closingTime: String?
@@ -837,59 +987,53 @@ private struct StoreMetaBar: View {
     let hasDelivery: Bool
 
     private var statusLabel: String {
-        isOpen ? (closingTime.map { "Jusqu'\u{00E0} \($0)" } ?? "Ouvert") : "Ferm\u{00E9}"
+        isOpen ? (closingTime.map { "Ouvert · \($0)" } ?? "Ouvert") : "Fermé"
     }
-
-    private var hasExtras: Bool { preparationTime > 0 || hasDelivery }
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
-            HStack(spacing: 7) {
-                statusRow
-                if hasExtras {
-                    metaDot
-                    extrasContent
-                }
+            HStack(spacing: 8) {
+                statusItem
+                if preparationTime > 0 { serviceItem(icon: "clock.fill", label: "\(preparationTime) min") }
+                if hasDelivery { serviceItem(icon: "scooter", label: "Livraison") }
             }
             VStack(alignment: .leading, spacing: 4) {
-                statusRow
-                if hasExtras { extrasContent }
+                HStack(spacing: 8) {
+                    statusItem
+                    if preparationTime > 0 { serviceItem(icon: "clock.fill", label: "\(preparationTime) min") }
+                }
+                if hasDelivery { serviceItem(icon: "scooter", label: "Livraison") }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .font(.footnote.weight(.semibold))
-        .foregroundStyle(TastyTheme.muted)
+        .padding(9)
+        .background(.black.opacity(0.16), in: RoundedRectangle(cornerRadius: TastyTheme.controlRadius, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: TastyTheme.controlRadius, style: .continuous)
+                .stroke(.white.opacity(0.08), lineWidth: 1)
+        }
     }
 
-    private var statusRow: some View {
+    private var statusItem: some View {
         HStack(spacing: 5) {
             Circle()
                 .fill(isOpen ? Color(red: 0.18, green: 0.78, blue: 0.45) : TastyTheme.coral)
                 .frame(width: 6, height: 6)
             Text(statusLabel)
+                .font(.caption.weight(.black))
+                .foregroundStyle(TastyTheme.ink)
                 .fixedSize(horizontal: true, vertical: false)
         }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background((isOpen ? TastyTheme.cyan : TastyTheme.coral).opacity(0.12), in: Capsule())
     }
 
-    @ViewBuilder
-    private var extrasContent: some View {
-        HStack(spacing: 7) {
-            if preparationTime > 0 {
-                Text("\(preparationTime) min")
-            }
-            if preparationTime > 0 && hasDelivery {
-                metaDot
-            }
-            if hasDelivery {
-                Text("Livraison")
-            }
-        }
-    }
-
-    private var metaDot: some View {
-        Text("·")
-            .font(.footnote.weight(.bold))
-            .foregroundStyle(TastyTheme.muted.opacity(0.42))
+    private func serviceItem(icon: String, label: String) -> some View {
+        Label(label, systemImage: icon)
+            .font(.caption.weight(.bold))
+            .foregroundStyle(TastyTheme.muted)
+            .fixedSize(horizontal: true, vertical: false)
     }
 }
 

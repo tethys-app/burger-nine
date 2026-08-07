@@ -94,8 +94,22 @@ struct CheckoutFlow: View {
     var onOrderPlaced: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
-    @State private var model = CheckoutModel()
+    @State private var model: CheckoutModel
     @State private var detent = PresentationDetent.fraction(0.58)
+
+    init(
+        cart: [CartLine: Int],
+        store: StoreLocation,
+        total: Double,
+        preferredMode: FulfillmentMode = .delivery,
+        onOrderPlaced: (() -> Void)? = nil
+    ) {
+        self.cart = cart
+        self.store = store
+        self.total = total
+        self.onOrderPlaced = onOrderPlaced
+        _model = State(initialValue: CheckoutModel(mode: preferredMode))
+    }
 
     var body: some View {
         ZStack {
@@ -357,7 +371,6 @@ private struct FulfillmentSheet: View {
                 .padding(17)
                 .background(model.canPay ? model.mode.accent : TastyTheme.muted.opacity(0.4),
                            in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
-                .shadow(color: model.mode.accent.opacity(model.canPay ? 0.28 : 0), radius: 16, y: 8)
         }
         .buttonStyle(.bouncy)
         .disabled(!model.canPay)
@@ -483,12 +496,7 @@ private struct CheckoutDetailView: View {
                     .foregroundStyle(.white.opacity(0.9))
             }
             .padding(14)
-            .background(
-                LinearGradient(colors: [Color(red: 1.0, green: 0.27, blue: 0.67), TastyTheme.neonViolet, TastyTheme.cyan],
-                               startPoint: .leading, endPoint: .trailing),
-                in: RoundedRectangle(cornerRadius: 18)
-            )
-            .shadow(color: Color(red: 1.0, green: 0.27, blue: 0.67).opacity(0.4), radius: 14, y: 6)
+            .background(TastyTheme.brandPink, in: RoundedRectangle(cornerRadius: 18))
         }
         .buttonStyle(.bouncy)
     }
@@ -528,7 +536,7 @@ private struct CheckoutDetailView: View {
                     .font(.headline.weight(.black))
                     .foregroundStyle(TastyTheme.ink)
                     .frame(width: 40, height: 40)
-                    .background(.ultraThinMaterial, in: Circle())
+                    .background(TastyTheme.elevatedSoft, in: Circle())
                     .overlay(Circle().stroke(TastyTheme.hairline))
             }
             .buttonStyle(.bouncy)
@@ -545,7 +553,7 @@ private struct CheckoutDetailView: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
-        .background(.ultraThinMaterial)
+        .background(TastyTheme.elevated)
         .overlay(alignment: .bottom) { Rectangle().fill(TastyTheme.hairline).frame(height: 1) }
     }
 
@@ -760,7 +768,6 @@ private struct CheckoutDetailView: View {
             .foregroundStyle(.white)
             .padding(17)
             .background(model.mode.accent, in: RoundedRectangle(cornerRadius: 20))
-            .shadow(color: model.mode.accent.opacity(0.28), radius: 16, y: 8)
         }
         .buttonStyle(.bouncy)
         .disabled(placing)
@@ -769,7 +776,7 @@ private struct CheckoutDetailView: View {
         .padding(.top, 12)
         .padding(.bottom, 14)
         .background {
-            Rectangle().fill(.ultraThinMaterial)
+            Rectangle().fill(TastyTheme.elevated)
                 .overlay(alignment: .top) { Rectangle().fill(TastyTheme.hairline).frame(height: 1) }
                 .ignoresSafeArea(edges: .bottom)
         }
@@ -859,6 +866,5 @@ private extension View {
         padding(16)
             .background(TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: 18))
             .overlay(RoundedRectangle(cornerRadius: 18).stroke(TastyTheme.hairline))
-            .shadow(color: TastyTheme.violet.opacity(0.045), radius: 10, y: 5)
     }
 }

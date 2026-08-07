@@ -38,6 +38,7 @@ enum TastyTheme {
     static let violet = Color(red: 173 / 255, green: 112 / 255, blue: 1)
     static let neonViolet = Color(red: 111 / 255, green: 75 / 255, blue: 236 / 255)
     static let cyan = Color(red: 83 / 255, green: 214 / 255, blue: 194 / 255)
+    static let brandPink = Color(red: 232 / 255, green: 20 / 255, blue: 139 / 255)
     static let muted = Color(red: 201 / 255, green: 188 / 255, blue: 207 / 255)
     static let hairline = Color.white.opacity(0.12)
 
@@ -48,6 +49,14 @@ enum TastyTheme {
     static var primaryGradient: LinearGradient {
         LinearGradient(
             colors: [violet, neonViolet],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    static var brandGradient: LinearGradient {
+        LinearGradient(
+            colors: [Color(red: 0.61, green: 0.34, blue: 0.96), Color(red: 0.90, green: 0.07, blue: 0.56)],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )

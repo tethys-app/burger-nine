@@ -404,7 +404,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 2D4G3J6Y8W;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Info.plist;
@@ -414,9 +414,9 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.burgernine.app;
-				PUBLIC_NEO_API_URL = "http://127.0.0.1:3211";
+				PUBLIC_NEO_API_URL = "https://friendly-hummingbird-971.eu-west-1.convex.site/";
 				PUBLIC_BRAND_SLUG = "burger-nine";
-				PUBLIC_SITE_URL = "http://localhost:4321";
+				PUBLIC_SITE_URL = "https://bnine.fr";
 				INFOPLIST_KEY_PUBLIC_NEO_API_URL = "$(PUBLIC_NEO_API_URL)";
 				INFOPLIST_KEY_PUBLIC_BRAND_SLUG = "$(PUBLIC_BRAND_SLUG)";
 				INFOPLIST_KEY_PUBLIC_SITE_URL = "$(PUBLIC_SITE_URL)";

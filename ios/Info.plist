@@ -33,6 +33,14 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>PUBLIC_NEO_API_URL</key>
+	<string>$(PUBLIC_NEO_API_URL)</string>
+	<key>PUBLIC_BRAND_SLUG</key>
+	<string>$(PUBLIC_BRAND_SLUG)</string>
+	<key>PUBLIC_SITE_URL</key>
+	<string>$(PUBLIC_SITE_URL)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Votre position permet de préparer la sélection du Burger Nine le plus proche.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
