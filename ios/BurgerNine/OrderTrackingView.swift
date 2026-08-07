@@ -83,7 +83,7 @@ struct OrderTrackingView: View {
                 bottomCard
             }
         }
-        .preferredColorScheme(.light)
+        .preferredColorScheme(.dark)
         .onAppear { startSimulation() }
     }
 

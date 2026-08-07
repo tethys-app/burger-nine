@@ -138,18 +138,18 @@ struct ProductOptionsSheet: View {
         .presentationDetents([.large])
         .presentationContentInteraction(.scrolls)
         .presentationDragIndicator(.visible)
-        .presentationCornerRadius(22)
-        .preferredColorScheme(.light)
+        .presentationCornerRadius(TastyTheme.sheetRadius)
+        .preferredColorScheme(.dark)
     }
 
     private var composerBackground: some View {
         ZStack {
-            Color(uiColor: .systemBackground)
+            TastyTheme.surface
             LinearGradient(
                 colors: [
                     accent.opacity(0.16),
                     TastyTheme.surface.opacity(0.86),
-                    Color(uiColor: .systemBackground)
+                    TastyTheme.surface
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -170,7 +170,7 @@ struct ProductOptionsSheet: View {
                 .shadow(color: accent.opacity(0.22), radius: 18, y: 10)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(item.name.trimmingCharacters(in: .whitespaces))
+                Text(item.name.trimmingCharacters(in: .whitespaces).uppercased())
                     .font(.system(.headline, design: .rounded, weight: .black))
                     .foregroundStyle(TastyTheme.ink)
                     .lineLimit(2)
@@ -313,15 +313,15 @@ struct ProductOptionsSheet: View {
                 ))
             }
         }
-        .background(TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: 18))
+        .background(TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: TastyTheme.controlRadius))
         .overlay(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: TastyTheme.controlRadius)
                 .stroke(invalidGroupID == group.id ? TastyTheme.coral : TastyTheme.hairline,
                         lineWidth: invalidGroupID == group.id ? 2 : 1)
         )
         .shadow(color: invalidGroupID == group.id ? TastyTheme.coral.opacity(0.3) : TastyTheme.violet.opacity(0.045),
                 radius: 10, y: 5)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .clipShape(RoundedRectangle(cornerRadius: TastyTheme.controlRadius))
         .id(group.id)
         .animation(.snappy(duration: 0.2), value: invalidGroupID)
     }
@@ -417,8 +417,8 @@ struct ProductOptionsSheet: View {
             .font(.headline.weight(.black))
             .foregroundStyle(canAdd ? TastyTheme.ink : TastyTheme.muted.opacity(0.72))
             .padding(18)
-            .background(canAdd ? TastyTheme.gold : TastyTheme.muted.opacity(0.14), in: RoundedRectangle(cornerRadius: 22))
-            .overlay(RoundedRectangle(cornerRadius: 22).stroke(.white.opacity(canAdd ? 0.72 : 0.28), lineWidth: 1))
+            .background(canAdd ? TastyTheme.gold : TastyTheme.muted.opacity(0.14), in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
+            .overlay(RoundedRectangle(cornerRadius: TastyTheme.cardRadius).stroke(.white.opacity(canAdd ? 0.72 : 0.28), lineWidth: 1))
             .shadow(color: canAdd ? TastyTheme.gold.opacity(0.24) : .clear, radius: 18, y: 9)
         }
         .buttonStyle(.bouncy)

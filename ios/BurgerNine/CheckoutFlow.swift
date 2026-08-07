@@ -110,7 +110,7 @@ struct CheckoutFlow: View {
         }
         .presentationDetents([.fraction(0.58), .large], selection: $detent)
         .presentationDragIndicator(.hidden)
-        .presentationCornerRadius(28)
+        .presentationCornerRadius(TastyTheme.sheetRadius)
         .presentationContentInteraction(.scrolls)
         .interactiveDismissDisabled(model.step == .payment)
     }
@@ -191,8 +191,8 @@ private struct FulfillmentSheet: View {
                     .foregroundStyle(selected ? .white : TastyTheme.muted)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 13)
-                    .background(selected ? mode.accent : TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: 15))
-                    .overlay(RoundedRectangle(cornerRadius: 15).stroke(selected ? .white.opacity(0.5) : TastyTheme.hairline))
+                    .background(selected ? mode.accent : TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: TastyTheme.controlRadius))
+                    .overlay(RoundedRectangle(cornerRadius: TastyTheme.controlRadius).stroke(selected ? .white.opacity(0.5) : TastyTheme.hairline))
                 }
                 .buttonStyle(.bouncy)
             }
@@ -356,7 +356,7 @@ private struct FulfillmentSheet: View {
                 .frame(maxWidth: .infinity)
                 .padding(17)
                 .background(model.canPay ? model.mode.accent : TastyTheme.muted.opacity(0.4),
-                           in: RoundedRectangle(cornerRadius: 20))
+                           in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
                 .shadow(color: model.mode.accent.opacity(model.canPay ? 0.28 : 0), radius: 16, y: 8)
         }
         .buttonStyle(.bouncy)
@@ -407,7 +407,7 @@ private struct CheckoutDetailView: View {
 
     var body: some View {
         checkoutSurface
-            .preferredColorScheme(.light)
+            .preferredColorScheme(.dark)
             .animation(.snappy(duration: 0.24), value: orderPlaced)
             .animation(.snappy(duration: 0.3), value: prize)
             .background { paymentSheetHost }

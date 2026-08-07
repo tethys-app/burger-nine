@@ -36,7 +36,7 @@ final class BurgerNineUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        let brand = app.staticTexts["Burger Nine"]
+        let brand = app.staticTexts["BURGER NINE"]
         XCTAssertTrue(brand.waitForExistence(timeout: 15), "Burger Nine brand should load")
 
         let product = app.buttons.matching(identifier: "product-row-1646143").firstMatch

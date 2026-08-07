@@ -102,7 +102,7 @@ private enum ProductOptionsPreviewData {
             initialSelectedOptionCounts: selected,
             initialExpandedOptionGroupIDs: expanded
         ) { _, _ in }
-        .preferredColorScheme(.light)
+        .preferredColorScheme(.dark)
     }
 }
 

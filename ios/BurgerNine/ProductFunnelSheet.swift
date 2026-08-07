@@ -67,8 +67,8 @@ struct ProductFunnelSheet: View {
         .background(composerBackground)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
-        .presentationCornerRadius(28)
-        .preferredColorScheme(.light)
+        .presentationCornerRadius(TastyTheme.sheetRadius)
+        .preferredColorScheme(.dark)
     }
 
     private var handle: some View {
@@ -188,8 +188,8 @@ struct ProductFunnelSheet: View {
                     .foregroundStyle(canFinish ? TastyTheme.ink : TastyTheme.muted.opacity(0.72))
                     .padding(.horizontal, 18).padding(.vertical, 14)
                     .frame(maxWidth: .infinity)
-                    .background(canFinish ? TastyTheme.gold : TastyTheme.muted.opacity(0.14), in: RoundedRectangle(cornerRadius: 16))
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(canFinish ? 0.72 : 0.28), lineWidth: 1))
+                    .background(canFinish ? TastyTheme.gold : TastyTheme.muted.opacity(0.14), in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
+                    .overlay(RoundedRectangle(cornerRadius: TastyTheme.cardRadius).stroke(.white.opacity(canFinish ? 0.72 : 0.28), lineWidth: 1))
                     .shadow(color: canFinish ? TastyTheme.gold.opacity(0.22) : .clear, radius: 12, y: 6)
                 }
                 .buttonStyle(.bouncy)
@@ -207,9 +207,9 @@ struct ProductFunnelSheet: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 18).padding(.vertical, 14)
                     .frame(maxWidth: .infinity)
-                    .background(TastyTheme.ink, in: RoundedRectangle(cornerRadius: 16))
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.12), lineWidth: 1))
-                    .shadow(color: TastyTheme.ink.opacity(0.18), radius: 10, y: 5)
+                    .background(TastyTheme.primaryGradient, in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
+                    .overlay(RoundedRectangle(cornerRadius: TastyTheme.cardRadius).stroke(.white.opacity(0.18), lineWidth: 1))
+                    .shadow(color: TastyTheme.violet.opacity(0.28), radius: 10, y: 5)
                 }
                 .buttonStyle(.bouncy)
                 .transition(.scale(scale: 0.92, anchor: .bottom).combined(with: .opacity))
@@ -295,9 +295,9 @@ struct ProductFunnelSheet: View {
 
     private var composerBackground: some View {
         ZStack {
-            Color(uiColor: .systemBackground)
+            TastyTheme.surface
             LinearGradient(
-                colors: [accent.opacity(0.12), TastyTheme.surface.opacity(0.75), Color(uiColor: .systemBackground)],
+                colors: [accent.opacity(0.12), TastyTheme.surfaceDepth.opacity(0.75), TastyTheme.surface],
                 startPoint: .topLeading, endPoint: .bottomTrailing
             )
         }

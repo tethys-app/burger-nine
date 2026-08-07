@@ -167,11 +167,13 @@ struct ProductCard: View {
 
     private func textColumn(titleLines: Int, scale: CGFloat = 1) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(item.tag.uppercased())
-                .font(.caption2.weight(.black))
-                .tracking(1.2)
-                .foregroundStyle(TastyTheme.orange)
-            Text(item.name.trimmingCharacters(in: .whitespaces))
+            if !item.tag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Text(item.tag.uppercased())
+                    .font(.caption2.weight(.black))
+                    .tracking(1.1)
+                    .foregroundStyle(TastyTheme.orange)
+            }
+            Text(item.name.trimmingCharacters(in: .whitespaces).uppercased())
                 .font(.system(.headline, design: .rounded, weight: .black))
                 .foregroundStyle(TastyTheme.ink)
                 .lineLimit(titleLines)
@@ -237,9 +239,11 @@ struct ProductCard: View {
         case .tapToAdd:
             HStack(spacing: 14) {
                 productImage
-                textColumn(titleLines: 1)
+                textColumn(titleLines: 2, scale: 0.86)
                 if quantity > 0 {
                     control.frame(width: clearControlWidth, alignment: .trailing)
+                } else {
+                    plusBadge.frame(width: 52, alignment: .trailing)
                 }
             }
         }
@@ -290,10 +294,10 @@ struct ProductCard: View {
 
     private var productImage: some View {
         RemoteProductImage(url: item.image)
-            .frame(width: 100, height: 100)
-            .clipShape(RoundedRectangle(cornerRadius: 28))
+            .frame(width: 92, height: 92)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay {
-                RoundedRectangle(cornerRadius: 28)
+                RoundedRectangle(cornerRadius: 20)
                     .stroke(TastyTheme.hairline, lineWidth: 1)
             }
             .overlay(alignment: .topTrailing) {
@@ -330,14 +334,8 @@ struct ProductCard: View {
             .font(.title3.weight(.black))
             .foregroundStyle(plusFilled ? TastyTheme.ink : TastyTheme.gold)
             .frame(width: 52, height: 52)
-            .background {
-                if plusFilled {
-                    Circle().fill(TastyTheme.gold.opacity(0.95))
-                } else {
-                    Circle().fill(TastyTheme.gold.opacity(0.12))
-                }
-            }
-            .overlay(Circle().stroke(plusFilled ? .white.opacity(0.85) : TastyTheme.gold.opacity(0.6), lineWidth: 2))
+            .background(Circle().fill(plusFilled ? TastyTheme.gold : TastyTheme.gold.opacity(0.12)))
+            .overlay(Circle().stroke(.white.opacity(plusFilled ? 0.7 : 0.18), lineWidth: 1))
     }
 
 }
@@ -346,21 +344,20 @@ private extension View {
     func productCardSurface(pressed: Bool = false, highlighted: Bool = false) -> some View {
         padding(13)
             .background(
-                LinearGradient(colors: [TastyTheme.elevated, TastyTheme.elevatedSoft], startPoint: .topLeading, endPoint: .bottomTrailing),
-                in: RoundedRectangle(cornerRadius: 32)
+                TastyTheme.surfaceGradient,
+                in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius)
             )
             .overlay {
-                RoundedRectangle(cornerRadius: 32)
-                    .fill(TastyTheme.orange.opacity(highlighted ? 0.08 : 0))
+                RoundedRectangle(cornerRadius: TastyTheme.cardRadius)
+                    .fill(TastyTheme.violet.opacity(highlighted ? 0.13 : 0))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 32)
+                RoundedRectangle(cornerRadius: TastyTheme.cardRadius)
                     .stroke(
                         LinearGradient(
                             colors: [
-                                highlighted ? TastyTheme.orange.opacity(0.42) : TastyTheme.hairline,
-                                TastyTheme.violet.opacity(highlighted ? 0.30 : 0.18),
-                                TastyTheme.orange.opacity(highlighted ? 0.26 : 0.10)
+                                highlighted ? TastyTheme.violet.opacity(0.52) : TastyTheme.hairline,
+                                .white.opacity(highlighted ? 0.24 : 0.08)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -370,11 +367,11 @@ private extension View {
             }
             .compositingGroup()
             .shadow(
-                color: TastyTheme.violet.opacity(pressed ? 0.32 : (highlighted ? 0.18 : 0.10)),
+                color: .black.opacity(pressed ? 0.28 : (highlighted ? 0.22 : 0.16)),
                 radius: pressed ? 24 : (highlighted ? 18 : 14),
                 y: pressed ? 12 : (highlighted ? 10 : 8)
             )
-            .contentShape(RoundedRectangle(cornerRadius: 32))
+            .contentShape(RoundedRectangle(cornerRadius: TastyTheme.cardRadius))
     }
 }
 

@@ -129,7 +129,7 @@ struct ContentView: View {
     private var currentCart: [CartLine: Int] { cartsByStore[selectedStore.id, default: [:]] }
     private var cartCount: Int { currentCart.values.reduce(0, +) }
     private var total: Double { currentCart.reduce(0) { $0 + $1.key.totalPrice * Double($1.value) } }
-    private var storeAccent: Color { selectedStore.brand.secondaryColor }
+    private var storeAccent: Color { TastyTheme.violet }
     private let pinnedRailHeight: CGFloat = 56
     private let pillScrollInset: CGFloat = 8
     private var productImageURLs: [String] {
@@ -349,11 +349,10 @@ struct ContentView: View {
 
     private var background: some View {
         ZStack {
-            LinearGradient(colors: [TastyTheme.surface, TastyTheme.surfaceDepth], startPoint: .top, endPoint: .bottom)
-            Circle().fill(TastyTheme.orange.opacity(0.15)).blur(radius: 70).offset(x: 150, y: -250)
-            Circle().fill(TastyTheme.cyan.opacity(0.11)).blur(radius: 80).offset(x: -160, y: 115)
-            Circle().fill(storeAccent.opacity(0.22)).blur(radius: 98).offset(x: 170, y: 230)
-            Circle().fill(TastyTheme.coral.opacity(0.06)).blur(radius: 95).offset(x: 165, y: 260)
+            LinearGradient(colors: [TastyTheme.surface, TastyTheme.surfaceDepth], startPoint: .topLeading, endPoint: .bottomTrailing)
+            Circle().fill(storeAccent.opacity(0.19)).blur(radius: 92).offset(x: 155, y: -260)
+            Circle().fill(TastyTheme.orange.opacity(0.10)).blur(radius: 86).offset(x: -150, y: 180)
+            Circle().fill(TastyTheme.neonViolet.opacity(0.10)).blur(radius: 112).offset(x: 140, y: 420)
         }.ignoresSafeArea()
     }
 
@@ -389,7 +388,7 @@ struct ContentView: View {
                 brandMark
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(selectedStore.brand.appName)
+                    Text(selectedStore.brand.appName.uppercased())
                         .font(.system(size: 26, weight: .black, design: .rounded))
                         .foregroundStyle(TastyTheme.ink)
                         .lineLimit(2)
@@ -415,7 +414,7 @@ struct ContentView: View {
             )
             .padding(.leading, brandMarkWidth + brandMarkSpacing)
         }
-        .padding(.top, 12)
+        .padding(.top, 18)
     }
 
     private var hasBrandLogo: Bool {
@@ -441,9 +440,9 @@ struct ContentView: View {
                 }
             }
             .frame(width: brandMarkWidth, height: brandMarkWidth)
-            .background(TastyTheme.elevated, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(TastyTheme.surfaceGradient, in: RoundedRectangle(cornerRadius: TastyTheme.controlRadius, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: TastyTheme.controlRadius, style: .continuous)
                     .stroke(TastyTheme.hairline, lineWidth: 1)
             }
         } else {
@@ -455,12 +454,19 @@ struct ContentView: View {
     private var brandMonogram: some View {
         Text(brandInitials)
             .font(.system(.subheadline, design: .rounded, weight: .black))
-            .foregroundStyle(TastyTheme.ink)
+            .foregroundStyle(.white)
             .frame(width: brandMarkWidth, height: brandMarkWidth)
-            .background(TastyTheme.gold.opacity(0.95), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(
+                LinearGradient(
+                    colors: [TastyTheme.violet, TastyTheme.neonViolet],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ),
+                in: RoundedRectangle(cornerRadius: TastyTheme.controlRadius, style: .continuous)
+            )
             .overlay {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(.white.opacity(0.85), lineWidth: 2)
+                RoundedRectangle(cornerRadius: TastyTheme.controlRadius, style: .continuous)
+                    .stroke(TastyTheme.hairline, lineWidth: 1)
             }
     }
 
@@ -511,11 +517,7 @@ struct ContentView: View {
                 .background {
                     Circle()
                         .fill(
-                            LinearGradient(
-                                colors: [TastyTheme.elevated, TastyTheme.elevatedSoft],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+                            TastyTheme.surfaceGradient
                         )
                         .overlay {
                             Circle()
@@ -536,8 +538,8 @@ struct ContentView: View {
 
     private func sectionHeader(_ section: MenuSection) -> some View {
         HStack(alignment: .lastTextBaseline) {
-            Text(section.name)
-                .font(.system(.title2, design: .rounded, weight: .black))
+            Text(section.name.uppercased())
+                .font(.system(.title3, design: .rounded, weight: .black))
                 .foregroundStyle(TastyTheme.ink)
             Spacer()
             Text(section.subtitle)
@@ -555,20 +557,20 @@ struct ContentView: View {
             showCheckout = true
         } label: {
             HStack(spacing: 14) {
-                Text("\(cartCount)").font(.headline.bold()).foregroundStyle(TastyTheme.ink).frame(width: 40, height: 40).background(TastyTheme.gold, in: Circle())
+                Text("\(cartCount)").font(.headline.bold()).foregroundStyle(TastyTheme.surface).frame(width: 40, height: 40).background(TastyTheme.gold, in: Circle())
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Voir le panier").font(.headline.bold()).foregroundStyle(.white)
-                    Text(total, format: .currency(code: "EUR")).font(.caption.bold()).foregroundStyle(.white.opacity(0.65))
+                    Text("Panier").font(.headline.bold()).foregroundStyle(.white)
+                    Text("\(cartCount) article\(cartCount > 1 ? "s" : "") · " + total.formatted(.currency(code: "EUR"))).font(.caption.bold()).foregroundStyle(.white.opacity(0.72))
                 }
                 Spacer()
                 Image(systemName: "chevron.right").font(.headline.bold()).foregroundStyle(.white)
             }
             .padding(14)
             .background(
-                LinearGradient(colors: [TastyTheme.ink, TastyTheme.ink.opacity(0.88)], startPoint: .topLeading, endPoint: .bottomTrailing),
-                in: RoundedRectangle(cornerRadius: 28)
+                TastyTheme.primaryGradient,
+                in: RoundedRectangle(cornerRadius: TastyTheme.cardRadius)
             )
-            .overlay(RoundedRectangle(cornerRadius: 28).stroke(LinearGradient(colors: [TastyTheme.orange.opacity(0.45), storeAccent.opacity(0.42)], startPoint: .leading, endPoint: .trailing)))
+            .overlay(RoundedRectangle(cornerRadius: TastyTheme.cardRadius).stroke(.white.opacity(0.22)))
             .padding(.horizontal, 16)
             .shadow(color: storeAccent.opacity(0.22), radius: 24, y: 12)
         }
@@ -797,7 +799,7 @@ private struct CategoryRail: View {
         Button {
             sync.select(section.id)
         } label: {
-            Text(section.name)
+            Text(section.name.uppercased())
                 .font(.footnote.weight(.black))
                 .lineLimit(1)
                 .padding(.horizontal, compact ? 14 : 15)
@@ -810,7 +812,7 @@ private struct CategoryRail: View {
                     // matched frame resolved inside a vanishing hierarchy → bad
                     // horizontal frame / freeze. A per-pill crossfade is robust.
                     Capsule()
-                        .fill(LinearGradient(colors: [TastyTheme.ink, accent.opacity(0.82)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .fill(LinearGradient(colors: [accent, TastyTheme.neonViolet], startPoint: .topLeading, endPoint: .bottomTrailing))
                         .opacity(isSelected ? 1 : 0)
                         .background {
                             Capsule()

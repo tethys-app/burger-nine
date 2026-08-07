@@ -24,45 +24,41 @@ enum HapticFeedback {
 }
 
 enum TastyTheme {
-    static let ink = adaptive(
-        light: UIColor(red: 0.07, green: 0.055, blue: 0.075, alpha: 1),
-        dark: UIColor(red: 0.96, green: 0.92, blue: 1.0, alpha: 1)
-    )
-    static let surface = adaptive(
-        light: UIColor(red: 0.985, green: 0.97, blue: 0.94, alpha: 1),
-        dark: UIColor(red: 0.045, green: 0.035, blue: 0.075, alpha: 1)
-    )
-    static let surfaceDepth = adaptive(
-        light: UIColor(red: 0.96, green: 0.94, blue: 0.91, alpha: 1),
-        dark: UIColor(red: 0.075, green: 0.050, blue: 0.12, alpha: 1)
-    )
-    static let elevated = adaptive(
-        light: UIColor.white,
-        dark: UIColor(red: 0.105, green: 0.080, blue: 0.145, alpha: 1)
-    )
-    static let elevatedSoft = adaptive(
-        light: UIColor(white: 1.0, alpha: 0.86),
-        dark: UIColor(red: 0.14, green: 0.10, blue: 0.19, alpha: 0.90)
-    )
-    static let orange = Color(red: 1.0, green: 0.49, blue: 0.13)
-    static let gold = Color(red: 1.0, green: 0.77, blue: 0.18)
-    static let coral = Color(red: 1.0, green: 0.28, blue: 0.36)
-    static let violet = Color(red: 0.52, green: 0.24, blue: 1.0)
-    static let neonViolet = Color(red: 0.72, green: 0.38, blue: 1.0)
-    static let cyan = Color(red: 0.0, green: 0.70, blue: 0.86)
-    static let muted = adaptive(
-        light: UIColor(red: 0.48, green: 0.42, blue: 0.38, alpha: 1),
-        dark: UIColor(red: 0.72, green: 0.67, blue: 0.78, alpha: 1)
-    )
-    static let hairline = adaptive(
-        light: UIColor(white: 0.0, alpha: 0.06),
-        dark: UIColor(red: 0.78, green: 0.58, blue: 1.0, alpha: 0.18)
-    )
+    // A restrained night-market palette: warm paper for content, plum for
+    // primary actions and only a few semantic accents. Keeping these tokens
+    // here makes every catalog, options and checkout surface feel like one app.
+    static let ink = Color(red: 1, green: 247 / 255, blue: 241 / 255)
+    static let surface = Color(red: 17 / 255, green: 12 / 255, blue: 20 / 255)
+    static let surfaceDepth = Color(red: 28 / 255, green: 18 / 255, blue: 31 / 255)
+    static let elevated = Color(red: 37 / 255, green: 25 / 255, blue: 43 / 255)
+    static let elevatedSoft = Color(red: 48 / 255, green: 33 / 255, blue: 55 / 255)
+    static let orange = Color(red: 1, green: 154 / 255, blue: 105 / 255)
+    static let gold = Color(red: 1, green: 199 / 255, blue: 87 / 255)
+    static let coral = Color(red: 244 / 255, green: 94 / 255, blue: 113 / 255)
+    static let violet = Color(red: 173 / 255, green: 112 / 255, blue: 1)
+    static let neonViolet = Color(red: 111 / 255, green: 75 / 255, blue: 236 / 255)
+    static let cyan = Color(red: 83 / 255, green: 214 / 255, blue: 194 / 255)
+    static let muted = Color(red: 201 / 255, green: 188 / 255, blue: 207 / 255)
+    static let hairline = Color.white.opacity(0.12)
 
-    private static func adaptive(light: UIColor, dark: UIColor) -> Color {
-        Color(uiColor: UIColor { traits in
-            traits.userInterfaceStyle == .dark ? dark : light
-        })
+    static let cardRadius: CGFloat = 24
+    static let controlRadius: CGFloat = 16
+    static let sheetRadius: CGFloat = 28
+
+    static var primaryGradient: LinearGradient {
+        LinearGradient(
+            colors: [violet, neonViolet],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    static var surfaceGradient: LinearGradient {
+        LinearGradient(
+            colors: [elevatedSoft, elevated],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 }
 
@@ -201,8 +197,9 @@ enum ClearButtonPreset: Int, CaseIterable {
 struct BouncyButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.94 : 1)
-            .animation(.spring(response: 0.24, dampingFraction: 0.68), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .brightness(configuration.isPressed ? -0.035 : 0)
+            .animation(.spring(response: 0.22, dampingFraction: 0.82), value: configuration.isPressed)
     }
 }
 

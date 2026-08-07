@@ -15,7 +15,7 @@ struct BurgerNineApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .preferredColorScheme(.light)
+                .preferredColorScheme(.dark)
                 .onOpenURL { url in
                     _ = StripeAPI.handleURLCallback(with: url)
                 }
