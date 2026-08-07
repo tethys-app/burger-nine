@@ -13,7 +13,7 @@ export const fr = {
     homeAria: 'Burger Nine — accueil',
   },
   hero: {
-    headlineLead: 'Goûte la ',
+    headlineLead: 'Viens goûter la ',
     headlineHighlight: 'frappe',
     headlineLines: ["C'est testé.", "C'est validé."],
     cta: 'Commander',
