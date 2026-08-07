@@ -8,22 +8,23 @@ import Nav from '../../components/Nav.astro'
 import Bottom from '../../components/landing/Bottom.astro'
 import { getBrand } from '../../lib/api'
 import { cityOf, deptLabel } from '../../lib/stores'
+import { fr as t } from '../../i18n/fr'
 
 const brand = await getBrand()
 const stores = brand.stores
 ---
 
 <Brand
-  title="La carte — Burger Nine"
-  description="Toute la carte Burger Nine, resto par resto : burgers, tacos, bowls, box, tex-mex, desserts et boissons, avec les vrais prix."
+  title={t.cartePicker.metaTitle}
+  description={t.cartePicker.metaDescription}
 >
   <Nav />
 
   <section class="sec" id="carte-picker" style="padding-top: 150px">
     <div class="wrap">
-      <div class="overline">La carte</div>
-      <h1 class="picker-h1">Choisis ton Nine,<br />on t'affiche sa carte.</h1>
-      <p class="picker-lede">Le menu n'est pas identique partout — vois direct celui de ton resto.</p>
+      <div class="overline">{t.cartePicker.overline}</div>
+      <h1 class="picker-h1">{t.cartePicker.h1[0]}<br />{t.cartePicker.h1[1]}</h1>
+      <p class="picker-lede">{t.cartePicker.lede}</p>
 
       <div class="picker-grid">
         {stores.map((store) => (
@@ -31,7 +32,7 @@ const stores = brand.stores
             <span class="dep">{deptLabel(store) ?? store.address?.zipcode}</span>
             <span class="city">{cityOf(store)}</span>
             <span class="mini">
-              Voir la carte
+              {t.cartePicker.cardCta}
               <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg>
             </span>
           </a>

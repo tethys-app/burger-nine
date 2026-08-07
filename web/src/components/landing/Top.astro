@@ -1,6 +1,7 @@
 ---
 // Verbatim from poc-website/index.html — static brand content.
 import Nav from '../Nav.astro'
+import { fr as t } from '../../i18n/fr'
 
 interface Props {
   storeCount?: number
@@ -16,23 +17,23 @@ const { storeCount = 0 } = Astro.props
       <div class="hero-copy">
         <span class="hero-kicker">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.6 4.4L18 8l-4.4 1.6L12 14l-1.6-4.4L6 8l4.4-1.6L12 2z" /></svg>
-          Smash burger · fait minute
+          {t.hero.kicker}
         </span>
-        <h1>Smashé.<br />Grillé.<br />Dévoré.</h1>
-        <p class="hero-lede">Steak écrasé sur plancha brûlante, cheddar qui dégouline, pain toasté. À emporter ou livré, sans détour.</p>
+        <h1>{t.hero.headline[0]}<br />{t.hero.headline[1]}<br />{t.hero.headline[2]}</h1>
+        <p class="hero-lede">{t.hero.lede}</p>
         <div class="hero-act">
-          <a class="btn bn-cta" href="#restos">Commander <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg></a>
-          <a href="#carte" class="hero-menu-link">Voir la carte <span>→</span></a>
+          <a class="btn bn-cta" href="#restos">{t.hero.cta} <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg></a>
+          <a href="#carte" class="hero-menu-link">{t.hero.menuLink} <span>→</span></a>
         </div>
-        <p class="hero-micro"><a href="#franchise">Envie d'ouvrir un Burger Nine ?</a></p>
+        <p class="hero-micro"><a href="#franchise">{t.hero.micro}</a></p>
       </div>
       <div class="hero-product">
-        <img src="/assets/generated/burger-hero-cutout-v1.png" alt="Double smash burger Burger Nine, bacon et cheddar fondu" fetchpriority="high" width="1254" height="1254" />
-        <span class="hero-product-label">Attention,<br />ça dégouline.</span>
+        <img src="/assets/generated/burger-hero-cutout-v1.png" alt={t.hero.productAlt} fetchpriority="high" width="1254" height="1254" />
+        <span class="hero-product-label">{t.hero.productLabel[0]}<br />{t.hero.productLabel[1]}</span>
       </div>
     </section>
     <div class="bn-bar" id="bnBar">
-      <a class="btn bn-cta" href="#restos">Commander <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg></a>
+      <a class="btn bn-cta" href="#restos">{t.hero.cta} <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg></a>
     </div>
     <script>
       const bar = document.getElementById('bnBar')
@@ -50,67 +51,59 @@ const { storeCount = 0 } = Astro.props
       <div class="wrap">
         <div class="sec-head rv">
           <div>
-            <div class="overline">01 · La carte</div>
-            <h2>
-              Quatre formats,
-              <br />
-              zéro chichi
-            </h2>
-            <a href="/carte" class="hero-menu-link cat-link">Voir le catalogue complet <span>→</span></a>
+            <div class="overline">{t.carte.overline}</div>
+            <h2>{t.carte.title}</h2>
+            <a href="/carte" class="hero-menu-link cat-link">{t.carte.catalogueLink} <span>→</span></a>
           </div>
         </div>
         <div class="cards">
           <article class="card rv">
             <div class="card-img">
-              <span class="card-tag">Burgers</span>
+              <span class="card-tag">{t.carte.items.burgers.name}</span>
               <img
                 src="/assets/e629889733124b52.jpg"
-                alt="Burger smashé Burger Nine"
+                alt={t.carte.items.burgers.alt}
                 style="object-position: 50% 46%"
               />
             </div>
             <div class="card-body">
-              <h3>Burgers</h3>
-              <p>Steak smashé, cheddar fondu, pain toasté au beurre.</p>
+              <h3>{t.carte.items.burgers.name}</h3>
             </div>
           </article>
           <article class="card rv">
             <div class="card-img">
-              <span class="card-tag">Tacos</span>
+              <span class="card-tag">{t.carte.items.tacos.name}</span>
               <img
                 src="/assets/8cd0808be67fd412.jpg"
-                alt="French tacos Burger Nine devant l'enseigne néon"
+                alt={t.carte.items.tacos.alt}
               />
             </div>
             <div class="card-body">
-              <h3>Tacos</h3>
-              <p>La sauce fromagère qui déborde, comme il faut.</p>
+              <h3>{t.carte.items.tacos.name}</h3>
             </div>
           </article>
           <article class="card rv">
             <div class="card-img">
-              <span class="card-tag">Riz Crousty</span>
+              <span class="card-tag">{t.carte.items.rizCrousty.name}</span>
               <img
                 src="/assets/6e4759bfacbcceee.jpg"
-                alt="Riz Crousty — riz et poulet croustillant sauce"
+                alt={t.carte.items.rizCrousty.alt}
               />
             </div>
             <div class="card-body">
-              <h3>Riz Crousty</h3>
-              <p>Poulet croustillant, riz parfumé, sauce généreuse.</p>
+              <h3>{t.carte.items.rizCrousty.name}</h3>
             </div>
           </article>
           <article class="card rv">
             <div class="card-img">
-              <span class="card-tag">Bowls</span>
+              <span class="card-tag">{t.carte.items.bowls.name}</span>
               <img
                 src="/assets/36daa6d021ebbfed.jpg"
-                alt="Bowl bœuf smashé pickles cheddar"
+                alt={t.carte.items.bowls.alt}
               />
             </div>
             <div class="card-body">
-              <h3>Bowls</h3>
-              <p>Tout le smash, sans le pain — frais et généreux.</p>
+              <h3>{t.carte.items.bowls.name}</h3>
             </div>
           </article>
         </div>
@@ -134,15 +127,15 @@ const { storeCount = 0 } = Astro.props
         <div class="wrap">
           <div class="sec-head rv">
             <div>
-              <div class="overline">02 · Les hits</div>
+              <div class="overline">{t.hits.overline}</div>
               <h2>
-                Ceux qu'on
+                {t.hits.title[0]}
                 <br />
-                recommande
+                {t.hits.title[1]}
               </h2>
             </div>
             <p class="side">
-              Les recettes qui reviennent commande après commande.
+              {t.hits.side}
             </p>
           </div>
           <div class="hits-row">
@@ -150,30 +143,30 @@ const { storeCount = 0 } = Astro.props
               <div class="hit-img">
                 <img
                   src="/assets/8d8bfc36ad278f95.jpg"
-                  alt="Le Smash Bowl signature"
+                  alt={t.hits.items.smashBowl.alt}
                   style="object-position: 50% 48%"
                 />
-                <a href="#restos" class="hit-discover">Découvrir</a>
+                <a href="#restos" class="hit-discover">{t.hits.discover}</a>
               </div>
             </article>
             <article class="hit rv">
               <div class="hit-img">
                 <img
                   src="/assets/02ed823ff0149d9c.jpg"
-                  alt="Brochettes glazées BBQ"
+                  alt={t.hits.items.brochettes.alt}
                   style="object-position: 50% 62%"
                 />
-                <a href="#restos" class="hit-discover">Découvrir</a>
+                <a href="#restos" class="hit-discover">{t.hits.discover}</a>
               </div>
             </article>
             <article class="hit rv">
               <div class="hit-img">
                 <img
                   src="/assets/f26c8dda5aa27aad.jpg"
-                  alt="Le Tandoor Sub"
+                  alt={t.hits.items.tandoorSub.alt}
                   style="object-position: 50% 30%"
                 />
-                <a href="#restos" class="hit-discover">Découvrir</a>
+                <a href="#restos" class="hit-discover">{t.hits.discover}</a>
               </div>
             </article>
           </div>
@@ -200,8 +193,8 @@ const { storeCount = 0 } = Astro.props
       <div class="wrap">
         <div class="spot-grid">
           <div class="spot-txt rv">
-            <div class="overline">03 · Le spot</div>
-            <span class="neon-quote">« Askip c'est le meilleur spot du coin »</span>
+            <div class="overline">{t.spot.overline}</div>
+            <span class="neon-quote">{t.spot.quote}</span>
             <h2
               style="
                 font-family: var(--display);
@@ -212,80 +205,41 @@ const { storeCount = 0 } = Astro.props
                 margin-bottom: 22px;
               "
             >
-              Le spot où
+              {t.spot.title[0]}
               <br />
-              t'as ta place
+              {t.spot.title[1]}
             </h2>
-            <div class="feat">
-              <div class="feat-item">
-                <div class="feat-ico">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </div>
-                <div>
-                  <b>Solo ou en bande</b>
-                  <span>Entre deux cours, en pause déj', ou toute la bande le soir : t'as ta table.</span>
-                </div>
-              </div>
-              <div class="feat-item">
-                <div class="feat-ico">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                  </svg>
-                </div>
-                <div>
-                  <b>Une équipe à fond</b>
-                  <span>Rapide, disponible, et toujours partante pour un sourire en plus.</span>
-                </div>
-              </div>
-              <div class="feat-item">
-                <div class="feat-ico">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2l1.6 4.4L18 8l-4.4 1.6L12 14l-1.6-4.4L6 8l4.4-1.6L12 2z" />
-                    <path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z" />
-                  </svg>
-                </div>
-                <div>
-                  <b>Un décor repensé</b>
-                  <span>Néon, brique et bois brut — entre snack de quartier et street food assumée.</span>
-                </div>
-              </div>
+
+            <!-- FRANCHISE: le détail vit sur sa propre page, pas de doublon ici -->
+            <div class="franchise-cta" id="franchise">
+              <a href="/franchise" class="btn bn-cta">
+                {t.spot.franchiseCta}
+                <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
+                  <path d="M0 0l10 6-10 6z" />
+                </svg>
+              </a>
             </div>
           </div>
           <div class="mosaic rv">
             <div class="m m1">
               <img
                 src="/assets/8b3c04a6b0064c73.jpg"
-                alt="Burger Nine servi en salle"
+                alt={t.spot.images.salle.alt}
               />
             </div>
             <div class="m m2">
               <img
                 src="/assets/c0ef2e775465d0aa.jpg"
-                alt="Bowl Burger Nine devant le néon"
+                alt={t.spot.images.bowlNeon.alt}
               />
             </div>
             <div class="m m3">
               <img
                 src="/assets/f5f7d40f15150c44.jpg"
-                alt="Plateaux à partager chez Burger Nine"
+                alt={t.spot.images.plateaux.alt}
               />
             </div>
           </div>
-        </div>
-
-        <!-- FRANCHISE: le détail vit sur sa propre page, pas de doublon ici -->
-        <div class="franchise-cta rv" id="franchise">
-          <a href="/franchise" class="btn bn-cta">
-            Ouvrir mon Burger Nine
-            <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
-              <path d="M0 0l10 6-10 6z" />
-            </svg>
-          </a>
         </div>
       </div>
     </section>

@@ -56,7 +56,7 @@
         /* JAZZ 90s — Memphis/Nickelodeon squiggle-confetti accent, used for
            CTAs and decorative texture instead of the old pink→yellow→violet
            gradient buttons. Flat colors, thick black ink, hard offset shadow. */
-        --jazz-teal: #00d2c3;
+        --jazz-peach: #ffb35e;
         --jazz-coral: #ff5b4d;
         --jazz-mustard: #ffcf3f;
         --jazz-ink: #111;
@@ -200,7 +200,7 @@
         border: 3px solid var(--jazz-ink);
         border-radius: 50%;
         cursor: pointer;
-        background: var(--jazz-teal);
+        background: var(--jazz-peach);
         box-shadow: 4px 4px 0 var(--jazz-ink);
         transition: transform 0.15s, box-shadow 0.15s;
       }
@@ -511,7 +511,7 @@
       .hero-kicker svg, .hero-proof svg { width: 12px; height: 14px; flex: none; color: var(--yellow); }
       .hero h1 { font-family: var(--display); font-weight: 800; font-size: clamp(38px, 11.4vw, 56px); line-height: .92; letter-spacing: -.01em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 2px rgba(10,2,6,.9), 0 3px 10px rgba(10,2,6,.75), 0 12px 30px rgba(10,2,6,.5); }
       .hero-act { gap: 12px; }
-      .bn-cta { position: relative; overflow: visible; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--jazz-teal); color: var(--jazz-ink); border-radius: 999px; border: 3px solid var(--jazz-ink); font-family: var(--display); font-weight: 800; letter-spacing: .05em; text-transform: uppercase; box-shadow: 5px 5px 0 var(--jazz-ink); transition: transform .15s, box-shadow .15s; }
+      .bn-cta { position: relative; overflow: visible; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--jazz-peach); color: var(--jazz-ink); border-radius: 999px; border: 3px solid var(--jazz-ink); font-family: var(--display); font-weight: 800; letter-spacing: .05em; text-transform: uppercase; box-shadow: 5px 5px 0 var(--jazz-ink); transition: transform .15s, box-shadow .15s; }
       .bn-cta:hover { transform: translate(2px, 2px); box-shadow: 3px 3px 0 var(--jazz-ink); }
       .bn-cta:active { transform: translate(5px, 5px); box-shadow: 0 0 0 var(--jazz-ink); }
       .bn-cta svg { width: 11px; height: 13px; }
@@ -780,7 +780,7 @@
         font-size: 12.5px;
         font-weight: 800;
         letter-spacing: 0.08em;
-        background: var(--jazz-teal);
+        background: var(--jazz-peach);
         color: var(--jazz-ink);
         padding: 11px 20px;
         border-radius: 999px;
@@ -798,7 +798,7 @@
         display: grid;
         grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
         gap: 60px;
-        align-items: start;
+        align-items: center;
       }
       .franchise-cta {
         display: flex;
@@ -821,42 +821,6 @@
         color: var(--muted);
         font-size: 16.5px;
         max-width: 450px;
-      }
-      .feat {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        margin-top: 34px;
-      }
-      .feat-item {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
-      .feat-ico {
-        width: 44px;
-        height: 44px;
-        flex: none;
-        border-radius: 12px;
-        background: rgba(255, 45, 158, 0.13);
-        border: 1px solid rgba(255, 45, 158, 0.32);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--pink);
-      }
-      .feat-ico svg {
-        width: 20px;
-        height: 20px;
-      }
-      .feat-item div b {
-        display: block;
-        font-size: 15px;
-        font-weight: 700;
-      }
-      .feat-item div span {
-        color: var(--muted);
-        font-size: 13.5px;
       }
       .mosaic {
         display: grid;

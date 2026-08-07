@@ -1,6 +1,8 @@
 ---
 // Site nav. On the landing page the links are in-page anchors; everywhere else
 // they have to point back home, so `home` prefixes them.
+import { fr as t } from '../i18n/fr'
+
 interface Props {
   /** True on the landing page, where the targets are on this page already. */
   home?: boolean
@@ -15,18 +17,18 @@ const to = (hash: string) => (home ? hash : `/${hash}`)
 <header class="nav">
   <div class="nav-in">
     <div class="nav-side left">
-      <a class="lnk" href="/carte">La carte</a>
-      <a class="lnk" href={to('#hits')}>Les hits</a>
+      <a class="lnk" href="/carte">{t.nav.carte}</a>
+      <a class="lnk" href={to('#hits')}>{t.nav.hits}</a>
     </div>
-    <a href={home ? '#top' : '/'} class="nav-logo" aria-label="Burger Nine — accueil">
+    <a href={home ? '#top' : '/'} class="nav-logo" aria-label={t.nav.homeAria}>
       <img src="/assets/f4c82effa1f42578.png" alt="Burger Nine" />
     </a>
     <div class="nav-side right">
-      <a class="lnk" href={to('#restos')}>Nos restos</a>
-      <a class="lnk" href="/carrieres">Carrières</a>
+      <a class="lnk" href={to('#restos')}>{t.nav.restos}</a>
+      <a class="lnk" href="/carrieres">{t.nav.carrieres}</a>
       <button
         class="nav-menu-btn"
-        aria-label="Ouvrir le menu"
+        aria-label={t.nav.openMenuAria}
         aria-expanded="false"
         aria-controls="nav-dropdown"
       >
@@ -37,13 +39,13 @@ const to = (hash: string) => (home ? hash : `/${hash}`)
     </div>
   </div>
   <nav class="nav-dropdown" id="nav-dropdown">
-    <a class="lnk" href="/carte">La carte</a>
-    <a class="lnk" href={to('#hits')}>Les hits</a>
-    <a class="lnk" href={to('#restos')}>Nos restos</a>
-    <a class="lnk" href={to('#franchise')}>Franchise</a>
-    <a class="lnk" href="/carrieres">Carrières</a>
+    <a class="lnk" href="/carte">{t.nav.carte}</a>
+    <a class="lnk" href={to('#hits')}>{t.nav.hits}</a>
+    <a class="lnk" href={to('#restos')}>{t.nav.restos}</a>
+    <a class="lnk" href={to('#franchise')}>{t.nav.franchise}</a>
+    <a class="lnk" href="/carrieres">{t.nav.carrieres}</a>
     <a href={to('#restos')} class="btn bn-cta">
-      Commander
+      {t.nav.commander}
       <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
         <path d="M0 0l10 6-10 6z"></path>
       </svg>

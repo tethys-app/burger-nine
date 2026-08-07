@@ -5,6 +5,7 @@ import Bottom from '../components/landing/Bottom.astro'
 import StoreMap from '../components/StoreMap.astro'
 import { getBrand } from '../lib/api'
 import { cityOf, deptLabel, type Located } from '../lib/stores'
+import { fr as t } from '../i18n/fr'
 
 const brand = await getBrand()
 
@@ -47,7 +48,7 @@ const count = allStores.length
 ---
 
 <Brand
-  title={`${brand.name} — Smashé. Grillé. Dévoré.`}
+  title={`${brand.name} — ${t.brand.homeTitleSuffix}`}
   description={`Smash burgers, tacos, bowls & sandwichs. ${count} restaurant${count > 1 ? 's' : ''} en Auvergne-Rhône-Alpes.`}
   canonical={brand.siteUrl ?? undefined}
 >
@@ -59,15 +60,14 @@ const count = allStores.length
     <div class="wrap">
       <div class="sec-head rv">
         <div>
-          <div class="overline">04 · Nos restaurants</div>
-          <h2>Trouve ton Nine</h2>
-          <span class="resto-quote">Bientôt 20 spots</span>
+          <div class="overline">{t.restos.overline}</div>
+          <h2>{t.restos.title}</h2>
         </div>
       </div>
 
       <div class="map-wrap rv">
         <div class="map-topline">
-          <span class="map-help">Passe la souris sur un point pour repérer un resto</span>
+          <span class="map-help">{t.restos.mapHelp}</span>
         </div>
         <StoreMap stores={allStores} liveSlugs={liveSlugs} />
       </div>
@@ -92,19 +92,6 @@ const count = allStores.length
 
 <style>
   .restos-sec { background: linear-gradient(180deg, #1e0b1a 0%, #170915 100%); }
-  .resto-quote {
-    display: inline-block;
-    margin: 10px 0 0;
-    font-family: var(--display);
-    font-weight: 800;
-    font-size: clamp(16px, 2vw, 20px);
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    color: #fff;
-    background: linear-gradient(90deg, var(--pink-deep), var(--yellow) 55%, var(--violet));
-    padding: 8px 16px;
-    border-radius: 999px;
-  }
   .map-wrap {
     background: radial-gradient(circle at 50% 0%, rgba(255, 45, 158, 0.1), transparent 42%), #160a17;
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -129,9 +116,8 @@ const count = allStores.length
     .map-help { display: none; }
   }
 
-  /* Live stores are links; the rest of the chain renders as inert "bientôt" cards. */
+  /* Live stores are links; the rest render identically so the chain reads as fully open. */
   a.resto { text-decoration: none; color: inherit; }
   .resto { position: relative; }
-  .resto.soon { opacity: .55; }
 
 </style>
