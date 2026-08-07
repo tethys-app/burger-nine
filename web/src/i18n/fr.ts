@@ -18,7 +18,6 @@ export const fr = {
     headlineTrail: ' du Nine',
     headlineLines: ["C'est testé.", "C'est validé."],
     cta: 'Commander',
-    menuLink: 'Voir la carte',
     micro: "Envie d'ouvrir un Burger Nine ?",
     productAlt: 'Double smash burger Burger Nine, bacon et cheddar fondu',
     productLabel: ['Chaque bouchée', "c'est une boucherie !"],

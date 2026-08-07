@@ -1509,9 +1509,10 @@
         padding: 108px max(28px, calc((100vw - 1150px) / 2)) 52px;
         overflow: hidden;
         /* One light source, one direction: a single warm-magenta glow behind
-           the product (as if it's lit by the plancha, not by three competing
-           radials), fading into one continuous dark diagonal — no seams. */
-        background: radial-gradient(62% 100% at 84% 42%, #ff6bc4 0%, #e21a7c 24%, #93124f 46%, transparent 70%), linear-gradient(126deg, #0d0510 0%, #1c0917 34%, #3d0c2b 62%, #6e0e40 100%);
+           the product (as if it's lit by the plancha), rising out of a base
+           that goes almost black at the top and turns glossy magenta at the
+           bottom, like light pooling on a wet floor. */
+        background: radial-gradient(60% 85% at 84% 68%, #ff8fd6 0%, #ff2d9e 22%, #b0135f 42%, transparent 72%), linear-gradient(180deg, #030006 0%, #0a0210 22%, #260a1c 48%, #5c0d38 74%, #9c1560 100%);
       }
       .hero::before {
         content: '';
@@ -1542,8 +1543,8 @@
         letter-spacing: -.03em;
       }
       .hero-lede { max-width: 365px; margin: 24px 0 26px; font-size: 17px; line-height: 1.45; font-weight: 600; color: #fbd9eb; }
-      .hero-tagline { max-width: 420px; margin: 16px 0 28px; font-family: var(--display); font-weight: 800; font-size: clamp(16px, 1.9vw, 22px); line-height: 1.1; text-transform: uppercase; letter-spacing: -.01em; color: #fbd9eb; }
-      .hero-act { width: auto; flex-direction: row; align-items: center; gap: 18px; }
+      .hero-tagline { max-width: 420px; margin: 26px 0 0; font-family: var(--display); font-weight: 800; font-size: clamp(16px, 1.9vw, 22px); line-height: 1.1; text-transform: uppercase; letter-spacing: -.01em; color: #fbd9eb; }
+      .hero-act { width: auto; flex-direction: row; align-items: center; gap: 18px; margin-top: 40px; }
       .hero .bn-cta { width: auto; min-width: 220px; min-height: 58px; padding: 0 30px; }
       .hero-menu-link { color: #fff; font-size: 14px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
       .hero-menu-link span { display: inline-block; margin-left: 6px; color: var(--yellow); font-size: 18px; transition: transform .2s; }
@@ -1563,7 +1564,7 @@
       .hero-product::before {
         content: '';
         position: absolute;
-        width: min(46vw, 630px);
+        width: min(54vw, 720px);
         aspect-ratio: 1;
         left: 50%;
         top: 50%;
@@ -1578,7 +1579,7 @@
         left: 50%;
         top: 50%;
         transform: translate(-50%, -48%);
-        width: min(49vw, 610px);
+        width: min(57vw, 700px);
         height: auto;
         /* Shadow falls away from the gradient's light source (upper-right),
            so the cutout reads as lit by the same glow instead of pasted on. */
@@ -1651,8 +1652,8 @@
           gap: 4px;
           padding: 108px 20px 20px;
           background:
-            radial-gradient(85% 55% at 50% 66%, #ff6bcb 0%, #ff2d9e 26%, #d4137a 44%, #7d0b46 64%, transparent 84%),
-            linear-gradient(180deg, #1c0616 0%, #2a0a22 60%, #1c0616 100%);
+            radial-gradient(90% 55% at 50% 82%, #ff8fd6 0%, #ff2d9e 24%, #c0136a 44%, #6e0e40 66%, transparent 86%),
+            linear-gradient(180deg, #030006 0%, #0d0512 20%, #2a0a1f 48%, #5c0d38 76%, #9c1560 100%);
           position: relative;
         }
         .hero::before { opacity: .12; mask-image: none; }
@@ -1665,9 +1666,9 @@
         }
         .hero-copy { justify-content: flex-start; padding: 0; }
         .hero h1 { max-width: 320px; margin-bottom: 0; font-size: clamp(32px, 9.5vw, 44px); }
-        .hero-tagline { margin: 14px 0 26px; font-size: clamp(15px, 4.4vw, 19px); }
+        .hero-tagline { margin: 24px 0 0; font-size: clamp(15px, 4.4vw, 19px); }
         .hero-lede { display: none; }
-        .hero-act { width: 100%; flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 4px; }
+        .hero-act { width: 100%; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 32px; margin-bottom: 4px; }
         .hero .bn-cta { width: auto; min-width: 240px; min-height: 58px; padding: 0 32px; }
         .hero-micro { display: none; }
         .bn-bar { transform: translateY(0); }
@@ -1675,14 +1676,14 @@
           position: relative;
           /* Fills the void left below the CTA instead of floating as a small
              medallion — the product is the point of the hero on mobile too. */
-          width: min(84vw, 360px);
+          width: min(100vw, 440px);
           aspect-ratio: 1;
           height: auto;
           margin: 0 auto;
           pointer-events: none;
         }
         .hero-product::before { width: 100%; left: 50%; top: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 14px rgba(255,255,255,.06), 0 0 0 28px rgba(255,255,255,.04); }
-        .hero-product img { left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-4deg); width: 94%; height: auto; }
+        .hero-product img { left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-4deg); width: 98%; height: auto; }
         .hero-product-label { right: 2%; bottom: 2%; font-size: clamp(18px, 5vw, 26px); }
         .hero-steam { top: 2%; width: 90px; height: 90px; }
         .hero-steam .wisp { width: 16px; height: 30px; }
