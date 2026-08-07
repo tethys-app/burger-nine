@@ -19,8 +19,7 @@ export const fr = {
     headlineLines: ["C'est testé.", "C'est validé."],
     cta: 'Commander',
     micro: "Envie d'ouvrir un Burger Nine ?",
-    productAlt: 'Double smash burger Burger Nine, bacon et cheddar fondu',
-    productLabel: ['Chaque bouchée', "c'est une boucherie !"],
+    cityAlt: "Skyline néon la nuit avec l'enseigne Burger Nine et le panneau « C'est d'la frappe »",
   },
   carte: {
     overline: '01 · La carte',

@@ -22,14 +22,8 @@ const { storeCount = 0 } = Astro.props
         </div>
         <p class="hero-micro"><a href="#franchise">{t.hero.micro}</a></p>
       </div>
-      <div class="hero-product">
-        <div class="hero-steam" aria-hidden="true">
-          <span class="wisp w1"></span>
-          <span class="wisp w2"></span>
-          <span class="wisp w3"></span>
-        </div>
-        <img src="/assets/generated/burger-hero-cutout-v1.png" alt={t.hero.productAlt} fetchpriority="high" width="1254" height="1254" />
-        <span class="hero-product-label">{t.hero.productLabel[0]}<br />{t.hero.productLabel[1]}</span>
+      <div class="hero-city">
+        <img src="/assets/generated/hero-city-v1.jpg" alt={t.hero.cityAlt} fetchpriority="high" width="3136" height="1344" />
       </div>
     </section>
     <div class="bn-bar" id="bnBar">
@@ -45,16 +39,16 @@ const { storeCount = 0 } = Astro.props
       }
       if (new Date().getHours() >= 19 || new Date().getHours() < 6) document.body.classList.add('night')
 
-      // Subtle parallax on the hero cutout: drifts slower than the page, so
-      // it reads as sitting in front of the gradient rather than printed on it.
-      const product = document.querySelector<HTMLElement>('.hero-product')
+      // Subtle parallax on the city shot: drifts slower than the page, so
+      // it reads as sitting behind the gradient rather than printed on it.
+      const city = document.querySelector<HTMLElement>('.hero-city img')
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      if (product && hero && !reduceMotion) {
+      if (city && hero && !reduceMotion) {
         let ticking = false
         const updateParallax = () => {
           ticking = false
           const progress = Math.min(1, Math.max(0, window.scrollY / hero.offsetHeight))
-          product.style.transform = `translateY(${progress * 36}px)`
+          city.style.transform = `translateY(${progress * 24}px)`
         }
         window.addEventListener(
           'scroll',
