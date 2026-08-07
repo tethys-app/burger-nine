@@ -13,9 +13,10 @@ export const fr = {
     homeAria: 'Burger Nine — accueil',
   },
   hero: {
-    headlineLead: 'Viens tester la ',
+    headlineLead: 'Viens tester',
+    headlineMid: 'la ',
     headlineHighlight: 'frappe',
-    headlineTrail: ' du Nine',
+    headlineTrail: 'du Nine',
     headlineLines: ["C'est testé.", "C'est validé."],
     cta: 'Commander',
     micro: "Envie d'ouvrir un Burger Nine ?",
