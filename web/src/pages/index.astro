@@ -4,12 +4,46 @@ import Top from '../components/landing/Top.astro'
 import Bottom from '../components/landing/Bottom.astro'
 import StoreMap from '../components/StoreMap.astro'
 import { getBrand } from '../lib/api'
-import { byDepartment, cityOf, deptLabel } from '../lib/stores'
+import { cityOf, deptLabel, type Located } from '../lib/stores'
 
 const brand = await getBrand()
-const groups = byDepartment(brand.stores)
-const count = brand.stores.length
-const deptCount = groups.length
+
+// Every B9 / Burger Nine spot, connected or not. The POC hardcoded these 16
+// cities as inert divs; the two live in brand.stores link to a real menu,
+// the rest show as upcoming so the map and grid read as the whole chain.
+const ALL_LOCATIONS: { slug: string; city: string; zipcode: string }[] = [
+  { slug: 'b9-lyon-7', city: 'Lyon 7ᵉ', zipcode: '69007' },
+  { slug: 'b9-tassin', city: 'Tassin-la-Demi-Lune', zipcode: '69160' },
+  { slug: 'b9-vaugneray', city: 'Vaugneray', zipcode: '69670' },
+  { slug: 'b9-mornant', city: 'Mornant', zipcode: '69440' },
+  { slug: 'burger-nine-condrieu', city: 'Condrieu', zipcode: '69420' },
+  { slug: 'b9-sainte-colombe', city: 'Sainte-Colombe', zipcode: '69560' },
+  { slug: 'burger-nine-roussillon', city: 'Roussillon', zipcode: '38150' },
+  { slug: 'b9-beaurepaire', city: 'Beaurepaire', zipcode: '38270' },
+  { slug: 'b9-saint-jean-de-bournay', city: 'Saint-Jean-de-Bournay', zipcode: '38300' },
+  { slug: 'b9-nine-la-cote', city: 'La Côte-Saint-André', zipcode: '38260' },
+  { slug: 'b9-le-pont-de-beauvoisin', city: 'Le Pont-de-Beauvoisin', zipcode: '38480' },
+  { slug: 'burger-nine-gex', city: 'Gex', zipcode: '01170' },
+  { slug: 'b9-ferney-voltaire', city: 'Ferney-Voltaire', zipcode: '01210' },
+  { slug: 'burger-nine-annonay', city: 'Annonay', zipcode: '07100' },
+  { slug: 'b9-saint-vallier', city: 'Saint-Vallier', zipcode: '26240' },
+  { slug: 'b9-tain-l-hermitage', city: "Tain-l'Hermitage", zipcode: '26600' },
+]
+
+const connected = new Map(brand.stores.map((s) => [s.slug, s]))
+const liveSlugs = new Set(brand.stores.map((s) => s.slug))
+
+const allStores: Located[] = ALL_LOCATIONS.map((loc) => {
+  const live = connected.get(loc.slug)
+  if (live) return live
+  return {
+    slug: loc.slug,
+    name: `Burger Nine ${loc.city}`,
+    address: { street: null, zipcode: loc.zipcode, city: loc.city, country: 'FR', latitude: null, longitude: null },
+  }
+})
+
+const count = allStores.length
 ---
 
 <Brand
@@ -19,40 +53,36 @@ const deptCount = groups.length
 >
   <Top storeCount={count} />
 
-  {/* Connected stores, from GET /v1/brands/{brand}. The POC hardcoded 16 cities
-      as inert divs; every card here is a real store and links to its menu. */}
+  {/* Every B9 / Burger Nine spot. The two connected to GET /v1/brands/{brand}
+      link to a real menu; the rest of the chain shows as "bientôt". */}
   <section class="sec restos-sec" id="restos">
     <div class="wrap">
       <div class="sec-head rv">
         <div>
           <div class="overline">04 · Nos restaurants</div>
-          <h2>
-            {count} spot{count > 1 ? 's' : ''},<br />
-            {deptCount} département{deptCount > 1 ? 's' : ''}
-          </h2>
+          <h2>Le Nine frappe à ta porte !</h2>
+          <span class="resto-quote">Bientôt 20 villes</span>
         </div>
-        <p class="side">
-          {groups.map((g) => g.name ?? g.code).join(', ')} — et la famille s'agrandit.
-        </p>
       </div>
 
       <div class="map-wrap rv">
         <div class="map-topline">
-          <span class="map-eyebrow"><i></i> Carte des restaurants</span>
           <span class="map-help">Survole un point pour voir le restaurant</span>
         </div>
-        <StoreMap stores={brand.stores} />
+        <StoreMap stores={allStores} liveSlugs={liveSlugs} />
       </div>
 
       <div class="resto-grid rv">
-        {brand.stores.map((store, index) => (
-          <a class="resto" href={`/${store.slug}`}>
-            <span class="resto-number">{String(index + 1).padStart(2, '0')}</span>
-            <span class="dep">{deptLabel(store)}</span>
-            <span class="city">{cityOf(store)}</span>
-            <span class="note">Choisir ce restaurant <b aria-hidden="true">→</b></span>
-          </a>
-        ))}
+        {allStores.map((store) => {
+          const isLive = liveSlugs.has(store.slug)
+          const Tag = isLive ? 'a' : 'div'
+          return (
+            <Tag class:list={['resto', { soon: !isLive }]} {...(isLive ? { href: `/${store.slug}` } : {})}>
+              <span class="dep">{deptLabel(store)}</span>
+              <span class="city">{cityOf(store)}</span>
+            </Tag>
+          )
+        })}
       </div>
     </div>
   </section>
@@ -62,6 +92,19 @@ const deptCount = groups.length
 
 <style>
   .restos-sec { background: linear-gradient(180deg, #1e0b1a 0%, #170915 100%); }
+  .resto-quote {
+    display: inline-block;
+    margin: 10px 0 0;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(16px, 2vw, 20px);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #fff;
+    background: linear-gradient(90deg, var(--pink-deep), var(--yellow) 55%, var(--violet));
+    padding: 8px 16px;
+    border-radius: 999px;
+  }
   .map-wrap {
     background: radial-gradient(circle at 50% 0%, rgba(255, 45, 158, 0.1), transparent 42%), #160a17;
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -73,14 +116,12 @@ const deptCount = groups.length
   .map-topline {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 16px;
     padding: 2px 4px 14px;
     font-size: 12px;
     color: var(--muted);
   }
-  .map-eyebrow { color: #fff; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-  .map-eyebrow i { display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 0 5px rgba(255, 45, 158, .14); }
   .map-help { font-size: 11px; }
   @media (max-width: 640px) {
     .map-wrap { padding: 14px 12px 16px; border-radius: 18px; }
@@ -88,12 +129,9 @@ const deptCount = groups.length
     .map-help { display: none; }
   }
 
-  /* The POC's resto cards were inert divs; they are links now. */
+  /* Live stores are links; the rest of the chain renders as inert "bientôt" cards. */
   a.resto { text-decoration: none; color: inherit; }
-  a.resto .note { color: var(--pink); font-weight: 600; }
   .resto { position: relative; }
-  .resto-number { position: absolute; top: 16px; right: 17px; color: rgba(255,255,255,.24); font-family: var(--display); font-size: 15px; font-weight: 800; }
-  .resto .note b { display: inline-block; margin-left: 3px; transition: transform .2s; }
-  .resto:hover .note b { transform: translateX(4px); }
+  .resto.soon { opacity: .55; }
 
 </style>

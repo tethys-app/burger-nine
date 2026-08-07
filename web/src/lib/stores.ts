@@ -55,9 +55,9 @@ export function cityOf(store: Located) {
     .replace(/(^|[\s'’-])([\p{L}])/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase('fr'))
 }
 
-/** Connected stores grouped by département, both sorted for a stable render. */
-export function byDepartment(stores: BrandStore[]) {
-  const groups = new Map<string, { code: string; name: string | null; stores: BrandStore[] }>()
+/** Stores grouped by département, both sorted for a stable render. */
+export function byDepartment<S extends Located>(stores: S[]) {
+  const groups = new Map<string, { code: string; name: string | null; stores: S[] }>()
   for (const store of stores) {
     const dept = deptOf(store)
     const code = dept?.code ?? '__'

@@ -10,8 +10,10 @@ import { coordsFor, cityOf, type Located } from '../lib/stores'
 
 interface Props {
   stores: Located[]
+  /** Slugs with a real menu page. Others render as an upcoming pin, not a link. */
+  liveSlugs?: Set<string>
 }
-const { stores } = Astro.props
+const { stores, liveSlugs } = Astro.props
 
 const located = stores.flatMap((store) => {
   const point = coordsFor(store)
@@ -76,16 +78,19 @@ const active = new Set(located.map((p) => p.store.address?.zipcode?.slice(0, 2))
     ))}
 
     <g class="pins">
-      {located.map(({ store, lat, lon }, index) => (
-        <a href={`/${store.slug}`} class="pin">
-          <title>{cityOf(store)}</title>
-          <circle class="ring" cx={x(lon)} cy={y(lat)} r="14" />
-          <circle class="halo" cx={x(lon)} cy={y(lat)} r="17" />
-          <circle class="dot" cx={x(lon)} cy={y(lat)} r="7" />
-          <text class="pin-index" x={x(lon)} y={y(lat) + 4}>{index + 1}</text>
-          <text x={x(lon)} y={y(lat) - 20}>{cityOf(store)}</text>
-        </a>
-      ))}
+      {located.map(({ store, lat, lon }) => {
+        const isLive = liveSlugs ? liveSlugs.has(store.slug) : true
+        const Tag = isLive ? 'a' : 'g'
+        return (
+          <Tag class:list={['pin', { soon: !isLive }]} {...(isLive ? { href: `/${store.slug}` } : {})}>
+            <title>{cityOf(store)}{isLive ? '' : ' — bientôt'}</title>
+            <circle class="ring" cx={x(lon)} cy={y(lat)} r="14" />
+            <circle class="halo" cx={x(lon)} cy={y(lat)} r="17" />
+            <circle class="dot" cx={x(lon)} cy={y(lat)} r="7" />
+            <text x={x(lon)} y={y(lat) - 20}>{cityOf(store)}</text>
+          </Tag>
+        )
+      })}
     </g>
   </svg>
 </figure>
@@ -119,6 +124,9 @@ const active = new Set(located.map((p) => p.store.address?.zipcode?.slice(0, 2))
   }
 
   .pin { cursor: pointer; }
+  .pin.soon { cursor: default; }
+  .pin.soon .dot, .pin.soon .halo { fill: rgba(255,255,255,.4); }
+  .pin.soon .ring { stroke: rgba(255,255,255,.35); }
   .pin .ring { fill: none; stroke: rgba(255,255,255,.55); stroke-width: 1; opacity: .55; transition: opacity .25s, r .25s; }
   .pin .halo { fill: var(--pink); opacity: 0.18; transition: opacity 0.25s, r 0.25s; }
   .pin .dot {
@@ -130,7 +138,7 @@ const active = new Set(located.map((p) => p.store.address?.zipcode?.slice(0, 2))
   /* The stores cluster tightly around Lyon, so 16 permanent labels overlap
      into mush. The dots carry the geography; the name appears on hover, and
      the card grid below is the readable list of every city. */
-  .pin > text:not(.pin-index) {
+  .pin > text {
     fill: #fff;
     font-family: var(--display);
     font-weight: 800;
@@ -144,14 +152,6 @@ const active = new Set(located.map((p) => p.store.address?.zipcode?.slice(0, 2))
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.18s;
-  }
-  .pin-index {
-    fill: #fff;
-    font-family: var(--display);
-    font-size: 8px;
-    font-weight: 800;
-    text-anchor: middle;
-    pointer-events: none;
   }
   .pin:hover .halo, .pin:focus-visible .halo { opacity: 0.48; }
   .pin:hover .ring, .pin:focus-visible .ring { opacity: 1; r: 18; }
