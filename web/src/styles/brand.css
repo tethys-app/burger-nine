@@ -57,6 +57,7 @@
            CTAs and decorative texture instead of the old pink→yellow→violet
            gradient buttons. Flat colors, thick black ink, hard offset shadow. */
         --jazz-peach: #ffb35e;
+        --jazz-teal: #00d2c3;
         --jazz-coral: #ff5b4d;
         --jazz-mustard: #ffcf3f;
         --jazz-ink: #111;
@@ -133,23 +134,6 @@
         -webkit-backdrop-filter: blur(16px);
         backdrop-filter: blur(16px);
         border-bottom: 1px solid var(--line);
-      }
-      /* JAZZ 90s squiggle-confetti strip — Memphis/Nickelodeon pattern tile,
-         teal/coral/mustard shapes on black, tiled along the nav's bottom edge. */
-      .nav::after {
-        content: '';
-        display: block;
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -16px;
-        height: 16px;
-        z-index: 1;
-        background-color: var(--jazz-ink);
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='16'%3E%3Cpath d='M4 12 Q14 2 24 12 T44 12' stroke='%2300d2c3' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='58' cy='8' r='3' fill='%23ff5b4d'/%3E%3Cpolygon points='72,4 80,14 64,14' fill='%23ffcf3f'/%3E%3Cpath d='M84 12 Q90 4 96 12' stroke='%23ff5b4d' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-        background-repeat: repeat-x;
-        background-position: left top;
-        background-size: 96px 16px;
       }
       .nav-in {
         max-width: 1240px;
@@ -780,7 +764,7 @@
         font-size: 12.5px;
         font-weight: 800;
         letter-spacing: 0.08em;
-        background: var(--jazz-peach);
+        background: var(--jazz-teal);
         color: var(--jazz-ink);
         padding: 11px 20px;
         border-radius: 999px;

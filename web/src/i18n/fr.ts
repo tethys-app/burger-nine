@@ -15,7 +15,6 @@ export const fr = {
   hero: {
     kicker: 'Smash burger · fait minute',
     headline: ['Clique.', 'Croque.', 'Kiffe.'],
-    lede: 'Steak écrasé sur plancha brûlante, cheddar qui dégouline, pain toasté. À emporter ou livré, sans détour.',
     cta: 'Commander',
     menuLink: 'Voir la carte',
     micro: "Envie d'ouvrir un Burger Nine ?",
@@ -24,7 +23,7 @@ export const fr = {
   },
   carte: {
     overline: '01 · La carte',
-    title: 'LA CARTE DU NINE',
+    title: 'À la une',
     catalogueLink: 'Voir le catalogue complet',
     items: {
       burgers: { name: 'Burgers', alt: 'Burger smashé Burger Nine' },
