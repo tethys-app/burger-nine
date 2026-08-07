@@ -103,8 +103,7 @@ enum MenuAPI {
         serviceType: String,
         customer: CustomerRequest,
         deliveryAddress: DeliveryAddressRequest?,
-        idempotencyKey: String,
-        paymentMethod: String = "online"
+        idempotencyKey: String
     ) async throws -> CheckoutResponse {
         try await request(
             path: ["stores", slug, "checkout"],
@@ -116,11 +115,33 @@ enum MenuAPI {
                 deliveryAddress: deliveryAddress,
                 idempotencyKey: idempotencyKey,
                 sessionId: nil,
-                paymentMethod: paymentMethod,
                 returnUrl: BurgerNineConfig.siteURL.absoluteString + "/order-status?id={ORDER_ID}",
                 paymentFlow: "native_payment_sheet"
             )
         )
+    }
+
+    static func order(id: String, token: String) async throws -> OrderStatusResponse {
+        guard var components = URLComponents(string: BurgerNineConfig.apiURL.absoluteString) else {
+            throw APIError.invalidURL
+        }
+        components.path = ["v1", "orders", id].reduce(components.path) { path, component in
+            path + (path.hasSuffix("/") ? "" : "/") + component
+        }
+        components.queryItems = [URLQueryItem(name: "token", value: token)]
+        guard let url = components.url else { throw APIError.invalidURL }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse else { throw APIError.invalidResponse }
+        guard (200..<300).contains(http.statusCode) else {
+            let error = try? JSONDecoder().decode(APIErrorResponse.self, from: data)
+            throw APIError.httpError(http.statusCode, error?.message ?? HTTPURLResponse.localizedString(forStatusCode: http.statusCode))
+        }
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return try decoder.decode(OrderStatusResponse.self, from: data)
     }
 
     static func cartLine(line: CartLine, quantity: Int) -> CartLineRequest {
@@ -301,24 +322,47 @@ enum MenuAPI {
 
     struct QuoteResponse: Decodable {
         let catalogVersion: String
+        let lines: [PricedLine]
         let totals: Totals
         let valid: Bool
         let blockers: [Blocker]
     }
 
+    struct PricedLine: Decodable {
+        let productRef: String
+        let productName: String
+        let quantity: Int
+        let unitPriceCents: Int
+        let subtotalCents: Int
+        let options: [PricedOption]
+    }
+
+    struct PricedOption: Decodable {
+        let modifierRef: String
+        let modifierName: String
+        let optionRef: String
+        let optionName: String
+        let priceCents: Int
+    }
+
     struct Totals: Decodable {
+        let subtotalCents: Int
+        let commissionCents: Int
+        let taxCents: Int
+        let deliveryFeeCents: Int
         let totalCents: Int
     }
 
     struct Blocker: Decodable {
         let code: String
         let message: String
+        let line: Int?
     }
 
     struct CustomerRequest: Encodable {
-        let name: String?
+        let name: String
         let email: String?
-        let phone: String?
+        let phone: String
     }
 
     struct DeliveryAddressRequest: Encodable {
@@ -326,6 +370,8 @@ enum MenuAPI {
         let zipcode: String
         let city: String
         let country: String?
+        let latitude: Double?
+        let longitude: Double?
         let note: String?
     }
 
@@ -336,7 +382,6 @@ enum MenuAPI {
         let deliveryAddress: DeliveryAddressRequest?
         let idempotencyKey: String
         let sessionId: String?
-        let paymentMethod: String
         let returnUrl: String
         let paymentFlow: String
     }
@@ -348,7 +393,54 @@ enum MenuAPI {
         let clientSecret: String?
     }
 
+    enum OrderStatus: String, Decodable {
+        case pendingPayment = "pending_payment"
+        case paymentFailed = "payment_failed"
+        case new
+        case received
+        case accepted
+        case inPreparation = "in_preparation"
+        case awaitingCollection = "awaiting_collection"
+        case inDelivery = "in_delivery"
+        case completed
+        case rejected
+        case cancelled
+        case deliveryFailed = "delivery_failed"
+    }
+
+    struct OrderStatusResponse: Decodable {
+        let id: String
+        let status: OrderStatus
+        let serviceType: String
+        let customer: CustomerResponse
+        let deliveryAddress: OrderAddress?
+        let items: [PricedLine]
+        let totals: Totals
+        let createdAt: Double
+        let store: OrderStore?
+    }
+
+    struct CustomerResponse: Decodable {
+        let name: String?
+        let email: String?
+        let phone: String?
+    }
+
+    struct OrderAddress: Decodable {
+        let street: String
+        let zipcode: String
+        let city: String
+        let country: String?
+        let note: String?
+    }
+
+    struct OrderStore: Decodable {
+        let slug: String
+        let name: String
+    }
+
     private struct APIErrorResponse: Decodable {
+        let code: String?
         let message: String
     }
 

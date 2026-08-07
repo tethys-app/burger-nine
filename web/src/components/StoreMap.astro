@@ -59,6 +59,16 @@ const active = new Set(located.map((p) => p.store.address?.zipcode?.slice(0, 2))
 
 <figure class="map">
   <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Carte de nos ${located.length} restaurants`}>
+    <defs>
+      <pattern id="map-grid" width="36" height="36" patternUnits="userSpaceOnUse">
+        <path d="M 36 0 L 0 0 0 36" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1" />
+      </pattern>
+      <radialGradient id="map-glow" cx="50%" cy="20%" r="90%">
+        <stop offset="0%" stop-color="#ff2d9e" stop-opacity=".16" />
+        <stop offset="100%" stop-color="#ff2d9e" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+    <rect class="map-field" width={W} height={H} rx="18" />
     {departements.map((dept) => (
       <g class:list={['dept', { on: active.has(dept.code) }]}>
         {dept.polys.map((poly) => <path d={path(poly)} />)}
@@ -66,11 +76,13 @@ const active = new Set(located.map((p) => p.store.address?.zipcode?.slice(0, 2))
     ))}
 
     <g class="pins">
-      {located.map(({ store, lat, lon }) => (
+      {located.map(({ store, lat, lon }, index) => (
         <a href={`/${store.slug}`} class="pin">
           <title>{cityOf(store)}</title>
+          <circle class="ring" cx={x(lon)} cy={y(lat)} r="14" />
           <circle class="halo" cx={x(lon)} cy={y(lat)} r="17" />
           <circle class="dot" cx={x(lon)} cy={y(lat)} r="7" />
+          <text class="pin-index" x={x(lon)} y={y(lat) + 4}>{index + 1}</text>
           <text x={x(lon)} y={y(lat) - 20}>{cityOf(store)}</text>
         </a>
       ))}
@@ -91,32 +103,34 @@ const active = new Set(located.map((p) => p.store.address?.zipcode?.slice(0, 2))
 </script>
 
 <style>
-  .map { margin: 0; }
+  .map { margin: 0; overflow: hidden; border-radius: 16px; }
   .map svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .map-field { fill: url(#map-grid); }
 
   .dept path {
-    fill: rgba(255, 255, 255, 0.035);
-    stroke: var(--line);
-    stroke-width: 1.2;
+    fill: rgba(255, 255, 255, 0.05);
+    stroke: rgba(255,255,255,.2);
+    stroke-width: 1.5;
     stroke-linejoin: round;
   }
   .dept.on path {
-    fill: rgba(255, 45, 158, 0.07);
-    stroke: rgba(255, 45, 158, 0.32);
+    fill: rgba(255, 45, 158, 0.14);
+    stroke: rgba(255, 82, 180, 0.58);
   }
 
   .pin { cursor: pointer; }
-  .pin .halo { fill: var(--pink); opacity: 0.15; transition: opacity 0.25s, r 0.25s; }
+  .pin .ring { fill: none; stroke: rgba(255,255,255,.55); stroke-width: 1; opacity: .55; transition: opacity .25s, r .25s; }
+  .pin .halo { fill: var(--pink); opacity: 0.18; transition: opacity 0.25s, r 0.25s; }
   .pin .dot {
     fill: var(--pink);
     stroke: #fff;
-    stroke-width: 2.5;
+    stroke-width: 2;
     transition: r 0.25s;
   }
   /* The stores cluster tightly around Lyon, so 16 permanent labels overlap
      into mush. The dots carry the geography; the name appears on hover, and
      the card grid below is the readable list of every city. */
-  .pin text {
+  .pin > text:not(.pin-index) {
     fill: #fff;
     font-family: var(--display);
     font-weight: 800;
@@ -131,11 +145,20 @@ const active = new Set(located.map((p) => p.store.address?.zipcode?.slice(0, 2))
     opacity: 0;
     transition: opacity 0.18s;
   }
-  .pin:hover .halo, .pin:focus-visible .halo { opacity: 0.4; }
+  .pin-index {
+    fill: #fff;
+    font-family: var(--display);
+    font-size: 8px;
+    font-weight: 800;
+    text-anchor: middle;
+    pointer-events: none;
+  }
+  .pin:hover .halo, .pin:focus-visible .halo { opacity: 0.48; }
+  .pin:hover .ring, .pin:focus-visible .ring { opacity: 1; r: 18; }
   .pin:hover .dot, .pin:focus-visible .dot { r: 9; }
   .pin:hover text, .pin:focus-visible text { opacity: 1; }
 
   @media (prefers-reduced-motion: reduce) {
-    .pin .halo, .pin .dot, .pin text { transition: none; }
+    .pin .halo, .pin .ring, .pin .dot, .pin text { transition: none; }
   }
 </style>

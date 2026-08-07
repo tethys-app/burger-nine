@@ -4,6 +4,19 @@ import StripePaymentSheet
 
 // MARK: - Shared model
 
+struct DeliveryAddressDraft: Equatable {
+    let street: String
+    let zipcode: String
+    let city: String
+    let country: String
+    let latitude: Double?
+    let longitude: Double?
+
+    var display: String {
+        [street, zipcode, city].filter { !$0.isEmpty }.joined(separator: ", ")
+    }
+}
+
 enum FulfillmentMode: String, CaseIterable, Identifiable {
     case delivery = "Livraison"
     case pickup = "Sur place / à emporter"
@@ -69,9 +82,14 @@ enum FulfillmentMode: String, CaseIterable, Identifiable {
 @Observable
 final class CheckoutModel {
     var mode = FulfillmentMode.delivery
-    var confirmedAddress: String?
+    var confirmedAddress: DeliveryAddressDraft?
     /// Code porte, étage, instructions… (optional second line).
     var addressDetail = ""
+    var customerName = ""
+    var customerPhone = ""
+    var customerEmail = ""
+    /// One checkout attempt keeps the same key across retryable failures.
+    let idempotencyKey = UUID().uuidString
     var step = Step.fulfillment
 
     enum Step { case fulfillment, payment }
@@ -82,6 +100,11 @@ final class CheckoutModel {
 
     var canPay: Bool {
         mode == .pickup || confirmedAddress != nil
+    }
+
+    var customerValid: Bool {
+        !customerName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !customerPhone.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
 
@@ -233,14 +256,14 @@ private struct FulfillmentSheet: View {
         }
     }
 
-    private func addressRecap(_ address: String) -> some View {
+    private func addressRecap(_ address: DeliveryAddressDraft) -> some View {
         HStack(spacing: 12) {
             Image(systemName: "location.fill")
                 .font(.headline.weight(.black))
                 .foregroundStyle(model.mode.accent)
                 .frame(width: 36, height: 36)
                 .background(model.mode.accent.opacity(0.16), in: Circle())
-            Text(address)
+            Text(address.display)
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(TastyTheme.ink)
                 .lineLimit(2)
@@ -299,9 +322,11 @@ private struct FulfillmentSheet: View {
                 Button {
                     addressFocused = false
                     search.query = ""
-                    model.confirmedAddress = [result.title, result.subtitle]
-                        .filter { !$0.isEmpty }.joined(separator: ", ")
-                    HapticFeedback.select()
+                    Task {
+                        guard let address = await search.resolve(result) else { return }
+                        model.confirmedAddress = address
+                        HapticFeedback.select()
+                    }
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: "mappin.circle.fill")
@@ -407,8 +432,24 @@ private struct CheckoutDetailView: View {
     }
     private var subtotalAfter: Double { freeMeal ? 0 : total * (1 - discountRate) }
     private var deliveryFee: Double { (model.mode == .delivery && !freeMeal) ? 1.90 : 0 }
-    private var serviceFee: Double { (total > 0 && !freeMeal) ? 0.45 : 0 }
-    private var grandTotal: Double { subtotalAfter + deliveryFee + serviceFee }
+    @State private var quote: MenuAPI.QuoteResponse?
+    @State private var quoteError: String?
+    @State private var quoteLoading = false
+    @State private var createdOrder: MenuAPI.CheckoutResponse?
+
+    private var quotedTotal: Double {
+        Double(quote?.totals.totalCents ?? Int((total * 100).rounded())) / 100
+    }
+    private var quotedSubtotal: Double {
+        Double(quote?.totals.subtotalCents ?? Int((total * 100).rounded())) / 100
+    }
+    private var quotedDeliveryFee: Double {
+        Double(quote?.totals.deliveryFeeCents ?? 0) / 100
+    }
+    private var quotedOtherFees: Double {
+        Double((quote?.totals.commissionCents ?? 0) + (quote?.totals.taxCents ?? 0)) / 100
+    }
+    private var grandTotal: Double { quotedTotal }
 
     private var sortedLines: [CartLine] {
         cart.keys.sorted { $0.item.name.localizedCaseInsensitiveCompare($1.item.name) == .orderedAscending }
@@ -432,6 +473,52 @@ private struct CheckoutDetailView: View {
             } message: {
                 Text(placementError)
             }
+            .task(id: quoteTaskKey) {
+                await refreshQuote()
+            }
+    }
+
+    private var quoteTaskKey: String {
+        let lines = sortedLines.map { "\($0.id):\(cart[$0, default: 0])" }.joined(separator: ";")
+        return "\(store.id)|\(model.mode == .delivery ? "delivery" : "collection")|\(lines)"
+    }
+
+    private func refreshQuote() async {
+        quoteLoading = true
+        quoteError = nil
+        defer { quoteLoading = false }
+        do {
+            try await Task.sleep(for: .milliseconds(150))
+            guard !Task.isCancelled else { return }
+            let lines = sortedLines.map { line in
+                MenuAPI.cartLine(line: line, quantity: cart[line, default: 0])
+            }
+            let next = try await MenuAPI.quote(
+                slug: store.id,
+                lines: lines,
+                serviceType: model.mode == .delivery ? "delivery" : "collection",
+                paymentMethod: "online"
+            )
+            guard !Task.isCancelled else { return }
+            quote = next
+            if !next.valid {
+                quoteError = next.blockers.map(\.message).joined(separator: "\n")
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            if !Task.isCancelled {
+                quote = nil
+                quoteError = error.localizedDescription
+            }
+        }
+    }
+
+    private func quoteLineTotal(for line: CartLine) -> Double {
+        if let quoted = quote?.lines.first(where: { $0.productRef == line.item.id }) {
+            return Double(quoted.subtotalCents) / 100
+        }
+        return Double(cart[line, default: 0]) * line.totalPrice
     }
 
     private var checkoutSurface: some View {
@@ -456,12 +543,15 @@ private struct CheckoutDetailView: View {
     }
 
     private func makePaymentSheet(clientSecret: String) throws -> PaymentSheet {
-        guard let publishableKey = store.stripePublishableKey, !publishableKey.isEmpty else {
+        guard let publishableKey = store.stripePublishableKey,
+              !publishableKey.isEmpty,
+              let stripeAccountID = store.stripeAccountId,
+              !stripeAccountID.isEmpty else {
             throw MenuAPI.APIError.paymentConfigurationMissing
         }
 
         let apiClient = STPAPIClient(publishableKey: publishableKey)
-        apiClient.stripeAccount = store.stripeAccountId
+        apiClient.stripeAccount = stripeAccountID
 
         var configuration = PaymentSheet.Configuration()
         configuration.apiClient = apiClient
@@ -519,6 +609,14 @@ private struct CheckoutDetailView: View {
                     if prize == nil { gameTeaser }
                     orderRecap
                     addressRecap
+                    customerFields
+                    if let quoteError {
+                        Text(quoteError)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(TastyTheme.coral)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .checkoutPanel()
+                    }
                     etaRow
                 }
                 .padding(.horizontal, 18)
@@ -592,14 +690,9 @@ private struct CheckoutDetailView: View {
 
             VStack(spacing: 9) {
                 Divider().overlay(TastyTheme.hairline)
-                priceRow("Sous-total", total)
-                if freeMeal {
-                    winRow("Repas offert 🌴", -total)
-                } else if discountRate > 0 {
-                    winRow("Réduction Vice", -(total * discountRate))
-                }
-                if model.mode == .delivery { priceRow("Livraison", deliveryFee) }
-                priceRow("Frais de service", serviceFee)
+                priceRow("Sous-total", quotedSubtotal)
+                if quotedDeliveryFee > 0 { priceRow("Livraison", quotedDeliveryFee) }
+                if quotedOtherFees > 0 { priceRow("Taxes et frais", quotedOtherFees) }
                 Divider().overlay(TastyTheme.hairline)
                 HStack {
                     Text("Total").font(.headline.weight(.black)).foregroundStyle(TastyTheme.ink)
@@ -633,7 +726,7 @@ private struct CheckoutDetailView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            Text(Double(cart[line, default: 0]) * line.totalPrice, format: .currency(code: "EUR"))
+            Text(quoteLineTotal(for: line), format: .currency(code: "EUR"))
                 .font(.subheadline.weight(.black))
                 .foregroundStyle(TastyTheme.ink)
         }
@@ -650,7 +743,7 @@ private struct CheckoutDetailView: View {
                 Text(model.mode.rawValue)
                     .font(.caption.weight(.black))
                     .foregroundStyle(TastyTheme.muted)
-                Text(model.mode == .delivery ? (model.confirmedAddress ?? "") : store.displayName)
+                Text(model.mode == .delivery ? (model.confirmedAddress?.display ?? "") : store.displayName)
                     .font(.subheadline.weight(.black))
                     .foregroundStyle(TastyTheme.ink)
                     .lineLimit(2)
@@ -672,6 +765,30 @@ private struct CheckoutDetailView: View {
         .padding(14)
         .background(TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(TastyTheme.hairline))
+    }
+
+    private var customerFields: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionTitle("Vos coordonnées")
+            TextField("Nom", text: $model.customerName)
+                .textContentType(.name)
+                .textInputAutocapitalization(.words)
+                .padding(14)
+                .background(TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: 14))
+            TextField("Téléphone", text: $model.customerPhone)
+                .keyboardType(.phonePad)
+                .textContentType(.telephoneNumber)
+                .padding(14)
+                .background(TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: 14))
+            TextField("Email (facultatif)", text: $model.customerEmail)
+                .keyboardType(.emailAddress)
+                .textContentType(.emailAddress)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .padding(14)
+                .background(TastyTheme.elevatedSoft, in: RoundedRectangle(cornerRadius: 14))
+        }
+        .checkoutPanel()
     }
 
     private var etaRow: some View {
@@ -699,26 +816,24 @@ private struct CheckoutDetailView: View {
                 placing = true
                 defer { placing = false }
                 do {
+                    guard let quote, quote.valid else {
+                        throw MenuAPI.APIError.httpError(422, quoteError ?? "Le panier n'est plus valide")
+                    }
+                    guard model.customerValid else {
+                        throw MenuAPI.APIError.httpError(400, "Le nom et le téléphone sont requis")
+                    }
                     let lines = sortedLines.map { line in
                         MenuAPI.cartLine(line: line, quantity: cart[line, default: 0])
                     }
                     let serviceType = model.mode == .delivery ? "delivery" : "collection"
-                    let paymentMethod = "online"
-                    let quote = try await MenuAPI.quote(
-                        slug: store.id,
-                        lines: lines,
-                        serviceType: serviceType,
-                        paymentMethod: paymentMethod
-                    )
-                    guard quote.valid else {
-                        throw MenuAPI.APIError.httpError(422, quote.blockers.map(\.message).joined(separator: "\n"))
-                    }
                     let deliveryAddress = model.mode == .delivery
                         ? MenuAPI.DeliveryAddressRequest(
-                            street: model.confirmedAddress ?? "",
-                            zipcode: "",
-                            city: "",
-                            country: "FR",
+                            street: model.confirmedAddress?.street ?? "",
+                            zipcode: model.confirmedAddress?.zipcode ?? "",
+                            city: model.confirmedAddress?.city ?? "",
+                            country: model.confirmedAddress?.country,
+                            latitude: model.confirmedAddress?.latitude,
+                            longitude: model.confirmedAddress?.longitude,
                             note: model.addressDetail.isEmpty ? nil : model.addressDetail
                         )
                         : nil
@@ -726,11 +841,15 @@ private struct CheckoutDetailView: View {
                         slug: store.id,
                         lines: lines,
                         serviceType: serviceType,
-                        customer: MenuAPI.CustomerRequest(name: "Burger Nine customer", email: nil, phone: nil),
+                        customer: MenuAPI.CustomerRequest(
+                            name: model.customerName.trimmingCharacters(in: .whitespacesAndNewlines),
+                            email: model.customerEmail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : model.customerEmail,
+                            phone: model.customerPhone.trimmingCharacters(in: .whitespacesAndNewlines)
+                        ),
                         deliveryAddress: deliveryAddress,
-                        idempotencyKey: UUID().uuidString,
-                        paymentMethod: paymentMethod
+                        idempotencyKey: model.idempotencyKey
                     )
+                    createdOrder = order
                     MenuDiag.record("checkout created order \(order.orderId) for brand \(BurgerNineConfig.brandSlug)")
                     if order.paymentMethod == "offline" {
                         HapticFeedback.add()
@@ -770,7 +889,7 @@ private struct CheckoutDetailView: View {
             .background(model.mode.accent, in: RoundedRectangle(cornerRadius: 20))
         }
         .buttonStyle(.bouncy)
-        .disabled(placing)
+        .disabled(placing || quoteLoading || quote?.valid != true || !model.customerValid)
         .opacity(placing ? 0.6 : 1)
         .padding(.horizontal, 18)
         .padding(.top, 12)
@@ -803,8 +922,10 @@ private struct CheckoutDetailView: View {
         OrderTrackingView(
             mode: model.mode,
             storeName: store.displayName,
-            address: model.confirmedAddress ?? store.addressLine,
+            address: model.confirmedAddress?.display ?? store.addressLine,
             grandTotal: grandTotal,
+            orderID: createdOrder?.orderId,
+            orderToken: createdOrder?.orderToken,
             onDismiss: { dismiss() }
         )
     }
@@ -856,6 +977,25 @@ final class AddressSearch: NSObject, MKLocalSearchCompleterDelegate {
 
     nonisolated func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
         Task { @MainActor in self.results = [] }
+    }
+
+    func resolve(_ completion: MKLocalSearchCompletion) async -> DeliveryAddressDraft? {
+        let request = MKLocalSearch.Request(completion: completion)
+        let search = MKLocalSearch(request: request)
+        guard let response = try? await search.start(),
+              let placemark = response.mapItems.first?.placemark else { return nil }
+
+        let street = [placemark.subThoroughfare, placemark.thoroughfare]
+            .compactMap { $0 }
+            .joined(separator: " ")
+        return DeliveryAddressDraft(
+            street: street.isEmpty ? completion.title : street,
+            zipcode: placemark.postalCode ?? "",
+            city: placemark.locality ?? placemark.subAdministrativeArea ?? completion.subtitle,
+            country: placemark.isoCountryCode ?? "FR",
+            latitude: placemark.location?.coordinate.latitude,
+            longitude: placemark.location?.coordinate.longitude
+        )
     }
 }
 

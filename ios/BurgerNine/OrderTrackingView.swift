@@ -51,9 +51,13 @@ struct OrderTrackingView: View {
     let storeName: String
     let address: String
     let grandTotal: Double
+    let orderID: String?
+    let orderToken: String?
     let onDismiss: () -> Void
 
     @State private var step: TrackingStep = .confirmed
+    @State private var liveOrder: MenuAPI.OrderStatusResponse?
+    @State private var pollingError: String?
     @State private var etaMinutes: Int = 28
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 45.6881, longitude: 4.8156), // Roussillon
@@ -62,6 +66,24 @@ struct OrderTrackingView: View {
     // Simulated courier coordinate drifts toward delivery address
     @State private var courierCoord = CLLocationCoordinate2D(latitude: 45.6920, longitude: 4.8090)
     @State private var pulseScale: CGFloat = 1
+
+    init(
+        mode: FulfillmentMode,
+        storeName: String,
+        address: String,
+        grandTotal: Double,
+        orderID: String? = nil,
+        orderToken: String? = nil,
+        onDismiss: @escaping () -> Void
+    ) {
+        self.mode = mode
+        self.storeName = storeName
+        self.address = address
+        self.grandTotal = grandTotal
+        self.orderID = orderID
+        self.orderToken = orderToken
+        self.onDismiss = onDismiss
+    }
 
     private var isPickup: Bool { mode == .pickup }
     private var currentColor: Color { step.color }
@@ -84,7 +106,10 @@ struct OrderTrackingView: View {
             }
         }
         .preferredColorScheme(.dark)
-        .onAppear { startSimulation() }
+        .onAppear {
+            if orderID == nil { startSimulation() }
+        }
+        .task { await pollLiveOrder() }
     }
 
     // MARK: - Status bar
@@ -110,11 +135,11 @@ struct OrderTrackingView: View {
                 .animation(.easeInOut(duration: 0.4), value: step)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(step.label)
+                    Text(statusLabel)
                         .font(.system(.headline, design: .rounded, weight: .black))
                         .foregroundStyle(TastyTheme.ink)
                         .animation(.none, value: step)
-                    Text(etaLine)
+                    Text(liveOrder == nil ? etaLine : liveStatusDetail)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(TastyTheme.muted)
                 }
@@ -195,6 +220,87 @@ struct OrderTrackingView: View {
     private var deliverySteps: [TrackingStep] { TrackingStep.allCases }
     private var pickupSteps: [TrackingStep] { [.confirmed, .preparing, .arrived] }
 
+    private var displayStoreName: String { liveOrder?.store?.name ?? storeName }
+
+    private var displayAddress: String {
+        guard let address = liveOrder?.deliveryAddress else { return self.address }
+        return [address.street, address.zipcode, address.city].joined(separator: ", ")
+    }
+
+    private var displayTotal: Double {
+        Double(liveOrder?.totals.totalCents ?? Int((grandTotal * 100).rounded())) / 100
+    }
+
+    private var statusLabel: String {
+        guard let status = liveOrder?.status else { return step.label }
+        switch status {
+        case .pendingPayment: return "Confirmation du paiement…"
+        case .paymentFailed: return "Le paiement n’a pas abouti"
+        case .new, .received: return "Commande reçue"
+        case .accepted: return "Commande acceptée"
+        case .inPreparation: return "En préparation"
+        case .awaitingCollection: return "Prête — à récupérer"
+        case .inDelivery: return "En livraison"
+        case .completed: return "Commande terminée"
+        case .rejected: return "Commande refusée"
+        case .cancelled: return "Commande annulée"
+        case .deliveryFailed: return "Échec de la livraison"
+        }
+    }
+
+    private var liveStatusDetail: String {
+        if let pollingError { return pollingError }
+        switch liveOrder?.status {
+        case .pendingPayment: return "Nous confirmons votre paiement…"
+        case .paymentFailed: return "Vous pouvez fermer cette commande et réessayer."
+        case .new, .received, .accepted: return "Votre commande a bien été transmise au restaurant."
+        case .inPreparation: return "Le restaurant prépare votre commande."
+        case .awaitingCollection: return "Vous pouvez récupérer votre commande."
+        case .inDelivery: return "Votre commande est en livraison."
+        case .completed: return "Merci pour votre commande !"
+        case .rejected: return "Le restaurant n’a pas pu accepter cette commande."
+        case .cancelled: return "Cette commande a été annulée."
+        case .deliveryFailed: return "La livraison n’a pas abouti."
+        case nil: return "Chargement de la commande…"
+        }
+    }
+
+    private func pollLiveOrder() async {
+        guard let orderID, let orderToken else { return }
+        while !Task.isCancelled {
+            do {
+                let next = try await MenuAPI.order(id: orderID, token: orderToken)
+                guard !Task.isCancelled else { return }
+                liveOrder = next
+                step = trackingStep(for: next.status)
+                pollingError = nil
+                if isTerminal(next.status) { return }
+                try await Task.sleep(for: .seconds(1))
+            } catch is CancellationError {
+                return
+            } catch {
+                if !Task.isCancelled { pollingError = error.localizedDescription }
+                return
+            }
+        }
+    }
+
+    private func trackingStep(for status: MenuAPI.OrderStatus) -> TrackingStep {
+        switch status {
+        case .inDelivery: return .onTheWay
+        case .inPreparation, .awaitingCollection: return .preparing
+        case .completed, .rejected, .cancelled, .deliveryFailed: return .arrived
+        case .pendingPayment, .paymentFailed, .new, .received, .accepted: return .confirmed
+        }
+    }
+
+    private func isTerminal(_ status: MenuAPI.OrderStatus) -> Bool {
+        switch status {
+        case .paymentFailed, .completed, .rejected, .cancelled, .deliveryFailed: return true
+        default: return false
+        }
+    }
+
     // MARK: - Bottom card
 
     private var bottomCard: some View {
@@ -215,17 +321,17 @@ struct OrderTrackingView: View {
                         .frame(width: 38, height: 38)
                         .background(currentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(storeName)
+                        Text(displayStoreName)
                             .font(.subheadline.weight(.black))
                             .foregroundStyle(TastyTheme.ink)
                             .lineLimit(1)
-                        Text(isPickup ? "Retrait sur place" : address)
+                        Text(isPickup ? "Retrait sur place" : displayAddress)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(TastyTheme.muted)
                             .lineLimit(1)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(grandTotal, format: .currency(code: "EUR"))
+                    Text(displayTotal, format: .currency(code: "EUR"))
                         .font(.subheadline.weight(.black))
                         .foregroundStyle(TastyTheme.ink)
                 }
@@ -285,7 +391,7 @@ struct OrderTrackingView: View {
         var pins: [MapPin] = [
             MapPin(id: "store", coord: region.center, view: AnyView(StoreMapPin(color: currentColor)))
         ]
-        if !isPickup && step == .onTheWay {
+        if orderID == nil && !isPickup && step == .onTheWay {
             pins.append(MapPin(id: "courier", coord: courierCoord, view: AnyView(CourierMapPin())))
         }
         return pins

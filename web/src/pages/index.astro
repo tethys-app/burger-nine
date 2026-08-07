@@ -17,11 +17,11 @@ const deptCount = groups.length
   description={`Smash burgers, tacos, bowls & sandwichs. ${count} restaurant${count > 1 ? 's' : ''} en Auvergne-Rhône-Alpes.`}
   canonical={brand.siteUrl ?? undefined}
 >
-  <Top />
+  <Top storeCount={count} />
 
   {/* Connected stores, from GET /v1/brands/{brand}. The POC hardcoded 16 cities
       as inert divs; every card here is a real store and links to its menu. */}
-  <section class="sec" id="restos">
+  <section class="sec restos-sec" id="restos">
     <div class="wrap">
       <div class="sec-head rv">
         <div>
@@ -37,46 +37,22 @@ const deptCount = groups.length
       </div>
 
       <div class="map-wrap rv">
+        <div class="map-topline">
+          <span class="map-eyebrow"><i></i> Carte des restaurants</span>
+          <span class="map-help">Survole un point pour voir le restaurant</span>
+        </div>
         <StoreMap stores={brand.stores} />
       </div>
 
       <div class="resto-grid rv">
-        {brand.stores.map((store) => (
+        {brand.stores.map((store, index) => (
           <a class="resto" href={`/${store.slug}`}>
+            <span class="resto-number">{String(index + 1).padStart(2, '0')}</span>
             <span class="dep">{deptLabel(store)}</span>
             <span class="city">{cityOf(store)}</span>
-            <span class="note">Commander →</span>
+            <span class="note">Choisir ce restaurant <b aria-hidden="true">→</b></span>
           </a>
         ))}
-      </div>
-    </div>
-  </section>
-
-  {/* One entry point per connected store. The POC said "la commande en ligne
-      arrive bientôt" — it is here, so that placeholder is gone. */}
-  <section class="order" id="commander">
-    <div class="wrap">
-      <div class="order-grid">
-        <div class="rv">
-          <div class="overline">06 · Commander</div>
-          <h2 class="order-title">Envie du <span class="pk">kiff</span> ?</h2>
-          <p class="lead">
-            Sur place, à emporter ou en livraison — choisis ton resto et c'est parti.
-          </p>
-          <div class="order-list">
-            {brand.stores.map((store) => (
-              <a class="order-store" href={`/${store.slug}`}>
-                <span class="os-city">{cityOf(store)}</span>
-                <span class="os-addr">
-                  {store.address?.street}{store.address?.zipcode ? `, ${store.address.zipcode}` : ''}
-                </span>
-                <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
-                  <path d="M0 0l10 6-10 6z"></path>
-                </svg>
-              </a>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -85,53 +61,39 @@ const deptCount = groups.length
 </Brand>
 
 <style>
+  .restos-sec { background: linear-gradient(180deg, #1e0b1a 0%, #170915 100%); }
   .map-wrap {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 22px;
-    padding: 26px 30px;
-    margin-bottom: 18px;
+    background: radial-gradient(circle at 50% 0%, rgba(255, 45, 158, 0.1), transparent 42%), #160a17;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 26px;
+    padding: 18px 22px 24px;
+    margin-bottom: 22px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
   }
+  .map-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 2px 4px 14px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .map-eyebrow { color: #fff; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+  .map-eyebrow i { display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 0 5px rgba(255, 45, 158, .14); }
+  .map-help { font-size: 11px; }
   @media (max-width: 640px) {
-    .map-wrap { padding: 14px; border-radius: 16px; }
+    .map-wrap { padding: 14px 12px 16px; border-radius: 18px; }
+    .map-topline { padding: 2px 5px 10px; }
+    .map-help { display: none; }
   }
 
   /* The POC's resto cards were inert divs; they are links now. */
   a.resto { text-decoration: none; color: inherit; }
   a.resto .note { color: var(--pink); font-weight: 600; }
+  .resto { position: relative; }
+  .resto-number { position: absolute; top: 16px; right: 17px; color: rgba(255,255,255,.24); font-family: var(--display); font-size: 15px; font-weight: 800; }
+  .resto .note b { display: inline-block; margin-left: 3px; transition: transform .2s; }
+  .resto:hover .note b { transform: translateX(4px); }
 
-  .order-title {
-    font-family: var(--display);
-    font-weight: 800;
-    font-size: clamp(34px, 4.6vw, 56px);
-    line-height: 1.02;
-    text-transform: uppercase;
-    margin-bottom: 18px;
-  }
-  .order-list { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
-  .order-store {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas: 'city arrow' 'addr arrow';
-    align-items: center;
-    gap: 2px 16px;
-    padding: 16px 20px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    color: inherit;
-    text-decoration: none;
-    transition: transform 0.25s, border-color 0.25s;
-  }
-  .order-store:hover { transform: translateY(-2px); border-color: var(--pink); }
-  .os-city {
-    grid-area: city;
-    font-family: var(--display);
-    font-weight: 800;
-    font-size: 19px;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
-  .os-addr { grid-area: addr; font-size: 12.5px; color: var(--muted); }
-  .order-store svg { grid-area: arrow; width: 10px; color: var(--pink); }
 </style>
