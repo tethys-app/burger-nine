@@ -15,11 +15,7 @@ const { storeCount = 0 } = Astro.props
     <!-- HERO -->
     <section class="hero" id="top">
       <div class="hero-copy">
-        <span class="hero-kicker">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.6 4.4L18 8l-4.4 1.6L12 14l-1.6-4.4L6 8l4.4-1.6L12 2z" /></svg>
-          {t.hero.kicker}
-        </span>
-        <h1>{t.hero.headline[0]}<br />{t.hero.headline[1]}<br />{t.hero.headline[2]}</h1>
+        <h1>{t.hero.headlineLead}<span class="hl-frappe">{t.hero.headlineHighlight}</span>.<br />{t.hero.headlineLines[0]}<br />{t.hero.headlineLines[1]}</h1>
         <div class="hero-act">
           <a class="btn bn-cta" href="#restos">{t.hero.cta} <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg></a>
           <a href="#carte" class="hero-menu-link">{t.hero.menuLink} <span>→</span></a>
@@ -27,6 +23,11 @@ const { storeCount = 0 } = Astro.props
         <p class="hero-micro"><a href="#franchise">{t.hero.micro}</a></p>
       </div>
       <div class="hero-product">
+        <div class="hero-steam" aria-hidden="true">
+          <span class="wisp w1"></span>
+          <span class="wisp w2"></span>
+          <span class="wisp w3"></span>
+        </div>
         <img src="/assets/generated/burger-hero-cutout-v1.png" alt={t.hero.productAlt} fetchpriority="high" width="1254" height="1254" />
         <span class="hero-product-label">{t.hero.productLabel[0]}<br />{t.hero.productLabel[1]}</span>
       </div>
@@ -43,6 +44,29 @@ const { storeCount = 0 } = Astro.props
         updateBar()
       }
       if (new Date().getHours() >= 19 || new Date().getHours() < 6) document.body.classList.add('night')
+
+      // Subtle parallax on the hero cutout: drifts slower than the page, so
+      // it reads as sitting in front of the gradient rather than printed on it.
+      const product = document.querySelector<HTMLElement>('.hero-product')
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (product && hero && !reduceMotion) {
+        let ticking = false
+        const updateParallax = () => {
+          ticking = false
+          const progress = Math.min(1, Math.max(0, window.scrollY / hero.offsetHeight))
+          product.style.transform = `translateY(${progress * 36}px)`
+        }
+        window.addEventListener(
+          'scroll',
+          () => {
+            if (!ticking) {
+              ticking = true
+              requestAnimationFrame(updateParallax)
+            }
+          },
+          { passive: true },
+        )
+      }
     </script>
 
     <!-- LA CARTE -->
@@ -211,7 +235,7 @@ const { storeCount = 0 } = Astro.props
 
             <!-- FRANCHISE: le détail vit sur sa propre page, pas de doublon ici -->
             <div class="franchise-cta" id="franchise">
-              <a href="/franchise" class="btn bn-cta">
+              <a href="/franchise" class="btn bn-cta gold">
                 {t.spot.franchiseCta}
                 <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
                   <path d="M0 0l10 6-10 6z" />

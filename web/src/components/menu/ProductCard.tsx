@@ -85,7 +85,7 @@ function RowCard({ item, sectionName, currency, showImage, qty, hasOptions, add,
               {stripHtml(item.description)}
             </span>
           )}
-          <span className="mt-1 block pr-[52px] text-lg font-black text-ink">
+          <span className="mt-1 block pr-[52px] font-display text-lg font-black text-ink">
             {money(item.price_cents, currency)}
           </span>
         </button>
@@ -179,7 +179,7 @@ function Unavailable({ item, sectionName, currency, style, showImage }: CardProp
           <span className={`menu-title block font-black text-ink ${poster ? 'text-[17px]' : 'truncate text-[15px]'}`}>
             {item.title}
           </span>
-          <span className="mt-1 block text-lg font-black text-muted line-through">
+          <span className="mt-1 block font-display text-lg font-black text-muted line-through">
             {money(item.price_cents, currency)}
           </span>
           <span className="mt-1 text-[11px] font-black uppercase tracking-[0.1em] text-coral">

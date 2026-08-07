@@ -16,27 +16,22 @@ const to = (hash: string) => (home ? hash : `/${hash}`)
 
 <header class="nav">
   <div class="nav-in">
-    <div class="nav-side left">
-      <a class="lnk" href="/carte">{t.nav.carte}</a>
-      <a class="lnk" href={to('#hits')}>{t.nav.hits}</a>
+    <div class="nav-logo-echo" aria-hidden="true">
+      <img src="/assets/f4c82effa1f42578.png" alt="" />
     </div>
     <a href={home ? '#top' : '/'} class="nav-logo" aria-label={t.nav.homeAria}>
       <img src="/assets/f4c82effa1f42578.png" alt="Burger Nine" />
     </a>
-    <div class="nav-side right">
-      <a class="lnk" href={to('#restos')}>{t.nav.restos}</a>
-      <a class="lnk" href="/carrieres">{t.nav.carrieres}</a>
-      <button
-        class="nav-menu-btn"
-        aria-label={t.nav.openMenuAria}
-        aria-expanded="false"
-        aria-controls="nav-dropdown"
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-    </div>
+    <button
+      class="nav-menu-btn"
+      aria-label={t.nav.openMenuAria}
+      aria-expanded="false"
+      aria-controls="nav-dropdown"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </div>
   <nav class="nav-dropdown" id="nav-dropdown">
     <a class="lnk" href="/carte">{t.nav.carte}</a>

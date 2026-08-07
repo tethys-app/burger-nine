@@ -1,0 +1,99 @@
+---
+// Fixed vertical rail, pinned to the right edge, present on every Brand-layout
+// page. Same three networks as the footer — this is just a persistent,
+// always-reachable version instead of one you have to scroll to find.
+// Hidden on mobile: the bottom order bar already claims that edge there.
+---
+
+<aside class="soc-rail" aria-label="Réseaux sociaux">
+  <a
+    class="soc-rail-btn"
+    href="https://www.instagram.com/b9.burgernine/"
+    target="_blank"
+    rel="noopener"
+    aria-label="Instagram"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4.2" />
+      <circle cx="17.4" cy="6.6" r="1.2" fill="currentColor" stroke="none" />
+    </svg>
+  </a>
+  <a
+    class="soc-rail-btn"
+    href="https://www.tiktok.com/@b9off"
+    target="_blank"
+    rel="noopener"
+    aria-label="TikTok"
+  >
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M16.5 3c.4 2.1 1.8 3.6 4 3.9v3c-1.6 0-3-.5-4-1.3v6.9c0 3.5-2.4 5.9-5.8 5.9-3.2 0-5.7-2.4-5.7-5.6 0-3.1 2.4-5.6 5.6-5.6.3 0 .7 0 1 .1v3.2c-.3-.1-.6-.2-1-.2-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5c1.5 0 2.7-1.1 2.7-2.9V3h3.2z" />
+    </svg>
+  </a>
+  <a
+    class="soc-rail-btn"
+    href="https://www.facebook.com/Burger9Officiel/"
+    target="_blank"
+    rel="noopener"
+    aria-label="Facebook"
+  >
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M13.5 21v-7h2.4l.4-2.8h-2.8V9.4c0-.8.4-1.6 1.7-1.6h1.3V5.4c-.8-.1-1.6-.2-2.4-.2-2.4 0-4 1.5-4 4.1v1.9H7.5V14h2.6v7h3.4z" />
+    </svg>
+  </a>
+</aside>
+
+<style>
+  .soc-rail {
+    position: fixed;
+    z-index: 90;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 7px;
+    background: rgba(10, 3, 8, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+  }
+  .soc-rail-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+  }
+  .soc-rail-btn svg {
+    width: 17px;
+    height: 17px;
+  }
+  .soc-rail-btn:hover {
+    background: var(--jazz-teal);
+    color: var(--jazz-ink);
+    border-color: var(--jazz-ink);
+    transform: scale(1.08);
+  }
+  .soc-rail-btn:nth-child(2):hover,
+  .soc-rail-btn:nth-child(3):hover {
+    background: var(--jazz-peach);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .soc-rail-btn { transition: none; }
+  }
+
+  /* The bottom order bar already owns the mobile screen's edge real estate. */
+  @media (max-width: 900px) {
+    .soc-rail { display: none; }
+  }
+</style>

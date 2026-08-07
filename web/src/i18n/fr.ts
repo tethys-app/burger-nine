@@ -13,8 +13,9 @@ export const fr = {
     homeAria: 'Burger Nine — accueil',
   },
   hero: {
-    kicker: 'Smash burger · fait minute',
-    headline: ['Clique.', 'Croque.', 'Kiffe.'],
+    headlineLead: 'Goûte la ',
+    headlineHighlight: 'frappe',
+    headlineLines: ["C'est testé.", "C'est validé."],
     cta: 'Commander',
     menuLink: 'Voir la carte',
     micro: "Envie d'ouvrir un Burger Nine ?",
@@ -45,7 +46,7 @@ export const fr = {
   },
   spot: {
     overline: '03 · Le spot',
-    quote: "« Askip c'est le meilleur spot du coin »",
+    quote: "« Askip c'est la meilleure frappe du coin »",
     title: ['Le spot où', "t'as ta place"],
     franchiseCta: 'Ouvrir mon Burger Nine',
     images: {
@@ -56,8 +57,7 @@ export const fr = {
   },
   restos: {
     overline: '04 · Nos restaurants',
-    title: 'Le Nine frappe à ta porte !',
-    mapHelp: 'Passe la souris sur un point pour repérer un resto',
+    title: ['Bientôt 20 spots en France !', 'Trouve ton Nine'],
   },
   footer: {
     tagline: "C'est vraiment de la frappe",

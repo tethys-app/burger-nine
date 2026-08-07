@@ -4,38 +4,11 @@ import Nav from '../components/Nav.astro'
 import Bottom from '../components/landing/Bottom.astro'
 
 const roles = [
-  {
-    title: 'Équipier·ère polyvalent·e',
-    desc: 'Plancha, comptoir, drive : tu tournes sur tous les postes et tu apprends vite. Premier job ou reconversion, la formation se fait sur place.',
-  },
-  {
-    title: 'Chef·fe de partie plancha',
-    desc: "Le smash, c'est une question de timing et de geste. Tu tiens le poste steak aux heures de rush sans jamais perdre la cadence.",
-  },
-  {
-    title: "Team leader / manager d'équipe",
-    desc: "Tu encadres une équipe de service, tu gères les stocks et les plannings, et tu portes l'ambiance du resto au quotidien.",
-  },
+  { title: 'Équipier·ère polyvalent·e', desc: 'Service client, multi-tâches, formation continue sur le terrain.' },
+  { title: "Team leader", desc: "Tu portes l'équipe et le rythme." },
 ]
 
-const perks = [
-  {
-    title: 'On forme, vraiment',
-    desc: "Personne n'arrive en sachant faire un smash parfait. Tu apprends sur plancha, avec l'équipe en place, pas dans une vidéo.",
-  },
-  {
-    title: 'Ça bouge, jamais deux services pareils',
-    desc: 'Rush du midi, coup de feu du soir, drive qui déborde le week-end — le rythme est vivant, jamais monotone.',
-  },
-  {
-    title: 'Une équipe avant un CV',
-    desc: "La motivation et l'envie de bien faire comptent plus que l'expérience sur le papier.",
-  },
-  {
-    title: 'Ça évolue',
-    desc: 'Le réseau grandit — équipier aujourd\'hui, chef de partie ou team leader demain, dans ce resto ou dans le prochain qui ouvre.',
-  },
-]
+const perks = ['On forme, vraiment', 'Jamais deux services pareils', "L'équipe avant le CV", 'Ça évolue vite']
 
 const mailSubject = encodeURIComponent('Candidature Burger Nine')
 const mailBody = encodeURIComponent(
@@ -57,28 +30,14 @@ const mailBody = encodeURIComponent(
         <br />
         <span class="jobs-grad">qui aiment le rush.</span>
       </h1>
-      <p class="jobs-lede">
-        Pas de costume, pas de blabla RH interminable : chez Burger Nine on cherche des gens motivés pour tenir
-        la plancha, le comptoir ou l'équipe — et on les forme.
-      </p>
+      <p class="jobs-lede">Pas de CV parfait — on forme sur place.</p>
     </div>
   </section>
 
   <section class="sec" id="pourquoi" style="padding-top: 0; padding-bottom: 40px">
     <div class="wrap">
-      <div class="sec-head rv">
-        <div>
-          <div class="overline">Pourquoi bosser chez B9</div>
-          <h2>Ce que tu trouves ici</h2>
-        </div>
-      </div>
       <div class="jobs-perks rv">
-        {perks.map((p) => (
-          <div class="jobs-perk">
-            <h3>{p.title}</h3>
-            <p>{p.desc}</p>
-          </div>
-        ))}
+        {perks.map((p) => <span class="jobs-perk">{p}</span>)}
       </div>
     </div>
   </section>
@@ -90,7 +49,6 @@ const mailBody = encodeURIComponent(
           <div class="overline">Les postes</div>
           <h2>À quoi ça ressemble</h2>
         </div>
-        <p class="side">Pas d'offre ouverte tout le temps partout : ce sont les types de postes qu'on recrute selon les restos.</p>
       </div>
       <div class="jobs-roles rv">
         {roles.map((r) => (
@@ -109,10 +67,7 @@ const mailBody = encodeURIComponent(
         <div>
           <div class="overline">Postuler</div>
           <h2>Deux minutes, pas plus</h2>
-          <p class="jobs-apply-lede">
-            Dis-nous quel resto t'intéresse et ce que tu cherches — équipier, plancha, management — avec ton CV.
-            On répond direct, sans process à rallonge.
-          </p>
+          <p class="jobs-apply-lede">CV + resto visé. On répond vite.</p>
         </div>
         <div class="jobs-apply-actions">
           <a
@@ -156,12 +111,22 @@ const mailBody = encodeURIComponent(
   }
   .jobs-lede { color: var(--muted); font-size: 17px; max-width: 560px; }
 
-  .jobs-perks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-  .jobs-perk { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 24px; }
-  .jobs-perk h3 { font-family: var(--display); font-weight: 800; font-size: 16px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: .02em; }
-  .jobs-perk p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+  /* A row of pills instead of four bordered paragraphs — same language as
+     the hero-kicker / resto-quote pills used elsewhere on the site. */
+  .jobs-perks { display: flex; flex-wrap: wrap; gap: 10px; }
+  .jobs-perk {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .01em;
+    color: #fff;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 10px 18px;
+  }
 
-  .jobs-roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .jobs-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .jobs-role {
     border: 1px solid var(--line);
     border-radius: 18px;
@@ -186,7 +151,6 @@ const mailBody = encodeURIComponent(
   .jobs-apply .btn-ghost { border-color: rgba(255,255,255,.5); }
 
   @media (max-width: 1020px) {
-    .jobs-perks { grid-template-columns: minmax(0, 1fr); }
     .jobs-roles { grid-template-columns: minmax(0, 1fr); }
     .jobs-apply { grid-template-columns: minmax(0, 1fr); padding: 32px 26px; }
   }
