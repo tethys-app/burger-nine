@@ -53,6 +53,13 @@
         --violet-deep: #29101f;
         --yellow: #ffb020;
         --night: #0b0710;
+        /* JAZZ 90s — Memphis/Nickelodeon squiggle-confetti accent, used for
+           CTAs and decorative texture instead of the old pink→yellow→violet
+           gradient buttons. Flat colors, thick black ink, hard offset shadow. */
+        --jazz-teal: #00d2c3;
+        --jazz-coral: #ff5b4d;
+        --jazz-mustard: #ffcf3f;
+        --jazz-ink: #111;
         --display: "Baloo 2", "Fredoka", sans-serif;
         --display2: "Fredoka", "Baloo 2", sans-serif;
         --script: "Mr Dafoe", cursive;
@@ -127,6 +134,20 @@
         backdrop-filter: blur(16px);
         border-bottom: 1px solid var(--line);
       }
+      /* JAZZ 90s squiggle-confetti strip — Memphis/Nickelodeon pattern tile,
+         teal/coral/mustard shapes on black, tiled along the nav's bottom edge. */
+      .nav::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -8px;
+        height: 8px;
+        background-color: var(--jazz-ink);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='16'%3E%3Cpath d='M4 12 Q14 2 24 12 T44 12' stroke='%2300d2c3' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='58' cy='8' r='3' fill='%23ff5b4d'/%3E%3Cpolygon points='72,4 80,14 64,14' fill='%23ffcf3f'/%3E%3Cpath d='M84 12 Q90 4 96 12' stroke='%23ff5b4d' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: repeat-x;
+        background-size: 96px 16px;
+      }
       .nav-in {
         max-width: 1240px;
         margin: 0 auto;
@@ -173,21 +194,22 @@
         align-items: center;
         justify-content: center;
         gap: 5px;
-        border: 0;
+        border: 3px solid var(--jazz-ink);
         border-radius: 50%;
         cursor: pointer;
-        background: linear-gradient(135deg, var(--pink-deep) 0%, var(--yellow) 55%, var(--violet) 100%);
-        box-shadow: 0 8px 22px rgba(15, 8, 14, 0.4);
-        transition: transform 0.2s;
+        background: var(--jazz-teal);
+        box-shadow: 4px 4px 0 var(--jazz-ink);
+        transition: transform 0.15s, box-shadow 0.15s;
       }
       .nav-menu-btn:hover {
-        transform: translateY(-1px);
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0 var(--jazz-ink);
       }
       .nav-menu-btn span {
         width: 18px;
         height: 2px;
         border-radius: 2px;
-        background: #fff;
+        background: var(--jazz-ink);
         transition: transform 0.25s, opacity 0.2s;
       }
       .nav-menu-btn[aria-expanded="true"] span:nth-child(1) {
@@ -486,7 +508,9 @@
       .hero-kicker svg, .hero-proof svg { width: 12px; height: 14px; flex: none; color: var(--yellow); }
       .hero h1 { font-family: var(--display); font-weight: 800; font-size: clamp(38px, 11.4vw, 56px); line-height: .92; letter-spacing: -.01em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 2px rgba(10,2,6,.9), 0 3px 10px rgba(10,2,6,.75), 0 12px 30px rgba(10,2,6,.5); }
       .hero-act { gap: 12px; }
-      .bn-cta { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, var(--pink-deep) 0%, var(--yellow) 55%, var(--violet) 100%); color: #fff; border-radius: 999px; border: 0; font-family: var(--display); font-weight: 800; letter-spacing: .05em; text-transform: uppercase; box-shadow: 0 12px 34px rgba(15,8,14,.42), inset 0 -3px 0 rgba(0,0,0,.12); }
+      .bn-cta { position: relative; overflow: visible; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--jazz-teal); color: var(--jazz-ink); border-radius: 999px; border: 3px solid var(--jazz-ink); font-family: var(--display); font-weight: 800; letter-spacing: .05em; text-transform: uppercase; box-shadow: 5px 5px 0 var(--jazz-ink); transition: transform .15s, box-shadow .15s; }
+      .bn-cta:hover { transform: translate(2px, 2px); box-shadow: 3px 3px 0 var(--jazz-ink); }
+      .bn-cta:active { transform: translate(5px, 5px); box-shadow: 0 0 0 var(--jazz-ink); }
       .bn-cta svg { width: 11px; height: 13px; }
       .hero .bn-cta { width: 100%; min-height: 60px; font-size: 18px; }
       .hero-sub { display: flex; flex-direction: column; align-items: center; gap: 9px; width: 100%; font-size: 14.5px; }
@@ -753,12 +777,13 @@
         font-size: 12.5px;
         font-weight: 800;
         letter-spacing: 0.08em;
-        background: linear-gradient(135deg, var(--pink-deep) 0%, var(--yellow) 55%, var(--violet) 100%);
-        color: #fff;
+        background: var(--jazz-teal);
+        color: var(--jazz-ink);
         padding: 11px 20px;
         border-radius: 999px;
+        border: 3px solid var(--jazz-ink);
         text-transform: uppercase;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        box-shadow: 4px 4px 0 var(--jazz-ink);
         transition: transform 0.2s;
       }
       .hit-discover:hover {
