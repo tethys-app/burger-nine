@@ -3,7 +3,14 @@
   // mean this site grew server-side code. See CLAUDE.md.
   "name": "burger-nine",
   "compatibility_date": "2025-06-05",
+  "workers_dev": true,
   "assets": {
     "directory": "./dist"
-  }
+  },
+  "routes": [
+    {
+      "pattern": "burger-nine.tethy.sh",
+      "custom_domain": true
+    }
+  ]
 }
