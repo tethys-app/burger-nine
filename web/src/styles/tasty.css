@@ -1,25 +1,30 @@
 @import "tailwindcss";
 
-/* Ported from the Neo app's globals.css — same token names, same structure, so
-   the layout classes copied from its components work unchanged. The palette is
-   Burger Nine's (rose pétant, Baloo 2) rather than Neo's magenta/violet + Anton,
-   so the order page matches the rest of this site. */
+/* The ordering surface uses Neo's original Tasty palette. Burger Nine keeps
+   its menu data and imagery, but the interaction UI shares the legacy visual
+   language exactly. */
 @theme {
-  --color-surface: #1e0b1a;
-  --color-surface-depth: #170815;
-  --color-elevated: #2a0f26;
-  --color-elevated-soft: #351433;
-  --color-ink: #ffffff;
-  --color-muted: #f2cfe4;
-  --color-hairline: rgb(255 255 255 / 0.14);
+  --color-surface: #0b0a0d;
+  --color-surface-depth: #141118;
+  --color-elevated: #1c1520;
+  --color-elevated-soft: #241d2c;
+  --color-ink: #f5ebff;
+  --color-muted: #b8abc7;
+  --color-hairline: rgb(200 120 220 / 0.18);
 
-  --color-pink: #ff2d9e;
-  --color-pink-hot: #ff52b4;
-  --color-pink-deep: #c90e6e;
-  --color-magenta: #e31250;
-  --color-yellow: #ffd84d;
-  --color-coral: #ff5c7a;
-  --color-emerald: #2ee6a8;
+  --color-pink: #e0218a;
+  --color-pink-hot: #e0218a;
+  --color-pink-deep: #7a2f8f;
+  --color-magenta: #e0218a;
+  --color-yellow: #ffc42e;
+  --color-orange: #ff7d21;
+  --color-gold: #ffc42e;
+  --color-amber: #ff9f1c;
+  --color-coral: #ff475c;
+  --color-emerald: #1ec48a;
+  --color-cyan: #00b3db;
+  --color-azure: #2d8cff;
+  --color-teal: #0fb5a6;
 
   --font-rounded: "Fredoka", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
   --font-display: "Baloo 2", "Fredoka", system-ui, sans-serif;
@@ -30,23 +35,22 @@
   --theme-panel-bg: linear-gradient(180deg, var(--color-elevated), var(--color-elevated-soft));
   --theme-elevated-bg: var(--color-elevated);
   --theme-surface-depth: var(--color-surface-depth);
-  --theme-line: rgb(255 255 255 / 0.08);
+  --theme-line: rgb(27 20 37 / 0.6);
   --theme-hairline: var(--color-hairline);
-  --theme-floating-cart-bg: linear-gradient(135deg, #2a0f26, #3d1533);
-  --theme-glow: rgb(255 45 158 / 0.35);
+  --theme-floating-cart-bg: linear-gradient(135deg, #15101f, #1d1330);
+  --theme-glow: rgb(224 33 138 / 0.35);
 }
 
-/* Ambient blurred colour blobs behind the content, as in the Neo app —
-   retinted to the brand pink. */
+/* Ambient blurred colour blobs behind the content, matching the original. */
 .tasty-bg::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(60% 50% at 85% -10%, rgb(255 45 158 / 0.18), transparent 70%),
-    radial-gradient(55% 45% at 0% 35%, rgb(201 14 110 / 0.12), transparent 70%),
-    radial-gradient(65% 55% at 95% 80%, rgb(255 45 158 / 0.2), transparent 70%),
+    radial-gradient(60% 50% at 85% -10%, rgb(224 33 138 / 0.18), transparent 70%),
+    radial-gradient(55% 45% at 0% 35%, rgb(122 47 143 / 0.12), transparent 70%),
+    radial-gradient(65% 55% at 95% 80%, rgb(224 33 138 / 0.2), transparent 70%),
     linear-gradient(180deg, var(--color-surface), var(--color-surface-depth));
 }
 

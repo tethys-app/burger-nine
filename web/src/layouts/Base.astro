@@ -33,19 +33,37 @@ const { title, description } = Astro.props
         /* order.css and the islands are written against these five tokens.
            Pointing them at the brand palette re-skins the whole order UI
            without touching its layout. */
+        --bg: #0b0a0d;
+        --pink: #e0218a;
+        --pink-hot: #e0218a;
+        --pink-deep: #7a2f8f;
+        --panel: #1c1520;
+        --line: rgb(200 120 220 / 0.18);
+        --txt: #f5ebff;
+        --muted: #b8abc7;
+        --magenta: #e0218a;
+        --violet: #e0218a;
+        --violet-deep: #7a2f8f;
+        --yellow: #ffc42e;
+        --night: #0b0a0d;
         --fg: var(--txt);
         --accent: var(--pink);
-        --danger: #ff5c7a;
+        --danger: #ff475c;
         /* Panel surfaces, replacing order.css's hardcoded near-blacks. */
         --surface: var(--panel);
-        --surface-raised: #351433;
+        --surface-raised: #241d2c;
         font-family: var(--body);
       }
       * { box-sizing: border-box; }
-      /* The marquee and hero glows are deliberately wider than the viewport.
-         brand.css clips them on `body`, which just moves the scrollbar to
-         `html` — clip here too so there is no horizontal scroll. */
-      html { overflow-x: hidden; }
+      /* Keep the landing-page artwork inside the viewport without making
+         `html`/`body` scroll containers. `hidden` breaks descendants using
+         `position: sticky` (the category rail and desktop header); `clip`
+         preserves the visual guard without changing their containing block. */
+      html,
+      body.order-page {
+        overflow-x: clip;
+        overflow-y: visible;
+      }
       body {
         margin: 0;
         background: var(--bg);

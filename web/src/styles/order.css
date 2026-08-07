@@ -122,6 +122,67 @@
 }
 .sheet input[type='radio'], .sheet input[type='checkbox'] { width: auto; margin: 0; accent-color: var(--fg); }
 
+/* ── legacy option funnel ───────────────────────────────────── */
+/* This is intentionally scoped instead of reusing Burger Nine's rose palette:
+   the funnel is a direct visual port of Neo's original configurator. */
+.funnel-sheet {
+  --funnel-surface: #141118;
+  --funnel-elevated: #1c1520;
+  --funnel-ink: #f5ebff;
+  --funnel-muted: #b8abc7;
+  --funnel-line: rgb(200 120 220 / 0.18);
+  --funnel-violet: #e0218a;
+  --funnel-neon-violet: #7a2f8f;
+  --funnel-gold: #ffc42e;
+  background: var(--funnel-surface);
+  border-color: var(--funnel-line);
+  color: var(--funnel-ink);
+  font-family: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+.funnel-sheet > header,
+.funnel-sheet > footer { border-color: var(--funnel-line); }
+.funnel-sheet h3 { font-family: inherit; font-weight: 900; letter-spacing: normal; }
+.menu-title {
+  font-family: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
+  letter-spacing: normal;
+  text-transform: uppercase;
+}
+.menu-section-title { font-weight: 900; }
+.funnel-sheet h3 { text-transform: uppercase; }
+.funnel-sheet > footer {
+  position: static;
+  padding: 16px;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  overflow: visible;
+  background: transparent;
+}
+.funnel-sheet > footer::before { content: none; }
+.funnel-muted { color: var(--funnel-muted); }
+.funnel-gold { color: var(--funnel-gold); }
+.funnel-step-count,
+.funnel-requirement { line-height: 1.5; }
+.funnel-close,
+.funnel-back,
+.funnel-progress { background: var(--funnel-elevated); color: var(--funnel-muted); border-color: var(--funnel-line); }
+.funnel-close:hover { color: var(--funnel-ink); }
+.funnel-progress-active { background: var(--funnel-violet); }
+.funnel-choice {
+  background: rgb(28 21 32 / 0.6);
+  border-color: var(--funnel-line);
+  color: var(--funnel-ink);
+}
+.funnel-choice:hover { border-color: color-mix(in srgb, var(--funnel-violet) 50%, transparent); }
+.funnel-choice-selected { background: rgb(224 33 138 / 0.12); border-color: var(--funnel-violet); }
+.funnel-choice-mark { border-color: rgb(184 171 199 / 0.5); }
+.funnel-choice-mark-selected { background: var(--funnel-violet); border-color: var(--funnel-violet); color: #fff; }
+.funnel-primary {
+  background-image: linear-gradient(to bottom right, var(--funnel-violet), var(--funnel-neon-violet));
+  color: #fff;
+  font-weight: 900;
+}
+
 /* ── cart ───────────────────────────────────────────────────── */
 /* ── checkout modal ─────────────────────────────────────────── */
 /* Details then Stripe, in one dialog. Payment stays inline so the cart is still

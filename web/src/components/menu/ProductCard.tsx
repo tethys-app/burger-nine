@@ -79,7 +79,7 @@ function RowCard({ item, sectionName, currency, showImage, qty, hasOptions, add,
           <span className="block text-[10px] font-black uppercase tracking-[0.12em] text-pink">
             {sectionName}
           </span>
-          <span className="block truncate font-black text-ink text-[15px]">{item.title}</span>
+          <span className="menu-title block truncate font-black text-ink text-[15px]">{item.title}</span>
           {item.description && (
             <span className="line-clamp-2 block text-xs font-semibold text-muted">
               {stripHtml(item.description)}
@@ -107,7 +107,7 @@ function PosterCard({ item, sectionName, currency, showImage, showCategoryLabel 
   return (
     <div
       data-qty={qty}
-      className={`group relative flex h-full flex-col overflow-hidden rounded-[22px] border border-[#3a1230] bg-surface-depth
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[22px] border border-hairline bg-surface-depth
         transition-[border-color,box-shadow,transform] duration-200
         hover:-translate-y-[5px] hover:border-pink
         ${qty > 0 ? '!translate-y-0 border-pink/40' : ''}
@@ -138,7 +138,7 @@ function PosterCard({ item, sectionName, currency, showImage, showCategoryLabel 
               {sectionName}
             </span>
           )}
-          <span className="line-clamp-2 block min-h-[42px] font-display text-[17px] font-bold leading-tight text-ink">
+          <span className="menu-title line-clamp-2 block min-h-[42px] font-display text-[17px] font-bold leading-tight text-ink">
             {item.title}
           </span>
           {/* Reserved height even when empty, so cards in a row stay aligned. */}
@@ -176,7 +176,7 @@ function Unavailable({ item, sectionName, currency, style, showImage }: CardProp
           <span className="block text-[10px] font-black uppercase tracking-[0.12em] text-muted">
             {sectionName}
           </span>
-          <span className={`block font-black text-ink ${poster ? 'text-[17px]' : 'truncate text-[15px]'}`}>
+          <span className={`menu-title block font-black text-ink ${poster ? 'text-[17px]' : 'truncate text-[15px]'}`}>
             {item.title}
           </span>
           <span className="mt-1 block text-lg font-black text-muted line-through">

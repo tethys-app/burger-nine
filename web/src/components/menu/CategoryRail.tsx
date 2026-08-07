@@ -25,7 +25,7 @@ export function CategoryRail({
               key={sec.id}
               ref={(el) => { if (el) pills.current.set(sec.id, el) }}
               onClick={() => onSelect(sec.id)}
-              className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2.5 text-[13px] font-semibold transition-all duration-200
+              className={`menu-title shrink-0 whitespace-nowrap rounded-full px-4 py-2.5 text-[13px] font-semibold transition-all duration-200
                 ${on
                   ? 'border-transparent bg-gradient-to-br from-pink-hot to-pink-deep text-white shadow-md'
                   : 'border border-hairline bg-surface-depth text-muted hover:text-ink'}`}
@@ -58,7 +58,7 @@ export function CategoryNav({
                   ${on ? 'bg-elevated text-ink' : 'text-muted hover:bg-elevated/50 hover:text-ink'}`}
               >
                 <span className={`h-5 w-1 shrink-0 rounded-full transition-all ${on ? 'bg-pink' : 'bg-transparent'}`} />
-                <span className="min-w-0 flex-1 truncate text-sm font-black">{sec.title}</span>
+                <span className="menu-title min-w-0 flex-1 truncate text-sm font-black">{sec.title}</span>
               </button>
             </li>
           )

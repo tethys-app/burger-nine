@@ -3,7 +3,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 import { ApiFailure, checkout, getCatalog, getQuote, getStore } from '../lib/api'
 import { livePollMs } from '../lib/live'
-import { money, requirementLabel } from '../lib/format'
+import { money } from '../lib/format'
 import { cart, toApiLines, useCartEntries, type Entry } from './menu/cart-store'
 import { ProductCard } from './menu/ProductCard'
 import { CategoryNav, CategoryRail } from './menu/CategoryRail'
@@ -213,7 +213,7 @@ function MenuLayout({
                 className="mb-4 flex scroll-mt-[101px] flex-col gap-1 border-b border-hairline pb-2.5
                   lg:scroll-mt-[52px] lg:flex-row lg:items-baseline lg:gap-3"
               >
-                <h2 className="font-display text-xl font-black uppercase text-ink lg:text-2xl">
+                <h2 className="menu-section-title menu-title font-display text-xl font-black uppercase text-ink lg:text-2xl">
                   {section.title}
                 </h2>
               </header>
@@ -311,6 +311,12 @@ function ProductSheet({
   onCancel: () => void
 }) {
   const [selected, setSelected] = useState<Record<string, string[]>>({})
+  const [step, setStep] = useState(0)
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (advanceTimer.current) clearTimeout(advanceTimer.current)
+  }, [])
 
   const toggle = (modifierRef: string, choiceRef: string, max: number | null) => {
     setSelected((current) => {
@@ -324,12 +330,17 @@ function ProductSheet({
     })
   }
 
-  // Mirrors the server's rules so the button is only enabled for a line the
-  // server will accept. The server still enforces it — this is UX, not trust.
-  const satisfied = product.modifiers.every((modifier) => {
+  const validModifier = (modifier: Product['modifiers'][number]) => {
     const chosen = selected[modifier.ref] ?? []
     return chosen.length >= modifier.min && (modifier.max === null || chosen.length <= modifier.max)
-  })
+  }
+
+  // Mirrors the server's rules so the final add action only builds an accepted
+  // v1 line. The API remains authoritative when the cart is quoted.
+  const satisfied = product.modifiers.every(validModifier)
+  const current = product.modifiers[step]
+  const isLast = step === product.modifiers.length - 1
+  const currentValid = current ? validModifier(current) : true
 
   const extra = product.modifiers.reduce((sum, modifier) => {
     const chosen = selected[modifier.ref] ?? []
@@ -339,59 +350,153 @@ function ProductSheet({
     }, 0)
   }, 0)
 
+  const selectedTitles = product.modifiers.flatMap((modifier) => {
+    const selectedRefs = selected[modifier.ref] ?? []
+    return modifier.choices
+      .filter((choice) => selectedRefs.includes(choice.ref))
+      .map((choice) => choice.title)
+  })
+
+  const add = () => {
+    if (!satisfied) return
+    onAdd(
+      {
+        productRef: product.ref,
+        quantity: 1,
+        choices: Object.entries(selected).flatMap(([modifierRef, refs]) =>
+          refs.map((choiceRef) => ({ modifierRef, choiceRef })),
+        ),
+      },
+      product.price_cents + extra,
+    )
+  }
+
+  const continueFunnel = () => {
+    if (!currentValid) return
+    if (isLast) add()
+    else setStep((value) => value + 1)
+  }
+
+  const selectChoice = (choiceRef: string) => {
+    if (!current) return
+    const wasSelected = (selected[current.ref] ?? []).includes(choiceRef)
+    toggle(current.ref, choiceRef, current.max)
+
+    // Preserve the legacy funnel's quick path: required single-choice steps
+    // briefly acknowledge the pick, then reveal the next modifier.
+    if (!wasSelected && current.max === 1 && current.min > 0 && !isLast) {
+      if (advanceTimer.current) clearTimeout(advanceTimer.current)
+      advanceTimer.current = setTimeout(
+        () => setStep((value) => Math.min(value + 1, product.modifiers.length - 1)),
+        180,
+      )
+    }
+  }
+
   return (
-    <>
-      <div className="sheet-backdrop" onClick={onCancel} />
-      <div className="sheet" role="dialog" aria-modal="true" aria-label={product.title}>
-      <header>
-        <h3>{product.title}</h3>
-        <button onClick={onCancel} aria-label="Fermer">×</button>
-      </header>
-      {product.description && <p className="description">{product.description}</p>}
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={onCancel} />
+      <div
+        className="funnel-sheet relative flex max-h-[88dvh] w-full flex-col rounded-t-[32px] border pop-in sm:max-w-lg sm:rounded-[32px]"
+        role="dialog"
+        aria-modal="true"
+        aria-label={product.title}
+      >
+        <header className="flex items-start gap-3 border-b p-5">
+          {product.image_uri && (
+            <img src={product.image_uri} alt="" className="h-16 w-16 rounded-2xl object-cover" />
+          )}
+          <div className="min-w-0 flex-1">
+            <h3 className="text-xl font-black">{product.title}</h3>
+            {selectedTitles.length > 0 ? (
+              <p className="line-clamp-2 text-xs font-semibold funnel-muted">{selectedTitles.join(', ')}</p>
+            ) : product.description ? (
+              <p className="line-clamp-2 text-xs font-semibold funnel-muted">{product.description}</p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            aria-label="Fermer"
+            onClick={onCancel}
+            className="funnel-close grid h-9 w-9 shrink-0 place-items-center rounded-full transition"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </header>
 
-      {product.modifiers.map((modifier) => (
-        <fieldset key={modifier.ref}>
-          <legend>
-            {modifier.title}
-            <span className="requirement">{requirementLabel(modifier.min, modifier.max)}</span>
-          </legend>
-          {modifier.choices.map((choice) => (
-            <label key={choice.ref}>
-              <input
-                type={modifier.max === 1 ? 'radio' : 'checkbox'}
-                name={modifier.ref}
-                checked={(selected[modifier.ref] ?? []).includes(choice.ref)}
-                onChange={() => toggle(modifier.ref, choice.ref, modifier.max)}
+        {product.modifiers.length > 1 && (
+          <div className="flex items-center gap-2 px-5 pt-4" aria-label={`Étape ${step + 1} sur ${product.modifiers.length}`}>
+            {product.modifiers.map((modifier, index) => (
+              <span
+                key={modifier.ref}
+                className={`funnel-progress h-1.5 flex-1 rounded-full transition ${index <= step ? 'funnel-progress-active' : ''}`}
               />
-              <span>{choice.title}</span>
-              {choice.price_cents > 0 && <span className="price">+{money(choice.price_cents, currency)}</span>}
-            </label>
-          ))}
-        </fieldset>
-      ))}
+            ))}
+            <span className="funnel-step-count funnel-muted ml-1 shrink-0 text-[11px] font-black">{step + 1}/{product.modifiers.length}</span>
+          </div>
+        )}
 
-      <footer>
-        <button
-          className="primary"
-          disabled={!satisfied}
-          onClick={() =>
-            onAdd(
-              {
-                productRef: product.ref,
-                quantity: 1,
-                choices: Object.entries(selected).flatMap(([modifierRef, refs]) =>
-                  refs.map((choiceRef) => ({ modifierRef, choiceRef })),
-                ),
-              },
-              product.price_cents + extra,
-            )
-          }
-        >
-          Ajouter — {money(product.price_cents + extra, currency)}
-        </button>
-      </footer>
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">
+          {current && (
+            <fieldset className="m-0 border-0 p-0">
+              <legend className="mb-2.5 flex w-full items-baseline justify-between gap-3">
+                <span className="text-sm font-black">{current.title}</span>
+                <span className="funnel-requirement funnel-muted shrink-0 text-[11px] font-bold uppercase tracking-wide">
+                  {current.min > 0 ? 'Obligatoire' : 'Optionnel'}
+                  {current.max !== null && current.max !== 1 ? ` · max ${current.max}` : ''}
+                </span>
+              </legend>
+              <div className="space-y-2">
+                {current.choices.map((choice) => {
+                  const isSelected = (selected[current.ref] ?? []).includes(choice.ref)
+                  return (
+                    <button
+                      key={choice.ref}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => selectChoice(choice.ref)}
+                      className={`funnel-choice flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition ${
+                        isSelected ? 'funnel-choice-selected' : ''
+                      }`}
+                    >
+                      <span className={`grid h-5 w-5 shrink-0 place-items-center border-2 ${current.max === 1 ? 'rounded-full' : 'rounded-md'} ${
+                        isSelected ? 'funnel-choice-mark-selected' : 'funnel-choice-mark'
+                      }`}>
+                        {isSelected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7" /></svg>}
+                      </span>
+                      <span className="flex-1 text-sm font-bold">{choice.title}</span>
+                      {choice.price_cents > 0 && <span className="funnel-gold text-sm font-black">+{money(choice.price_cents, currency)}</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </fieldset>
+          )}
+        </div>
+
+        <footer className="flex items-center gap-2 border-t p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {step > 0 && (
+            <button
+              type="button"
+              onClick={() => setStep((value) => value - 1)}
+              aria-label="Étape précédente"
+              className="funnel-back grid h-[52px] w-[52px] shrink-0 place-items-center rounded-[18px] border transition active:scale-95"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+            </button>
+          )}
+          <button
+            type="button"
+            disabled={!currentValid}
+            onClick={continueFunnel}
+            className="funnel-primary flex flex-1 items-center justify-between rounded-[22px] bg-gradient-to-br px-5 py-4 font-black shadow-lg transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
+          >
+            <span>{isLast ? 'Ajouter au panier' : 'Continuer'}</span>
+            <span>{money(product.price_cents + extra, currency)}</span>
+          </button>
+        </footer>
       </div>
-    </>
+    </div>
   )
 }
 
