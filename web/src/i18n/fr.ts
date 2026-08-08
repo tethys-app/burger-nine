@@ -36,7 +36,7 @@ export const fr = {
   },
   hits: {
     overline: '02 · Les hits',
-    title: ["Ceux qu'on", 'recommande'],
+    title: ['Commandez.', 'Recommandez.'],
     side: 'Les recettes qui reviennent commande après commande.',
     discover: 'Découvrir',
     items: {
