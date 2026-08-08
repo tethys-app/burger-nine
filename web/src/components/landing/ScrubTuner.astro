@@ -1,0 +1,746 @@
+---
+// Dev-only tuning panel for ScrubHero. Open the page with `?tune`.
+//
+// It mutates the `cfg` object ScrubHero exposes on `window.__scrub`, so every
+// value applies live without a reload — the point is to find the numbers by
+// feel, then paste them back into ScrubHero.astro (there is a "copy" button
+// that emits the exact literals).
+//
+// `import.meta.env.DEV` means this whole component is dropped from a
+// production build, markup and script both.
+---
+
+{import.meta.env.DEV && (
+  <div id="scrubTuner" hidden>
+    {/* Always on screen, even collapsed — the way back in. */}
+    <button type="button" class="grip" data-act="collapse" title="Collapse (T)" aria-expanded="true">
+      <span class="chev"></span>
+    </button>
+    <header>
+      <strong>scrub tuner</strong>
+      <button type="button" data-act="close" title="Hide (T)">×</button>
+    </header>
+    {/* Scrolls instead of the panel, so the grip outside the panel survives. */}
+    <div class="body">
+    <div class="scopes">
+      <div class="scope">
+        <span class="cap">target <i class="k raw"></i> vs eased <i class="k eased"></i></span>
+        <canvas id="scopeTrack" width="266" height="70"></canvas>
+      </div>
+      <div class="scope">
+        <span class="cap">lag (ease cost) <i class="k lag"></i></span>
+        <canvas id="scopeLag" width="266" height="52"></canvas>
+      </div>
+      <div class="scope">
+        <span class="cap">velocity · progress/s <i class="k vel"></i></span>
+        <canvas id="scopeVel" width="266" height="52"></canvas>
+      </div>
+      <div class="scope">
+        <span class="cap">frame time <i class="k dt"></i> · seek <i class="k seek"></i> · 16.7ms budget</span>
+        <canvas id="scopeFrame" width="266" height="52"></canvas>
+      </div>
+      <div class="readout" id="readout"></div>
+    </div>
+
+    <div class="rows"></div>
+
+    <div class="sect">encode · needs <code>bun run encode-server</code></div>
+    <div class="rows enc"></div>
+    <div class="encbar">
+      <button type="button" data-act="encode">re-encode</button>
+      <span class="encstat" id="encStat">idle</span>
+    </div>
+
+    <footer>
+      <button type="button" data-act="copy">copy values</button>
+      <button type="button" data-act="reset">reset</button>
+    </footer>
+    <p class="hint-txt">T hides · C collapses · values are live</p>
+    </div>
+  </div>
+)}
+
+{import.meta.env.DEV && (
+  <style>
+    #scrubTuner {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 9999;
+      width: 300px;
+      max-height: calc(100vh - 24px);
+      /* Not `auto`: the grip sits at left:-30px, outside this box, and a
+         scroll container would clip it away. The inner .body scrolls instead.
+         The panel must still shrink-wrap its content, or it stays a
+         viewport-tall invisible box swallowing every touch. */
+      overflow: visible;
+      height: fit-content;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 12px 12px;
+      border-radius: 10px;
+      border: 1px solid rgb(255 255 255 / 0.14);
+      background: rgb(12 8 14 / 0.94);
+      backdrop-filter: blur(10px);
+      color: #f5ebff;
+      font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+      box-shadow: 0 18px 50px rgb(0 0 0 / 0.5);
+    }
+    #scrubTuner[hidden] { display: none; }
+
+    /* Collapsed: slide the panel out past the right edge and let the grip,
+       which sits outside it, stay put. Translating rather than hiding keeps
+       the canvases alive, so the scopes are still recording when you pull it
+       back open. */
+    #scrubTuner {
+      transition: translate 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #scrubTuner.collapsed {
+      translate: calc(100% + 12px) 0;
+    }
+    /* Collapsed, the panel is off-screen but still a fixed box the size of the
+       viewport — without this it keeps eating every touch and the page cannot
+       be scrolled. Only the grip stays interactive. */
+    #scrubTuner.collapsed { pointer-events: none; }
+    #scrubTuner.collapsed .grip { pointer-events: auto; }
+    @media (prefers-reduced-motion: reduce) {
+      #scrubTuner { transition: none; }
+    }
+
+    #scrubTuner .grip {
+      position: absolute;
+      top: 8px;
+      /* Outside the panel's own box, so it stays on screen when the panel
+         slides away. */
+      left: -30px;
+      width: 30px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex: none;
+      border: 1px solid rgb(255 255 255 / 0.14);
+      border-right: 0;
+      border-radius: 8px 0 0 8px;
+      background: rgb(12 8 14 / 0.94);
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+    }
+    #scrubTuner .chev {
+      width: 7px;
+      height: 7px;
+      border-right: 1.5px solid #ff2e93;
+      border-bottom: 1.5px solid #ff2e93;
+      /* Points right (push away) when open, left (pull back) when collapsed. */
+      rotate: -45deg;
+      translate: -2px 0;
+      transition: rotate 0.22s;
+    }
+    #scrubTuner.collapsed .chev { rotate: 135deg; translate: 2px 0; }
+    #scrubTuner header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ff2e93;
+    }
+    #scrubTuner .body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      min-height: 0;
+      /* Don't let a drag on the panel scroll the page behind it. */
+      overscroll-behavior: contain;
+    }
+    #scrubTuner .scopes { display: flex; flex-direction: column; gap: 6px; }
+    #scrubTuner .scope { display: flex; flex-direction: column; gap: 2px; }
+    #scrubTuner .cap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9.5px;
+      letter-spacing: 0.04em;
+      color: rgb(245 235 255 / 0.5);
+    }
+    /* Legend swatches, coloured to match each trace. */
+    #scrubTuner .k { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+    #scrubTuner .k.raw { background: #6ee7d7; }
+    #scrubTuner .k.eased { background: #ff2e93; }
+    #scrubTuner .k.lag { background: #ffc42e; }
+    #scrubTuner .k.vel { background: #9d7bff; }
+    #scrubTuner .k.dt { background: #6ee7d7; }
+    #scrubTuner .k.seek { background: #ff7a45; }
+    #scrubTuner canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 5px;
+      background: rgb(0 0 0 / 0.45);
+      border: 1px solid rgb(255 255 255 / 0.08);
+    }
+    #scrubTuner .readout {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px 10px;
+      padding: 5px 0 2px;
+      color: rgb(245 235 255 / 0.6);
+      font-variant-numeric: tabular-nums;
+    }
+    #scrubTuner .readout b { color: #ffc42e; font-weight: 400; }
+    #scrubTuner .readout .warn b { color: #ff475c; }
+    #scrubTuner hr { width: 100%; border: 0; border-top: 1px solid rgb(255 255 255 / 0.12); margin: 2px 0; }
+    #scrubTuner .rows { display: flex; flex-direction: column; gap: 7px; }
+    #scrubTuner .row { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; }
+    #scrubTuner label { color: rgb(245 235 255 / 0.72); }
+    #scrubTuner .val {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      font-variant-numeric: tabular-nums;
+    }
+    #scrubTuner .val .now { color: #ffc42e; font-weight: 400; }
+    /* The original value, shown struck through only while the row differs. */
+    #scrubTuner .val .was {
+      font-style: normal;
+      color: rgb(245 235 255 / 0.35);
+      text-decoration: line-through;
+    }
+    #scrubTuner .val .was:empty { display: none; }
+    /* An edited row is marked on the label and the track, so which values have
+       been touched is readable at a glance without comparing numbers. */
+    #scrubTuner .row.dirty label { color: #ff2e93; }
+    #scrubTuner .row.dirty label::before { content: '• '; }
+    #scrubTuner .row.dirty input[type='range'] { accent-color: #ff2e93; }
+    #scrubTuner .row:not(.dirty) input[type='range'] { accent-color: rgb(245 235 255 / 0.45); }
+    #scrubTuner input[type='range'] {
+      grid-column: 1 / -1;
+      width: 100%;
+      height: 3px;
+      cursor: ew-resize;
+    }
+    #scrubTuner .sect {
+      margin-top: 4px;
+      padding-top: 7px;
+      border-top: 1px solid rgb(255 255 255 / 0.12);
+      font-size: 9.5px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgb(245 235 255 / 0.45);
+    }
+    #scrubTuner .sect code { font-size: 9.5px; color: #6ee7d7; text-transform: none; }
+    #scrubTuner .encbar { display: flex; align-items: center; gap: 8px; }
+    #scrubTuner .encbar button { flex: none; }
+    #scrubTuner .encstat { flex: 1; font-size: 9.5px; color: rgb(245 235 255 / 0.55); }
+    #scrubTuner .encstat.busy { color: #ffc42e; }
+    #scrubTuner .encstat.err { color: #ff475c; }
+    #scrubTuner .encstat.ok { color: #6ee7d7; }
+    #scrubTuner footer { display: flex; gap: 6px; }
+    #scrubTuner button {
+      flex: 1;
+      padding: 5px 6px;
+      border-radius: 6px;
+      border: 1px solid rgb(255 255 255 / 0.18);
+      background: rgb(255 255 255 / 0.06);
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
+    #scrubTuner button:hover { background: rgb(255 255 255 / 0.13); }
+    #scrubTuner header button { flex: none; padding: 0 6px; border: 0; background: none; font-size: 14px; }
+    #scrubTuner .hint-txt { margin: 0; color: rgb(245 235 255 / 0.4); }
+
+    /* Phone: start collapsed (the script sets it), keep the panel off the
+       hero, and make the sliders actually draggable with a thumb. */
+    @media (max-width: 640px) {
+      #scrubTuner {
+        top: 8px;
+        right: 8px;
+        width: min(280px, calc(100vw - 52px));
+        max-height: calc(100svh - 16px);
+        font-size: 11px;
+      }
+      #scrubTuner.collapsed { translate: calc(100% + 8px) 0; }
+      /* A 3px track is unusable on a touchscreen; the visual line stays thin
+         via the border-box padding trick. */
+      #scrubTuner input[type='range'] {
+        height: 26px;
+        background: transparent;
+      }
+      #scrubTuner .grip { width: 34px; height: 52px; left: -34px; }
+      #scrubTuner button { padding: 8px 6px; }
+      /* The scopes are the first thing worth dropping on a small screen —
+         they cost the most height and are the least useful on a phone. */
+      #scrubTuner .scopes { display: none; }
+    }
+  </style>
+)}
+
+{import.meta.env.DEV && (
+  <script>
+    // The wrapper above keeps this out of the page, but Astro still compiles
+    // and emits the chunk — an orphan nothing imports, carrying the dev server
+    // URL into dist/. This inner guard is statically false in a production
+    // build, so the bundler drops the body instead.
+    if (import.meta.env.DEV) {
+    // Each control: [key, label, min, max, step, unit]. A dotted key ("foo.0")
+    // addresses one end of a [start, end] window.
+    // Scroll feel only. The CTA/scrim fade windows were dropped — they are
+    // set-once cosmetics, and burying the two sliders that actually decide
+    // whether scrubbing feels good under thirteen that do not was the problem.
+    const CONTROLS: [string, string, number, number, number, string][] = [
+      ['screens', 'scroll length (screens)', 1, 10, 0.25, ''],
+      ['ease', 'ease / smoothing', 0.02, 1, 0.01, ''],
+      // 1 = pinned the whole way (classic scrub), 0 = never pinned, the hero
+      // just scrolls past like any other section while it scrubs.
+      ['release', 'un-pin / free scroll', 0, 1, 0.05, ''],
+      // <1 finishes the clip before the pin lets go — that gap is the "still
+      // stuck with nothing moving" feeling.
+      ['span', 'clip ends at (of scroll)', 0.3, 1, 0.05, ''],
+      ['videoShift', 'video shift up', 0, 300, 5, 'px'],
+      // Starts exactly where the clip ends, so there is no dead stretch.
+      ['payoffRise', 'CTA rise length', 0.04, 0.6, 0.02, ''],
+      // The tail only exists below span 1 — that gap is what it fills.
+      ['tailRate', 'tail speed (1 = scroll)', 0, 2, 0.05, '×'],
+      ['tailFade', 'tail fade-in', 0.02, 0.5, 0.02, ''],
+    ]
+
+    // Re-encode controls. These do not touch CSS — they ask the dev encode
+    // server for a different file, so fps/resolution/crop can be judged by
+    // scrolling the real thing. `bun run encode-server` must be running.
+    const ENCODE: [string, string, number, number, number, string][] = [
+      ['height', 'resolution (height)', 360, 1440, 60, 'p'],
+      ['fps', 'frames per second', 12, 60, 1, ''],
+      ['crf', 'quality (lower = better)', 8, 32, 1, ''],
+      ['aspect', 'aspect ratio (w/h)', 0.6, 3, 0.01, ''],
+      ['focus', 'crop focus (0 top → 1 bot)', 0, 1, 0.05, ''],
+    ]
+    // Same host the page came from, not a hardcoded localhost: opened from a
+    // phone at 192.168.x.x, "localhost" would mean the phone itself.
+    const ENCODE_SERVER = `${location.protocol}//${location.hostname}:4325`
+
+    const panel = document.getElementById('scrubTuner')
+    // ScrubHero sets window.__scrub in its own module script; both are deferred
+    // so ordering is not guaranteed — poll briefly rather than assume.
+    const STORE_KEY = 'scrub-tuner'
+
+    const start = (api: any) => {
+      if (!panel || !api) return
+      const { cfg, section } = api
+      // Snapshot BEFORE restoring: "original" must mean the values compiled
+      // into ScrubHero/ENCODE, not whatever was saved last session. Otherwise
+      // the was→now readout compares a number to itself.
+      const initial = JSON.parse(JSON.stringify(cfg))
+
+      const read = (path: string) => {
+        const [k, i] = path.split('.')
+        return i === undefined ? cfg[k] : cfg[k][+i]
+      }
+      const write = (path: string, v: number) => {
+        const [k, i] = path.split('.')
+        if (i === undefined) cfg[k] = v
+        else cfg[k][+i] = v
+      }
+
+      // Values that live in CSS rather than in the paint loop.
+      const applyCss = () => {
+        section.style.setProperty('--screens', String(cfg.screens))
+        section.style.setProperty('--release', String(cfg.release))
+        section.style.setProperty('--video-shift', `${cfg.videoShift}px`)
+        section.style.setProperty('--payoff-top', `${cfg.payoffTop}%`)
+      }
+
+      const enc = { height: 720, fps: 24, crf: 14, aspect: 16 / 9, focus: 0.5 }
+      const encInitial = { ...enc }
+
+      // Persisted across reloads so a session of tuning is not lost to a
+      // refresh. Saved on every input; `reset` clears the key so the next load
+      // starts from the compiled defaults again.
+      const save = () => {
+        try {
+          localStorage.setItem(STORE_KEY, JSON.stringify({ cfg, enc }))
+        } catch {}
+      }
+      const restore = () => {
+        try {
+          const raw = localStorage.getItem(STORE_KEY)
+          if (!raw) return false
+          const saved = JSON.parse(raw)
+          // Merge key by key rather than Object.assign wholesale: a stored blob
+          // from an older build can carry keys that no longer exist, and would
+          // otherwise resurrect them onto cfg.
+          for (const k of Object.keys(cfg)) {
+            if (saved.cfg?.[k] !== undefined) cfg[k] = saved.cfg[k]
+          }
+          for (const k of Object.keys(enc)) {
+            if (saved.enc?.[k] !== undefined) (enc as any)[k] = saved.enc[k]
+          }
+          return true
+        } catch {
+          return false
+        }
+      }
+      const restored = restore()
+
+      // Builds a slider row into `host`, reading/writing through the supplied
+      // accessors — used for both the scroll cfg and the encode params.
+      // `base` supplies the original value so each row can show was→now.
+      const build = (
+        host: Element,
+        list: [string, string, number, number, number, string][],
+        get: (p: string) => number,
+        set: (p: string, v: number) => void,
+        base: (p: string) => number,
+        onInput: () => void,
+      ) => {
+        for (const [path, label, min, max, step, unit] of list) {
+          const row = document.createElement('div')
+          row.className = 'row'
+          row.innerHTML =
+            `<label for="t-${path}">${label}</label>` +
+            `<span class="val" id="v-${path}"><i class="was"></i><b class="now"></b></span>` +
+            `<input type="range" id="t-${path}" min="${min}" max="${max}" step="${step}">`
+          host.append(row)
+
+          const input = row.querySelector('input')!
+          const was = row.querySelector('.was') as HTMLElement
+          const now = row.querySelector('.now') as HTMLElement
+          const fmt = (v: number) => `${+v.toFixed(3)}${unit}`
+
+          const show = (v: number) => {
+            const orig = base(path)
+            // Compare rounded, or float noise (16/9) marks a row edited when
+            // nothing was touched.
+            const dirty = Math.abs(v - orig) > 1e-6
+            now.textContent = fmt(v)
+            was.textContent = dirty ? fmt(orig) : ''
+            row.classList.toggle('dirty', dirty)
+          }
+          const sync = () => {
+            input.value = String(get(path))
+            show(get(path))
+          }
+          input.addEventListener('input', () => {
+            set(path, Number(input.value))
+            show(Number(input.value))
+            onInput()
+            save()
+          })
+          sync()
+          ;(input as any).__sync = sync
+        }
+      }
+
+      build(
+        panel.querySelector('.rows')!,
+        CONTROLS,
+        read,
+        write,
+        (p) => {
+          const [k, i] = p.split('.')
+          return i === undefined ? initial[k] : initial[k][+i]
+        },
+        () => {
+          applyCss()
+          // Nudge the paint loop so changes show without moving the mouse.
+          window.dispatchEvent(new Event('scroll'))
+        },
+      )
+
+      // ---- encode --------------------------------------------------------
+      const encStat = panel.querySelector('#encStat')!
+      const say = (msg: string, cls = '') => {
+        encStat.textContent = msg
+        encStat.className = `encstat ${cls}`
+      }
+
+      build(
+        panel.querySelector('.rows.enc')!,
+        ENCODE,
+        (p) => (enc as any)[p],
+        (p, v) => ((enc as any)[p] = v),
+        (p) => (encInitial as any)[p],
+        () => say('changed — hit re-encode'),
+      )
+
+      let encoding = false
+      const runEncode = async () => {
+        if (encoding) return
+        encoding = true
+        say('encoding…', 'busy')
+        try {
+          const q = new URLSearchParams(
+            Object.entries(enc).map(([k, v]) => [k, String(v)]),
+          )
+          const res = await fetch(`${ENCODE_SERVER}/encode?${q}`)
+          const data = await res.json()
+          if (data.error) throw new Error(data.error.split('\n')[0])
+
+          // Swap the source and restore the scroll position, so the clip under
+          // the cursor is the one just encoded.
+          const v = api.video as HTMLVideoElement
+          const at = v.currentTime
+          v.src = data.url
+          v.load()
+          await new Promise((r) => v.addEventListener('loadedmetadata', r, { once: true }))
+          v.currentTime = Math.min(at, v.duration - 0.02)
+          // `object-fit: cover` would crop the new aspect straight back to the
+          // viewport, making the slider look like it did nothing. `contain`
+          // lets the encoded shape actually be visible while judging it.
+          v.style.objectFit = Math.abs(enc.aspect - 16 / 9) > 0.02 ? 'contain' : ''
+          window.dispatchEvent(new Event('scroll'))
+
+          // px of scroll per frame is the number that decides whether slow
+          // scrolling shows individual frames stepping.
+          const track = section.offsetHeight - window.innerHeight
+          const perFrame = track / data.frames
+          say(
+            `${data.frames}f · ${data.mb}MB · ${perFrame.toFixed(1)}px/frame` +
+              (data.cached ? ' · cached' : ` · ${data.encodeMs}ms`),
+            'ok',
+          )
+        } catch (err: any) {
+          const offline = err?.message?.includes('Failed to fetch')
+          say(offline ? 'server down — bun run encode-server' : err.message, 'err')
+        } finally {
+          encoding = false
+        }
+      }
+      panel.querySelector('[data-act="encode"]')!.addEventListener('click', runEncode)
+
+      const syncAll = () => panel.querySelectorAll('input').forEach((i) => (i as any).__sync?.())
+
+      panel.querySelector('[data-act="reset"]')!.addEventListener('click', () => {
+        Object.assign(cfg, JSON.parse(JSON.stringify(initial)))
+        Object.assign(enc, encInitial)
+        // Drop the saved blob too, or the next reload restores what was just
+        // reset away.
+        try {
+          localStorage.removeItem(STORE_KEY)
+        } catch {}
+        applyCss()
+        syncAll()
+        say('reset — hit re-encode to reload the clip')
+        window.dispatchEvent(new Event('scroll'))
+      })
+
+      panel.querySelector('[data-act="copy"]')!.addEventListener('click', async (e) => {
+        const text = [
+          `screens={${cfg.screens}}`,
+          `ease: ${cfg.ease},`,
+          `release: ${cfg.release},`,
+          `span: ${cfg.span},`,
+          `videoShift: ${cfg.videoShift}, // px`,
+          '',
+          '# encode',
+          `ffmpeg -y -i SOURCE.mp4 -an \\`,
+          `  -vf "scale=-2:${enc.height}:flags=lanczos,fps=${enc.fps}" \\`,
+          `  -c:v libx264 -preset veryslow -profile:v high -pix_fmt yuv420p \\`,
+          `  -crf ${enc.crf} -g 1 -keyint_min 1 -sc_threshold 0 \\`,
+          `  -x264-params "ref=1:bframes=0" -movflags +faststart out.mp4`,
+        ].join('\n')
+        await navigator.clipboard.writeText(text).catch(() => {})
+        const btn = e.currentTarget as HTMLButtonElement
+        btn.textContent = 'copied ✓'
+        setTimeout(() => (btn.textContent = 'copy values'), 1200)
+        console.log(text)
+      })
+
+      const toggle = (on?: boolean) => {
+        panel.hidden = on === undefined ? !panel.hidden : !on
+      }
+      panel.querySelector('[data-act="close"]')!.addEventListener('click', () => toggle(false))
+
+      const grip = panel.querySelector('[data-act="collapse"]')!
+      const collapse = (on?: boolean) => {
+        const next = on === undefined ? !panel.classList.contains('collapsed') : on
+        panel.classList.toggle('collapsed', next)
+        grip.setAttribute('aria-expanded', String(!next))
+        try {
+          localStorage.setItem(`${STORE_KEY}-collapsed`, next ? '1' : '0')
+        } catch {}
+      }
+      grip.addEventListener('click', () => collapse())
+
+      // Collapsed by default on a phone, where the panel would otherwise cover
+      // the hero it exists to judge. Remembered per device after that.
+      const savedCollapsed = (() => {
+        try {
+          return localStorage.getItem(`${STORE_KEY}-collapsed`)
+        } catch {
+          return null
+        }
+      })()
+      collapse(savedCollapsed === null ? window.innerWidth <= 640 : savedCollapsed === '1')
+
+      window.addEventListener('keydown', (ev) => {
+        const typing = /^(INPUT|TEXTAREA)$/.test((ev.target as HTMLElement)?.tagName ?? '')
+        if (typing) return
+        const k = ev.key.toLowerCase()
+        // T hides it entirely, C collapses to the grip.
+        if (k === 't') toggle()
+        if (k === 'c') collapse()
+      })
+
+      applyCss()
+      toggle(new URLSearchParams(location.search).has('tune'))
+      if (restored) {
+        // The scroll values are already live via applyCss, but the encode ones
+        // only describe a file that has not been fetched yet — say so rather
+        // than implying the clip on screen matches the sliders.
+        say('restored — hit re-encode to match the clip')
+        window.dispatchEvent(new Event('scroll'))
+      }
+
+      // ---- scopes -------------------------------------------------------
+      // Rolling history, one sample per animation frame. N is the canvas width
+      // in CSS px so each sample is exactly one column — no resampling.
+      const N = 266
+      const hist = {
+        target: new Float32Array(N),
+        current: new Float32Array(N),
+        lag: new Float32Array(N),
+        vel: new Float32Array(N),
+        dt: new Float32Array(N),
+        seek: new Float32Array(N),
+      }
+      let head = 0
+
+      const dpr = Math.min(devicePixelRatio || 1, 2)
+      // The markup's width/height are the CSS drawing size; back the canvas
+      // with dpr pixels so the traces stay crisp on retina.
+      const setup = (id: string) => {
+        const c = document.getElementById(id) as HTMLCanvasElement
+        const cssW = N
+        const cssH = c.height
+        c.width = cssW * dpr
+        c.height = cssH * dpr
+        c.style.aspectRatio = `${cssW} / ${cssH}`
+        const ctx = c.getContext('2d')!
+        ctx.scale(dpr, dpr)
+        return { ctx, w: cssW, h: cssH }
+      }
+      const track = setup('scopeTrack')
+      const lagS = setup('scopeLag')
+      const velS = setup('scopeVel')
+      const frameS = setup('scopeFrame')
+      const readout = document.getElementById('readout')!
+
+      // Draws one series oldest→newest, so the trace scrolls right to left.
+      const trace = (
+        { ctx, w, h }: { ctx: CanvasRenderingContext2D; w: number; h: number },
+        data: Float32Array,
+        color: string,
+        map: (v: number) => number,
+        fill = false,
+      ) => {
+        ctx.beginPath()
+        for (let i = 0; i < N; i++) {
+          const v = data[(head + i) % N]
+          const x = (i / (N - 1)) * w
+          const y = h - Math.max(0, Math.min(1, map(v))) * h
+          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)
+        }
+        ctx.strokeStyle = color
+        ctx.lineWidth = 1.25
+        ctx.stroke()
+        if (fill) {
+          ctx.lineTo(w, h)
+          ctx.lineTo(0, h)
+          ctx.closePath()
+          ctx.fillStyle = color.replace(')', ' / 0.16)')
+          ctx.fill()
+        }
+      }
+
+      const grid = ({ ctx, w, h }: { ctx: CanvasRenderingContext2D; w: number; h: number }, rows = 4) => {
+        ctx.clearRect(0, 0, w, h)
+        ctx.strokeStyle = 'rgb(255 255 255 / 0.07)'
+        ctx.lineWidth = 1
+        for (let i = 1; i < rows; i++) {
+          const y = (i / rows) * h
+          ctx.beginPath()
+          ctx.moveTo(0, y)
+          ctx.lineTo(w, y)
+          ctx.stroke()
+        }
+      }
+
+      const fmt = (n: number, d = 2) => n.toFixed(d)
+      let peakSeek = 0
+      let dropped = 0
+      let frames = 0
+
+      let lastT = 0
+      const draw = () => {
+        const tm = api.telemetry
+        // The paint loop only runs while something is moving. When it is idle
+        // the sample is genuinely "at rest" — record zeros rather than smearing
+        // the last live value across the scope.
+        const live = tm.t !== lastT
+        lastT = tm.t
+
+        hist.target[head] = tm.target
+        hist.current[head] = tm.current
+        hist.lag[head] = live ? tm.lag : 0
+        hist.vel[head] = live ? tm.velocity : 0
+        hist.dt[head] = live ? tm.dt : 0
+        hist.seek[head] = live ? tm.seekMs : 0
+        head = (head + 1) % N
+
+        if (live) {
+          frames++
+          if (tm.dt > 25) dropped++
+        }
+        peakSeek = Math.max(peakSeek * 0.995, live ? tm.seekMs : 0)
+
+        // Track: both curves on the same 0..1 scale — the gap between them is
+        // the easing, made visible.
+        grid(track)
+        trace(track, hist.target, 'rgb(110 231 215)', (v) => v)
+        trace(track, hist.current, 'rgb(255 46 147)', (v) => v, true)
+
+        // Lag, signed around the midline.
+        grid(lagS, 2)
+        trace(lagS, hist.lag, 'rgb(255 196 46)', (v) => 0.5 + v * 4)
+
+        // Velocity, signed, ±1.5 progress/s full scale.
+        grid(velS, 2)
+        trace(velS, hist.vel, 'rgb(157 123 255)', (v) => 0.5 + v / 3)
+
+        // Frame time and seek cost against a 33ms ceiling; the midline is the
+        // 16.7ms budget.
+        grid(frameS, 2)
+        trace(frameS, hist.dt, 'rgb(110 231 215)', (v) => v / 33)
+        trace(frameS, hist.seek, 'rgb(255 122 69)', (v) => v / 33)
+
+        const fps = live && tm.dt ? 1000 / tm.dt : 0
+        readout.innerHTML =
+          `<span>pos <b>${fmt(tm.current)}</b></span>` +
+          `<span>lag <b>${fmt(live ? tm.lag : 0, 3)}</b></span>` +
+          `<span>vel <b>${fmt(live ? tm.velocity : 0)}</b>/s</span>` +
+          `<span class="${live && tm.dt > 25 ? 'warn' : ''}">fps <b>${live ? fps.toFixed(0) : '—'}</b></span>` +
+          `<span class="${tm.seekMs > 16 ? 'warn' : ''}">seek <b>${fmt(tm.seekMs, 1)}</b>ms</span>` +
+          `<span>peak <b>${fmt(peakSeek, 1)}</b>ms</span>` +
+          `<span>video <b>${(api.video?.currentTime ?? 0).toFixed(2)}</b>s</span>` +
+          `<span class="${dropped / Math.max(frames, 1) > 0.05 ? 'warn' : ''}">drop <b>${((dropped / Math.max(frames, 1)) * 100).toFixed(0)}</b>%</span>`
+
+        requestAnimationFrame(draw)
+      }
+      requestAnimationFrame(draw)
+    }
+
+    let tries = 0
+    const wait = () => {
+      const api = (window as any).__scrub
+      if (api) start(api)
+      else if (tries++ < 60) requestAnimationFrame(wait)
+    }
+    wait()
+    }
+  </script>
+)}

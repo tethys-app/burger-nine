@@ -1,0 +1,100 @@
+---
+// Experimental homepage: same page as `/`, but the hero is a scroll-scrubbed
+// video instead of a parallaxed still. Kept as its own route so the live
+// homepage is untouched while this is being judged.
+//
+// `?screens=3` changes how much scrolling plays the clip (default 2 screens).
+import Brand from '../layouts/Brand.astro'
+import Top from '../components/landing/Top.astro'
+import Bottom from '../components/landing/Bottom.astro'
+import ScrubHero from '../components/landing/ScrubHero.astro'
+import ScrubTuner from '../components/landing/ScrubTuner.astro'
+import StoreMapInteractive from '../components/StoreMapInteractive'
+import { getBrand } from '../lib/api'
+import type { Located } from '../lib/stores'
+import { fr as t } from '../i18n/fr'
+
+const brand = await getBrand()
+
+const ALL_LOCATIONS: { slug: string; city: string; zipcode: string }[] = [
+  { slug: 'b9-lyon-7', city: 'Lyon 7ᵉ', zipcode: '69007' },
+  { slug: 'b9-tassin', city: 'Tassin-la-Demi-Lune', zipcode: '69160' },
+  { slug: 'b9-vaugneray', city: 'Vaugneray', zipcode: '69670' },
+  { slug: 'b9-mornant', city: 'Mornant', zipcode: '69440' },
+  { slug: 'burger-nine-condrieu', city: 'Condrieu', zipcode: '69420' },
+  { slug: 'b9-sainte-colombe', city: 'Sainte-Colombe', zipcode: '69560' },
+  { slug: 'burger-nine-roussillon', city: 'Roussillon', zipcode: '38150' },
+  { slug: 'b9-beaurepaire', city: 'Beaurepaire', zipcode: '38270' },
+  { slug: 'b9-saint-jean-de-bournay', city: 'Saint-Jean-de-Bournay', zipcode: '38300' },
+  { slug: 'b9-nine-la-cote', city: 'La Côte-Saint-André', zipcode: '38260' },
+  { slug: 'b9-le-pont-de-beauvoisin', city: 'Le Pont-de-Beauvoisin', zipcode: '38480' },
+  { slug: 'burger-nine-gex', city: 'Gex', zipcode: '01170' },
+  { slug: 'b9-ferney-voltaire', city: 'Ferney-Voltaire', zipcode: '01210' },
+  { slug: 'burger-nine-annonay', city: 'Annonay', zipcode: '07100' },
+  { slug: 'b9-saint-vallier', city: 'Saint-Vallier', zipcode: '26240' },
+  { slug: 'b9-tain-l-hermitage', city: "Tain-l'Hermitage", zipcode: '26600' },
+]
+
+const connected = new Map(brand.stores.map((s) => [s.slug, s]))
+const liveSlugs = new Set(brand.stores.map((s) => s.slug))
+
+const allStores: Located[] = ALL_LOCATIONS.map((loc) => {
+  const live = connected.get(loc.slug)
+  if (live) return live
+  return {
+    slug: loc.slug,
+    name: `Burger Nine ${loc.city}`,
+    address: { street: null, zipcode: loc.zipcode, city: loc.city, country: 'FR', latitude: null, longitude: null },
+  }
+})
+
+const count = allStores.length
+---
+
+<Brand
+  title={`${brand.name} — ${t.brand.homeTitleSuffix}`}
+  description={`Smash burgers, tacos, bowls & sandwichs. ${count} restaurant${count > 1 ? 's' : ''} en Auvergne-Rhône-Alpes.`}
+>
+  {/* An experiment should never outrank the real homepage in search. */}
+  <meta slot="head" name="robots" content="noindex" />
+
+  {/* 4 screens of scrolling to play the 6s clip: 2 felt twitchy, every notch
+      of the wheel jumped several frames. */}
+  {/* `span` below 1 leaves the clip finished while the stage is still pinned.
+      The tail fills exactly that stretch, moving at true scroll speed so the
+      hold reads as a backdrop rather than as being stuck. */}
+  <ScrubHero screens={4} tail={ALL_LOCATIONS.map((l) => l.city)} />
+  {/* Dev only, `?tune` to open. Dropped entirely from production builds. */}
+  <ScrubTuner />
+  <Top storeCount={count} hero={false} />
+
+  <section class="sec restos-sec" id="restos">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <div>
+          <div class="overline">{t.restos.overline}</div>
+          <h2>{t.restos.title[0]}<br />{t.restos.title[1]}</h2>
+        </div>
+      </div>
+
+      <div class="map-wrap rv" id="map">
+        <StoreMapInteractive client:only="react" stores={allStores} liveSlugs={Array.from(liveSlugs)} />
+      </div>
+    </div>
+  </section>
+
+  <Bottom home />
+</Brand>
+
+<style>
+  .restos-sec { background: linear-gradient(180deg, var(--ink-800) 0%, var(--ink-900) 100%); }
+  .map-wrap {
+    margin-bottom: var(--space-5);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  }
+  @media (max-width: 640px) {
+    .map-wrap { border-radius: 14px; }
+  }
+</style>
