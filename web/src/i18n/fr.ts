@@ -3,12 +3,12 @@
 // swapping this file — no hunting through .astro markup for hardcoded text.
 export const fr = {
   nav: {
-    carte: 'La carte',
+    carte: 'Menu',
     hits: 'Les hits',
     spot: 'Le spot',
     restos: 'Nos restos',
     franchise: 'Franchise',
-    carrieres: 'Carrières',
+    carrieres: 'Postes',
     commandes: 'Mes commandes',
     commander: 'Commander',
     openMenuAria: 'Ouvrir le menu',
