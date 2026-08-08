@@ -48,7 +48,7 @@ export const fr = {
   spot: {
     overline: '03 · Le spot',
     quote: "« Askip c'est la meilleure frappe du coin »",
-    title: ['Le spot où', "t'as ta place"],
+    title: ['Le festin peut', 'commencer'],
     franchiseCta: 'Ouvrir mon Burger Nine',
     images: {
       salle: { alt: 'Burger Nine servi en salle' },
