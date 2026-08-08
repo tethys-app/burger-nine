@@ -2,6 +2,7 @@
 import Brand from '../layouts/Brand.astro'
 import Nav from '../components/Nav.astro'
 import Bottom from '../components/landing/Bottom.astro'
+import BnineButton from '../components/theme/BnineButton.astro'
 
 const roles = [
   { title: 'Équipier·ère polyvalent·e', desc: 'Service client, multi-tâches, formation continue sur le terrain.' },
@@ -22,7 +23,7 @@ const mailBody = encodeURIComponent(
 >
   <Nav />
 
-  <section class="sec" id="carrieres-hero" style="padding-top: 140px; padding-bottom: 40px">
+  <section class="sec" id="carrieres-hero" style="padding-top: 140px; padding-bottom: var(--space-7)">
     <div class="wrap">
       <div class="overline">Carrières</div>
       <h1 class="jobs-h1">
@@ -34,7 +35,7 @@ const mailBody = encodeURIComponent(
     </div>
   </section>
 
-  <section class="sec" id="pourquoi" style="padding-top: 0; padding-bottom: 40px">
+  <section class="sec" id="pourquoi" style="padding-top: 0; padding-bottom: var(--space-7)">
     <div class="wrap">
       <div class="jobs-perks rv">
         {perks.map((p) => <span class="jobs-perk">{p}</span>)}
@@ -42,7 +43,7 @@ const mailBody = encodeURIComponent(
     </div>
   </section>
 
-  <section class="sec" id="postes" style="padding-top: 20px; padding-bottom: 40px">
+  <section class="sec" id="postes" style="padding-top: var(--space-6); padding-bottom: var(--space-7)">
     <div class="wrap">
       <div class="sec-head rv">
         <div>
@@ -61,7 +62,7 @@ const mailBody = encodeURIComponent(
     </div>
   </section>
 
-  <section class="sec" id="postuler" style="padding-top: 20px">
+  <section class="sec" id="postuler" style="padding-top: var(--space-6)">
     <div class="wrap">
       <div class="jobs-apply rv">
         <div>
@@ -70,13 +71,12 @@ const mailBody = encodeURIComponent(
           <p class="jobs-apply-lede">CV + resto visé. On répond vite.</p>
         </div>
         <div class="jobs-apply-actions">
-          <a
-            class="btn bn-cta"
+          <BnineButton
             href={`mailto:carrieres@bnine.fr?subject=${mailSubject}&body=${mailBody}`}
+            arrow
           >
             Envoyer mon CV par mail
-            <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg>
-          </a>
+          </BnineButton>
           <a
             class="btn btn-ghost"
             href="https://www.instagram.com/b9.burgernine/"
@@ -100,7 +100,7 @@ const mailBody = encodeURIComponent(
     font-size: clamp(36px, 5.6vw, 66px);
     line-height: 1.02;
     text-transform: uppercase;
-    max-width: 780px;
+    max-width: 820px;
     margin-bottom: 22px;
   }
   .jobs-grad {
@@ -126,11 +126,11 @@ const mailBody = encodeURIComponent(
     padding: 10px 18px;
   }
 
-  .jobs-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .jobs-roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
   .jobs-role {
     border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 24px;
+    border-radius: 20px;
+    padding: var(--space-5);
     background: linear-gradient(160deg, rgba(255, 45, 158, .06), transparent 60%);
   }
   .jobs-role h3 { font-family: var(--display); font-weight: 800; font-size: 17px; text-transform: uppercase; margin-bottom: 10px; }
@@ -138,20 +138,24 @@ const mailBody = encodeURIComponent(
 
   .jobs-apply {
     background: linear-gradient(120deg, var(--pink-deep), var(--violet));
-    border-radius: 26px;
-    padding: 48px;
+    border-radius: 24px;
+    padding: var(--space-7);
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
-    gap: 32px;
+    gap: var(--space-6);
     align-items: center;
   }
   .jobs-apply h2 { font-family: var(--display); font-weight: 800; font-size: clamp(26px, 3.4vw, 40px); text-transform: uppercase; margin: 8px 0 14px; }
   .jobs-apply-lede { color: rgba(255,255,255,.85); font-size: 15.5px; max-width: 460px; }
   .jobs-apply-actions { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
-  .jobs-apply .btn-ghost { border-color: rgba(255,255,255,.5); }
+  .jobs-apply .btn-ghost { border-color: rgba(255,255,255,.5); min-height: 52px; }
 
   @media (max-width: 1020px) {
     .jobs-roles { grid-template-columns: minmax(0, 1fr); }
-    .jobs-apply { grid-template-columns: minmax(0, 1fr); padding: 32px 26px; }
+    .jobs-apply { grid-template-columns: minmax(0, 1fr); padding: var(--space-6) 20px; }
+  }
+
+  @media (max-width: 640px) {
+    .jobs-roles { gap: 12px; }
   }
 </style>
