@@ -1476,9 +1476,6 @@
           width: 100%;
           justify-content: center;
         }
-        .hero {
-          padding: 110px 20px 130px;
-        }
         .scroll-cue {
           display: none;
         }
@@ -1491,40 +1488,13 @@
           transform: none;
         }
 
-      /* Keep the mobile hero spacing from the latest iteration after the
-         legacy responsive block above. */
-      @media (max-width: 640px) {
-        .hero { padding: 80px 20px calc(20px + env(safe-area-inset-bottom, 0px)); }
-      }
-
-      /* Landing hero: a proper product stage on wide screens, with a single
-         clear ordering route instead of treating the burger as a backdrop. */
+      /* Landing hero: one immersive full-bleed city photograph behind the
+         copy at every breakpoint — never a left-text/right-image split. */
       .hero {
-        min-height: min(820px, 100svh);
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(360px, .94fr);
-        align-items: stretch;
-        justify-content: normal;
-        gap: clamp(22px, 6vw, 94px);
-        padding: 108px max(28px, calc((100vw - 1150px) / 2)) 52px;
+        position: relative;
         overflow: hidden;
-        /* One light source, one direction: a single warm-magenta glow behind
-           the product (as if it's lit by the plancha), rising out of a base
-           that goes almost black at the top and turns glossy magenta at the
-           bottom, like light pooling on a wet floor. */
-        background: radial-gradient(60% 85% at 84% 68%, #ff8fd6 0%, #ff2d9e 22%, #b0135f 42%, transparent 72%), linear-gradient(180deg, #030006 0%, #0a0210 22%, #260a1c 48%, #5c0d38 74%, #9c1560 100%);
+        background: linear-gradient(180deg, #030006 0%, #0a0210 22%, #260a1c 48%, #5c0d38 74%, #9c1560 100%);
       }
-      .hero::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        opacity: .22;
-        pointer-events: none;
-        background-image: linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px);
-        background-size: 56px 56px;
-        mask-image: linear-gradient(90deg, #000, transparent 66%);
-      }
-      .hero::after { background: linear-gradient(90deg, rgba(8,2,7,.18), transparent 50%, rgba(8,2,7,.15)); }
       .hero-copy {
         position: relative;
         z-index: 2;
@@ -1532,20 +1502,13 @@
         flex-direction: column;
         justify-content: center;
         align-items: flex-start;
-        max-width: 580px;
-        padding-bottom: 22px;
       }
       .hero h1 {
-        max-width: 620px;
         margin: 0;
-        font-size: clamp(38px, 4.6vw, 64px);
-        line-height: .92;
         letter-spacing: -.03em;
       }
       .hero-lede { max-width: 365px; margin: 24px 0 26px; font-size: 17px; line-height: 1.45; font-weight: 600; color: #fbd9eb; }
-      .hero-tagline { max-width: 420px; margin: 36px 0 0; font-family: var(--display); font-weight: 800; font-size: clamp(16px, 1.9vw, 22px); line-height: 1.1; text-transform: uppercase; letter-spacing: -.01em; color: #fbd9eb; }
-      .hero-act { width: auto; flex-direction: row; align-items: center; gap: 18px; margin-top: 40px; }
-      .hero .bn-cta { width: auto; min-width: 220px; min-height: 58px; padding: 0 30px; }
+      .hero-tagline { max-width: 420px; font-family: var(--display); font-weight: 800; line-height: 1.1; text-transform: uppercase; letter-spacing: -.01em; color: #fbd9eb; }
       .hero-menu-link { color: #fff; font-size: 14px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
       .hero-menu-link span { display: inline-block; margin-left: 6px; color: var(--yellow); font-size: 18px; transition: transform .2s; }
       .hero-menu-link:hover span { transform: translateY(3px); }
@@ -1553,57 +1516,61 @@
       .cat-link:hover { color: #fff; }
       .hero-sub { align-items: flex-start; margin-top: 20px; }
       .hero-proof { justify-content: flex-start; }
-      .hero-micro { text-align: left; margin-top: 28px; }
-      /* The city shot replaces the product cutout as the hero's right-hand
-         stage — full-bleed on its column, blended into the dark gradient on
-         its left edge instead of sitting in a card. */
-      .hero-city {
-        position: relative;
-        z-index: 1;
-        min-width: 0;
-        height: 100%;
-        overflow: hidden;
+      .hero-city { z-index: 0; }
+      .hero-city img { display: block; }
+
+      /* ---------- >760px: landscape shot, full-bleed absolute background, text on the dark left ---------- */
+      @media (min-width: 761px) {
+        .hero {
+          height: clamp(640px, 46vw, 860px);
+          padding: 108px max(28px, calc((100vw - 1150px) / 2)) 52px;
+        }
+        .hero-copy {
+          width: min(42vw, 620px);
+          max-width: 620px;
+          padding-bottom: 22px;
+        }
+        .hero h1 { max-width: 620px; font-size: clamp(38px, 4.2vw, 76px); line-height: .92; }
+        .hero-tagline { margin: 36px 0 0; font-size: clamp(16px, 1.9vw, 22px); }
+        .hero-act { width: auto; flex-direction: row; align-items: center; gap: 18px; margin-top: 40px; }
+        .hero .bn-cta { width: auto; min-width: 220px; min-height: 58px; padding: 0 30px; }
+        .hero-micro { text-align: left; margin-top: 28px; }
+        .hero-city {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+        }
+        .hero-city img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: 68% center;
+        }
+        .hero-city::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          background: linear-gradient(90deg, rgba(3,0,6,.95) 0%, rgba(10,2,16,.88) 20%, rgba(20,4,22,.5) 38%, rgba(20,4,22,.12) 56%, transparent 70%);
+        }
+        .hero-city::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          background: linear-gradient(180deg, rgba(3,0,6,.3) 0%, transparent 18%, transparent 80%, rgba(3,0,6,.28) 100%);
+        }
       }
-      .hero-city img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: 68% center;
-      }
-      .hero-city::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        pointer-events: none;
-        background: linear-gradient(90deg, #0a0210 0%, rgba(10,2,16,.55) 14%, transparent 32%);
-      }
-      .hero-city::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        pointer-events: none;
-        background: linear-gradient(180deg, rgba(3,0,6,.5) 0%, transparent 22%, transparent 78%, rgba(3,0,6,.4) 100%);
-      }
+
+      /* ---------- <=760px: portrait shot, drives the hero's height in normal flow (zero cropping), copy overlaid on the void up top ---------- */
       @media (max-width: 760px) {
         .hero {
-          min-height: auto;
-          display: block;
           padding: 0;
           background: #0a0210;
-          position: relative;
-          overflow: hidden;
         }
-        .hero::before { content: none; }
-        .hero::after { content: none; }
-        /* The mobile shot is purpose-built for this composition (dark/purple
-           void up top, billboard uncropped on the right lower down), so it
-           drives the hero's height in normal flow at its native aspect —
-           zero cropping — and the copy overlays on top, absolutely
-           positioned, instead of the image being fitted behind fixed text. */
         .hero-copy {
           position: absolute;
           z-index: 2;
@@ -1611,28 +1578,27 @@
           left: 0;
           right: 0;
           justify-content: flex-start;
-          padding: 108px 20px 0;
+          padding: clamp(72px, 15vh, 108px) 20px 0;
         }
         .hero h1 { max-width: 320px; margin-bottom: 0; font-size: clamp(32px, 9.5vw, 44px); }
-        .hero-tagline { margin: 32px 0 0; font-size: clamp(15px, 4.4vw, 19px); }
+        .hero-tagline { margin: clamp(16px, 4vh, 32px) 0 0; font-size: clamp(15px, 4.4vw, 19px); }
         .hero-lede { display: none; }
-        .hero-act { width: 100%; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 28px; margin-bottom: 4px; }
+        .hero-act { width: 100%; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: clamp(16px, 4.5vh, 28px); margin-bottom: 4px; }
         .hero .bn-cta { width: auto; min-width: 240px; min-height: 58px; padding: 0 32px; }
         .hero-micro { display: none; }
         .bn-bar { transform: translateY(0); }
         .hero-city {
           position: relative;
-          z-index: 0;
           width: 100%;
           height: auto;
         }
         .hero-city picture,
         .hero-city img {
-          /* The shared/desktop rule makes .hero-city img position:absolute
-             with inset:0 — never reset here, it took the image out of flow,
-             so height:auto resolved to 0 and overflow:hidden clipped the
-             whole hero away. This is the fix: put it back in normal flow so
-             its native aspect ratio drives the hero's height. */
+          /* The base/desktop rule makes .hero-city img position:absolute
+             with inset:0 — never reset here, it takes the image out of flow,
+             so height:auto resolves to 0 and overflow:hidden clips the
+             whole hero away. This puts it back in normal flow so its native
+             aspect ratio drives the hero's height. */
           position: static;
           inset: auto;
           display: block;
@@ -1643,6 +1609,4 @@
           opacity: 1;
           filter: none;
         }
-        .hero-city::before { content: none; }
-        .hero-city::after { content: none; }
       }
