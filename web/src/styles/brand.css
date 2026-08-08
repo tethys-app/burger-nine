@@ -351,8 +351,10 @@
       .bn-cta:active { transform: translate(5px, 5px) scale(.97); box-shadow: 0 0 0 var(--jazz-ink); transition-duration: .05s; }
       .bn-cta svg { width: 11px; height: 13px; }
       /* Franchise is a different pitch than "commander" — aspirational, not
-         urgent — so it gets its own gold rather than borrowing the ordering CTA's color. */
-      .bn-cta.gold { background: linear-gradient(135deg, #ffd27a, var(--jazz-peach)); }
+         urgent — so it gets its own treatment rather than borrowing the
+         ordering CTA's color: the brand's violet/bordeaux/magenta range
+         instead of the site's teal/peach ordering palette. */
+      .bn-cta.gold { background: linear-gradient(135deg, var(--violet), var(--pink-deep) 55%, var(--magenta)); color: #fff; }
       .hero .bn-cta { width: 100%; min-height: 60px; font-size: 18px; }
       .bn-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 110; display: flex; gap: 10px; align-items: center; padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(15,8,14,.92); backdrop-filter: blur(16px); border-top: 1px solid var(--line); transform: translateY(115%); transition: transform .28s ease; }
       .bn-bar.on { transform: translateY(0); }
