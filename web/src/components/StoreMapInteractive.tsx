@@ -21,6 +21,7 @@ export default function StoreMapInteractive({ stores, liveSlugs }: Props) {
   const elRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<import('leaflet').Map | null>(null)
   const markersRef = useRef<Record<string, import('leaflet').Marker>>({})
+  const roRef = useRef<ResizeObserver | null>(null)
   const [activeSlug, setActiveSlug] = useState<string | null>(null)
 
   const located = stores.flatMap((store) => {
@@ -79,10 +80,21 @@ export default function StoreMapInteractive({ stores, liveSlugs }: Props) {
       } else {
         map.setView([45.5, 4.7], 8)
       }
+
+      // Leaflet measures its container once at creation and caches that size —
+      // it has no way to know the container later changed (viewport resize,
+      // the section's own layout settling after fonts/images load). Without
+      // this it keeps panning/zooming against stale dimensions, which shows
+      // up as the map suddenly rendering zoomed out to the whole continent.
+      const ro = new ResizeObserver(() => map.invalidateSize())
+      ro.observe(elRef.current)
+      roRef.current = ro
     })()
 
     return () => {
       cancelled = true
+      roRef.current?.disconnect()
+      roRef.current = null
       mapRef.current?.remove()
       mapRef.current = null
       markersRef.current = {}
