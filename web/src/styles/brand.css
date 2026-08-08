@@ -181,24 +181,6 @@
         align-items: center;
         justify-content: space-between;
       }
-      /* A big, faint echo of the wordmark peeking from behind the crisp one —
-         texture, not a second piece of information. Confined to .nav-in's
-         own clip so it never pokes out past the pill's rounded corners. */
-      .nav-logo-echo {
-        position: absolute;
-        left: -10px;
-        top: 50%;
-        transform: translateY(-50%) rotate(-8deg);
-        width: 240px;
-        opacity: 0.28;
-        pointer-events: none;
-        z-index: 0;
-      }
-      .nav-logo-echo img {
-        width: 100%;
-        height: auto;
-        display: block;
-      }
       .nav-logo {
         position: relative;
         z-index: 1;
