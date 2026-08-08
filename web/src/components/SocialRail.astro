@@ -1,8 +1,8 @@
 ---
 // Fixed vertical rail, pinned to the right edge, present on every Brand-layout
-// page. Same three networks as the footer — this is just a persistent,
-// always-reachable version instead of one you have to scroll to find.
-// Hidden on mobile: the bottom order bar already claims that edge there.
+// page on every viewport size. Same three networks as the footer — this is
+// just a persistent, always-reachable version instead of one you have to
+// scroll to find.
 ---
 
 <aside class="soc-rail" aria-label="Réseaux sociaux">
@@ -90,10 +90,5 @@
 
   @media (prefers-reduced-motion: reduce) {
     .soc-rail-btn { transition: none; }
-  }
-
-  /* The bottom order bar already owns the mobile screen's edge real estate. */
-  @media (max-width: 900px) {
-    .soc-rail { display: none; }
   }
 </style>
