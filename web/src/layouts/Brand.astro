@@ -36,8 +36,10 @@ const { title, description, canonical } = Astro.props
     <style is:global>
       /* The marquee and hero glows are deliberately wider than the viewport.
          brand.css clips them on `body`, which just moves the scrollbar to
-         `html` — clip here too so there is no horizontal scroll. */
-      html { overflow-x: hidden; }
+         `html` — clip here too so there is no horizontal scroll.
+         `clip`, not `hidden`: `hidden` makes `html` a scroll container, which
+         silently kills `position: sticky` inside it (the scrubbed hero). */
+      html { overflow-x: clip; }
     </style>
     <script>
       // Scroll reveal, lifted from the POC. Degrades to "everything visible"

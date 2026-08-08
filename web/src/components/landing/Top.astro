@@ -6,13 +6,16 @@ import BnineButton from '../theme/BnineButton.astro'
 
 interface Props {
   storeCount?: number
+  /** Skip the built-in hero — /experimental supplies its own scrubbed one. */
+  hero?: boolean
 }
 
-const { storeCount = 0 } = Astro.props
+const { storeCount = 0, hero = true } = Astro.props
 ---
 
     <Nav home />
-
+{hero && (
+  <Fragment>
     <!-- HERO -->
     <section class="hero" id="top">
       <div class="hero-copy">
@@ -30,6 +33,8 @@ const { storeCount = 0 } = Astro.props
         </picture>
       </div>
     </section>
+  </Fragment>
+)}
     <div class="bn-bar" id="bnBar">
       <BnineButton href="#restos" arrow>{t.hero.cta}</BnineButton>
     </div>
@@ -37,7 +42,11 @@ const { storeCount = 0 } = Astro.props
       const bar = document.getElementById('bnBar')
       const hero = document.getElementById('top')
       if (bar && hero) {
-        const updateBar = () => bar.classList.toggle('on', window.scrollY > hero.offsetHeight * 0.55)
+        // On the scrubbed hero the section is several screens tall and the last
+        // one already shows a CTA over the storefront — only take over once the
+        // whole thing has been scrolled past, or the two CTAs stack.
+        const threshold = hero.classList.contains('scrub') ? 1 : 0.55
+        const updateBar = () => bar.classList.toggle('on', window.scrollY > hero.offsetHeight * threshold)
         window.addEventListener('scroll', updateBar, { passive: true })
         updateBar()
       }
@@ -45,6 +54,7 @@ const { storeCount = 0 } = Astro.props
 
       // Subtle parallax on the city shot: drifts slower than the page, so
       // it reads as sitting behind the gradient rather than printed on it.
+      // Absent on /experimental, where the hero is a scrubbed video instead.
       const city = document.querySelector<HTMLElement>('.hero-city img')
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       if (city && hero && !reduceMotion) {

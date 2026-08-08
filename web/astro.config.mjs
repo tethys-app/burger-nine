@@ -8,7 +8,7 @@ import tailwind from '@tailwindcss/vite'
 export default defineConfig({
   output: 'static',
   integrations: [react()],
-  server: { port: 4322 },
+  server: { port: 4322, allowedHosts: true },
   site: process.env.PUBLIC_SITE_URL,
   build: { inlineStylesheets: 'auto' },
   vite: { plugins: [tailwind()] },

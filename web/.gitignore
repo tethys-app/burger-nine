@@ -4,3 +4,6 @@ node_modules/
 .env
 .env.local
 .env.*.local
+
+# Scrub tuner encode variants — regenerated on demand by scripts/encode-server.mjs
+public/assets/video/tune/

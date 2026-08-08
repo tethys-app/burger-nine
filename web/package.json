@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "build": "node scripts/check-invariants.mjs && astro build",
     "preview": "astro preview",
+    "encode-server": "bun scripts/encode-server.mjs",
     "check": "bun scripts/check-invariants.mjs && astro check"
   },
   "dependencies": {

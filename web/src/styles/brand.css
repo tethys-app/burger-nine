@@ -106,7 +106,10 @@
         font-size: 16px;
         line-height: 1.65;
         -webkit-font-smoothing: antialiased;
-        overflow-x: hidden;
+        /* `clip`, not `hidden`: `hidden` makes body a scroll container, which
+           silently breaks `position: sticky` inside it. Same guard, no side
+           effect. */
+        overflow-x: clip;
       }
       ::selection {
         background: var(--pink);
