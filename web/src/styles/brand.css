@@ -1526,7 +1526,11 @@
           display: flex;
           align-items: center;
           height: clamp(640px, 46vw, 860px);
-          padding: 116px max(28px, calc((100vw - 1150px) / 2)) 84px;
+          /* Match the nav pill's own content inset exactly (left:14px +
+             max-width:1240px centering + 28px inner padding) so the
+             headline's left edge lines up with the logo's, instead of
+             drifting apart under a different max-width/padding pair. */
+          padding: 116px max(42px, calc((100vw - 1240px) / 2 + 28px)) 84px;
         }
         .hero-copy {
           width: min(42vw, 620px);
