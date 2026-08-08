@@ -8,6 +8,7 @@ export const fr = {
     restos: 'Nos restos',
     franchise: 'Franchise',
     carrieres: 'Carrières',
+    commandes: 'Mes commandes',
     commander: 'Commander',
     openMenuAria: 'Ouvrir le menu',
     homeAria: 'Burger Nine — accueil',

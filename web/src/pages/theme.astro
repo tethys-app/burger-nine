@@ -1,0 +1,128 @@
+---
+import Brand from '../layouts/Brand.astro'
+import BnineButton from '../components/theme/BnineButton.astro'
+import BnineCard from '../components/theme/BnineCard.astro'
+import BnineMenuButton from '../components/theme/BnineMenuButton.astro'
+
+const colors = [
+  ['Cyan', '--b9-cyan', 'Action / navigation'],
+  ['Yellow', '--b9-yellow', 'Price / warm highlight'],
+  ['Peach', '--b9-peach', 'Franchise action'],
+  ['Pink', '--b9-pink', 'Accent / section cue'],
+  ['Coral', '--b9-coral', 'Playful supporting accent'],
+  ['Ink', '--b9-ink', 'Border / hard shadow'],
+  ['Night', '--b9-night', 'Page depth'],
+  ['Panel', '--b9-panel', 'Card surface'],
+] as const
+---
+
+<Brand title="Thème Burger Nine" description="Les fondations visuelles canoniques de Burger Nine.">
+  <main class="theme-page">
+    <header class="theme-hero">
+      <p class="b9-overline">Burger Nine / canon</p>
+      <h1>Le système qui fait<br /><span>Bang.</span></h1>
+      <p>Une référence vivante pour les couleurs, contrôles et surfaces du site Burger Nine.</p>
+    </header>
+
+    <section class="theme-section" aria-labelledby="colors-title">
+      <div class="theme-heading">
+        <p class="b9-overline">01 / Couleurs</p>
+        <h2 id="colors-title">La palette</h2>
+      </div>
+      <div class="theme-swatches">
+        {colors.map(([name, token, role]) => (
+          <article class="theme-swatch">
+            <div class="theme-swatch-color" style={`background: var(${token})`}></div>
+            <h3>{name}</h3>
+            <code>{token}</code>
+            <p>{role}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="theme-section" aria-labelledby="actions-title">
+      <div class="theme-heading">
+        <p class="b9-overline">02 / Actions</p>
+        <h2 id="actions-title">Le clic, en dur</h2>
+      </div>
+      <div class="theme-demo-panel">
+        <div class="theme-actions">
+          <div><BnineButton href="#actions-title" arrow>Commander</BnineButton><small>CTA principal · cyan</small></div>
+          <div><BnineButton href="#actions-title" variant="gold" arrow>Devenir franchisé</BnineButton><small>CTA aspirationnel · or / pêche</small></div>
+          <div><BnineButton href="#actions-title" variant="white" size="small">Voir la carte</BnineButton><small>Action neutre · blanc</small></div>
+        </div>
+        <div class="theme-menu-demo">
+          <div class="b9-nav-pill">
+            <img src="/assets/f4c82effa1f42578.png" alt="Burger Nine" />
+            <BnineMenuButton label="Ouvrir le menu" />
+          </div>
+          <p>Navigation : pilule cyan + bouton burger blanc, bord encre et ombre décalée.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="theme-section" aria-labelledby="components-title">
+      <div class="theme-heading">
+        <p class="b9-overline">03 / Composants</p>
+        <h2 id="components-title">Cadres & repères</h2>
+      </div>
+      <div class="theme-components">
+        <BnineCard>
+          <div slot="media" class="theme-card-media"><span class="b9-tag">Nouveauté</span></div>
+          <h3 class="b9-card__title">La carte</h3>
+          <p class="b9-card__copy">Les surfaces sont sombres, les coins généreux et le rose ne sert qu'à attirer l'œil.</p>
+        </BnineCard>
+        <div class="theme-controls">
+          <span class="b9-tag">Smash burger</span>
+          <div class="theme-chip-row">
+            <button class="b9-chip" type="button" aria-pressed="true">Burgers</button>
+            <button class="b9-chip" type="button" aria-pressed="false">Tacos</button>
+            <button class="b9-chip" type="button" aria-pressed="false">Bowls</button>
+          </div>
+          <p class="theme-copy">Le tag identifie une image. Les chips filtrent sans concurrencer le CTA.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="theme-section theme-type" aria-labelledby="type-title">
+      <p class="b9-overline">04 / Typographie</p>
+      <h2 id="type-title">Faim. <span>Folie.</span><br />Frappé juste.</h2>
+      <p>Baloo 2 porte les messages forts, Fredoka garde les détails légers et lisibles. Tout titre de campagne est en capitales.</p>
+    </section>
+  </main>
+</Brand>
+
+<style is:global>
+  .theme-page { min-height: 100svh; padding: 104px max(20px, calc((100vw - 1120px) / 2)) 100px; background: radial-gradient(circle at 88% 4%, rgb(0 210 195 / .14), transparent 25%), var(--b9-night); }
+  .theme-hero { max-width: 760px; padding: 54px 0 86px; }
+  .theme-hero h1, .theme-heading h2, .theme-type h2 { margin: 0; color: var(--b9-text); font-family: var(--b9-font-display); font-size: clamp(44px, 7vw, 82px); font-weight: 800; letter-spacing: -.02em; line-height: .95; text-transform: uppercase; }
+  .theme-hero h1 span, .theme-type h2 span { color: var(--b9-cyan); }
+  .theme-hero > p:last-child { max-width: 560px; margin: 24px 0 0; color: var(--b9-muted); font-size: 18px; }
+  .theme-section { padding: 52px 0; border-top: 1px solid var(--b9-line); }
+  .theme-heading { margin-bottom: 30px; }
+  .theme-heading h2 { font-size: clamp(30px, 4vw, 48px); }
+  .theme-swatches { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .theme-swatch { overflow: hidden; border: 1px solid var(--b9-line); border-radius: 14px; background: rgb(255 255 255 / .035); }
+  .theme-swatch-color { height: 84px; border-bottom: 1px solid rgb(255 255 255 / .12); }
+  .theme-swatch h3 { margin: 13px 14px 2px; font-family: var(--b9-font-display); font-size: 19px; letter-spacing: .02em; text-transform: uppercase; }
+  .theme-swatch code { display: block; margin: 0 14px; color: var(--b9-cyan); font-size: 11px; }
+  .theme-swatch p { margin: 8px 14px 15px; color: var(--b9-muted); font-size: 12px; line-height: 1.35; }
+  .theme-demo-panel { display: grid; grid-template-columns: 1.3fr 1fr; gap: 22px; padding: 28px; border-radius: var(--b9-radius-card); background: var(--b9-panel); border: 1px solid var(--b9-line); }
+  .theme-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 22px; }
+  .theme-actions > div { display: grid; gap: 10px; }
+  .theme-actions small { color: var(--b9-muted); font-size: 11px; }
+  .theme-menu-demo { display: grid; gap: 12px; align-content: start; }
+  .theme-menu-demo .b9-nav-pill { min-height: 66px; padding: 0 17px; }
+  .theme-menu-demo img { width: auto; height: 45px; }
+  .theme-menu-demo p, .theme-copy { margin: 0; color: var(--b9-muted); font-size: 13px; line-height: 1.45; }
+  .theme-components { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 22px; }
+  .theme-card-media { position: relative; min-height: 164px; padding: 14px; background: linear-gradient(125deg, var(--b9-pink-deep), var(--b9-coral) 46%, var(--b9-yellow)); }
+  .theme-controls { display: grid; align-content: center; gap: 18px; padding: 28px; border: 1px solid var(--b9-line); border-radius: var(--b9-radius-card); background: rgb(255 255 255 / .03); }
+  .theme-chip-row { display: flex; flex-wrap: wrap; gap: 9px; }
+  .theme-type { max-width: 780px; }
+  .theme-type h2 { font-size: clamp(40px, 6vw, 70px); }
+  .theme-type > p:last-child { max-width: 550px; margin: 22px 0 0; color: var(--b9-muted); font-size: 17px; }
+  @media (max-width: 780px) { .theme-swatches { grid-template-columns: repeat(2, minmax(0, 1fr)); } .theme-demo-panel, .theme-components { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .theme-page { padding-top: 82px; padding-bottom: 64px; } .theme-hero { padding: 34px 0 56px; } .theme-demo-panel { padding: 20px; } .theme-actions { display: grid; } .theme-actions .b9-button { width: 100%; } }
+</style>

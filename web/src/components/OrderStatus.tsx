@@ -1,22 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getOrder } from '../lib/api'
-import { money } from '../lib/format'
+import { money, STATUS_LABELS as LABELS } from '../lib/format'
 import type { Order } from '../lib/types'
-
-const LABELS: Record<Order['status'], string> = {
-  pending_payment: 'Confirmation du paiement…',
-  payment_failed: 'Le paiement n’a pas abouti.',
-  new: 'Commande reçue',
-  received: 'Commande reçue',
-  accepted: 'Commande acceptée',
-  in_preparation: 'En préparation',
-  awaiting_collection: 'Prête — à récupérer',
-  in_delivery: 'En livraison',
-  completed: 'Terminée',
-  rejected: 'Refusée par le restaurant',
-  cancelled: 'Annulée',
-  delivery_failed: 'Échec de la livraison',
-}
 
 export default function OrderStatus() {
   const [order, setOrder] = useState<Order>()

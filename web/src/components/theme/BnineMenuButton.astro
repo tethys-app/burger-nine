@@ -1,0 +1,14 @@
+---
+interface Props {
+  label: string
+  controls?: string
+  expanded?: boolean
+  class?: string
+}
+
+const { label, controls, expanded = false, class: className } = Astro.props
+---
+
+<button class:list={['nav-menu-btn', 'b9-menu-button', className]} aria-label={label} aria-expanded={expanded} aria-controls={controls}>
+  <span></span><span></span><span></span>
+</button>

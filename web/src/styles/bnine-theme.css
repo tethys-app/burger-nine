@@ -1,0 +1,151 @@
+/*
+ * Burger Nine's small, shared visual language.
+ *
+ * Use the b9-* tokens and components for new marketing UI. The older aliases
+ * below deliberately keep the existing landing and ordering surfaces working
+ * while they are gradually moved across.
+ */
+:root {
+  --b9-cyan: #00d2c3;
+  --b9-cyan-deep: #00a99d;
+  --b9-yellow: #ffb020;
+  --b9-peach: #ffb35e;
+  --b9-coral: #ff5b4d;
+  --b9-mustard: #ffcf3f;
+  --b9-pink: #ff2e93;
+  --b9-pink-hot: #ff5cae;
+  --b9-pink-deep: #c00f66;
+  --b9-ink: #111111;
+  --b9-night: #12070f;
+  --b9-panel: #260f2a;
+  --b9-line: rgb(255 255 255 / 0.14);
+  --b9-text: #ffffff;
+  --b9-muted: #f0cfe2;
+
+  --b9-font-display: "Baloo 2", "Fredoka", sans-serif;
+  --b9-font-body: "Fredoka", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --b9-radius-pill: 999px;
+  --b9-radius-card: 20px;
+  --b9-border: 3px solid var(--b9-ink);
+  --b9-shadow: 5px 5px 0 var(--b9-ink);
+  --b9-shadow-tight: 3px 3px 0 var(--b9-ink);
+
+  /* Existing page aliases. New work should prefer the b9-* names above. */
+  --jazz-teal: var(--b9-cyan);
+  --jazz-peach: var(--b9-peach);
+  --jazz-coral: var(--b9-coral);
+  --jazz-mustard: var(--b9-mustard);
+  --jazz-ink: var(--b9-ink);
+  --yellow: var(--b9-yellow);
+}
+
+.b9-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 12px 24px;
+  border: var(--b9-border);
+  border-radius: var(--b9-radius-pill);
+  box-shadow: var(--b9-shadow);
+  color: var(--b9-ink);
+  font-family: var(--b9-font-display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: .05em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: transform .12s ease-out, box-shadow .12s ease-out, background .12s ease-out;
+}
+.b9-button:hover { transform: translate(2px, 2px); box-shadow: var(--b9-shadow-tight); }
+.b9-button:active { transform: translate(5px, 5px) scale(.97); box-shadow: 0 0 0 var(--b9-ink); transition-duration: .05s; }
+.b9-button:focus-visible,
+.b9-menu-button:focus-visible { outline: 3px solid var(--b9-mustard); outline-offset: 3px; }
+.b9-button--cyan { background: var(--b9-cyan); }
+.b9-button--gold { background: linear-gradient(135deg, #ffd27a, var(--b9-peach)); }
+.b9-button--white { background: #fff; }
+.b9-button--small { min-height: 42px; padding: 9px 16px; font-size: 12px; }
+.b9-button--large { min-height: 60px; padding: 15px 30px; font-size: 18px; }
+.b9-button__arrow { width: 11px; height: 13px; flex: none; }
+
+/* The white circular control that sits in the cyan navigation pill. */
+.b9-menu-button {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0;
+  border: var(--b9-border);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 4px 4px 0 var(--b9-ink);
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+}
+.b9-menu-button:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--b9-ink); }
+.b9-menu-button:active { transform: translate(4px, 4px); box-shadow: none; }
+.b9-menu-button span { width: 18px; height: 2px; border-radius: 2px; background: var(--b9-ink); transition: transform .25s, opacity .2s; }
+.b9-menu-button[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.b9-menu-button[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.b9-menu-button[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.b9-nav-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 76px;
+  padding: 0 28px;
+  border: var(--b9-border);
+  border-radius: var(--b9-radius-pill);
+  background: var(--b9-cyan);
+  box-shadow: 6px 6px 0 var(--b9-ink);
+}
+
+.b9-card {
+  overflow: hidden;
+  border: 1px solid var(--b9-line);
+  border-radius: var(--b9-radius-card);
+  background: var(--b9-panel);
+  transition: transform .25s, border-color .25s, box-shadow .25s;
+}
+.b9-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--b9-pink) 55%, transparent); box-shadow: 0 22px 60px rgb(0 0 0 / .35); }
+.b9-card__body { padding: 20px 22px 24px; }
+.b9-card__title { margin: 0; font-family: var(--b9-font-display); font-size: 21px; font-weight: 800; letter-spacing: .03em; line-height: 1.1; text-transform: uppercase; }
+.b9-card__copy { margin: 8px 0 0; color: var(--b9-muted); font-size: 14px; line-height: 1.55; }
+
+.b9-tag,
+.b9-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--b9-radius-pill);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.b9-tag { padding: 7px 11px; border: 1px solid rgb(255 255 255 / .2); background: rgb(18 7 15 / .58); color: var(--b9-text); backdrop-filter: blur(8px); }
+.b9-chip { padding: 9px 15px; border: 1px solid var(--b9-line); color: var(--b9-muted); transition: border-color .2s, color .2s, background .2s; }
+.b9-chip:hover,
+.b9-chip[aria-pressed="true"] { border-color: var(--b9-cyan); background: color-mix(in srgb, var(--b9-cyan) 16%, transparent); color: var(--b9-text); }
+
+.b9-overline { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; color: var(--b9-pink); font-size: 12px; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; }
+.b9-overline::before { content: ""; width: 26px; height: 2px; background: currentColor; }
+
+@media (max-width: 640px) {
+  .b9-nav-pill { min-height: 66px; padding: 0 18px; }
+  .b9-menu-button { width: 42px; height: 42px; }
+  .b9-button--large { min-height: 56px; font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .b9-button, .b9-menu-button, .b9-card, .b9-chip { transition: none; }
+}

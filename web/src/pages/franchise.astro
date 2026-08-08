@@ -2,6 +2,7 @@
 import Brand from '../layouts/Brand.astro'
 import Nav from '../components/Nav.astro'
 import Bottom from '../components/landing/Bottom.astro'
+import BnineButton from '../components/theme/BnineButton.astro'
 ---
 
 <Brand
@@ -115,17 +116,15 @@ import Bottom from '../components/landing/Bottom.astro'
             </div>
           </div>
           <div class="cta-row" style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 36px">
-            <a
+            <BnineButton
               href="https://www.instagram.com/b9.burgernine/"
+              variant="gold"
+              arrow
               target="_blank"
               rel="noopener"
-              class="btn bn-cta gold"
             >
               Candidater sur Instagram
-              <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
-                <path d="M0 0l10 6-10 6z" />
-              </svg>
-            </a>
+            </BnineButton>
           </div>
         </div>
       </div>

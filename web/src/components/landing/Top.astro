@@ -2,6 +2,7 @@
 // Verbatim from poc-website/index.html — static brand content.
 import Nav from '../Nav.astro'
 import { fr as t } from '../../i18n/fr'
+import BnineButton from '../theme/BnineButton.astro'
 
 interface Props {
   storeCount?: number
@@ -18,7 +19,7 @@ const { storeCount = 0 } = Astro.props
         <h1>{t.hero.headlineLead}<br />{t.hero.headlineMid}<span class="hl-frappe">{t.hero.headlineHighlight}</span><br />{t.hero.headlineTrail}.</h1>
         <p class="hero-tagline">{t.hero.headlineLines[0]} {t.hero.headlineLines[1]}</p>
         <div class="hero-act">
-          <a class="btn bn-cta" href="#restos">{t.hero.cta} <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg></a>
+          <BnineButton href="#restos" arrow>{t.hero.cta}</BnineButton>
         </div>
         <p class="hero-micro"><a href="#franchise">{t.hero.micro}</a></p>
       </div>
@@ -30,7 +31,7 @@ const { storeCount = 0 } = Astro.props
       </div>
     </section>
     <div class="bn-bar" id="bnBar">
-      <a class="btn bn-cta" href="#restos">{t.hero.cta} <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg></a>
+      <BnineButton href="#restos" arrow>{t.hero.cta}</BnineButton>
     </div>
     <script>
       const bar = document.getElementById('bnBar')

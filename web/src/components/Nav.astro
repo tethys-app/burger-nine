@@ -2,6 +2,8 @@
 // Site nav. On the landing page the links are in-page anchors; everywhere else
 // they have to point back home, so `home` prefixes them.
 import { fr as t } from '../i18n/fr'
+import BnineButton from './theme/BnineButton.astro'
+import BnineMenuButton from './theme/BnineMenuButton.astro'
 
 interface Props {
   /** True on the landing page, where the targets are on this page already. */
@@ -22,16 +24,7 @@ const to = (hash: string) => (home ? hash : `/${hash}`)
     <a href={home ? '#top' : '/'} class="nav-logo" aria-label={t.nav.homeAria}>
       <img src="/assets/f4c82effa1f42578.png" alt="Burger Nine" />
     </a>
-    <button
-      class="nav-menu-btn"
-      aria-label={t.nav.openMenuAria}
-      aria-expanded="false"
-      aria-controls="nav-dropdown"
-    >
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
+    <BnineMenuButton label={t.nav.openMenuAria} controls="nav-dropdown" />
   </div>
   <nav class="nav-dropdown" id="nav-dropdown">
     <a class="lnk" href="/carte">{t.nav.carte}</a>
@@ -39,12 +32,10 @@ const to = (hash: string) => (home ? hash : `/${hash}`)
     <a class="lnk" href={to('#restos')}>{t.nav.restos}</a>
     <a class="lnk" href={to('#franchise')}>{t.nav.franchise}</a>
     <a class="lnk" href="/carrieres">{t.nav.carrieres}</a>
-    <a href={to('#restos')} class="btn bn-cta">
+    <a class="lnk" href="/mes-commandes">{t.nav.commandes}</a>
+    <BnineButton href={to('#restos')} arrow>
       {t.nav.commander}
-      <svg viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
-        <path d="M0 0l10 6-10 6z"></path>
-      </svg>
-    </a>
+    </BnineButton>
   </nav>
 </header>
 

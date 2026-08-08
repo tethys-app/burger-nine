@@ -1,0 +1,18 @@
+---
+interface Props {
+  href?: string
+  variant?: 'cyan' | 'gold' | 'white'
+  size?: 'small' | 'default' | 'large'
+  arrow?: boolean
+  target?: '_blank' | '_self'
+  rel?: string
+  class?: string
+}
+
+const { href = '#', variant = 'cyan', size = 'default', arrow = false, target, rel, class: className } = Astro.props
+---
+
+<a class:list={['btn', 'bn-cta', 'b9-button', `b9-button--${variant}`, size !== 'default' && `b9-button--${size}`, className]} href={href} target={target} rel={rel}>
+  <slot />
+  {arrow && <svg class="b9-button__arrow" viewBox="0 0 10 12" fill="currentColor" aria-hidden="true"><path d="M0 0l10 6-10 6z" /></svg>}
+</a>
