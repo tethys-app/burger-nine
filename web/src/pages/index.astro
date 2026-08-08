@@ -1,7 +1,14 @@
 ---
+// Experimental homepage: same page as `/`, but the hero is a scroll-scrubbed
+// video instead of a parallaxed still. Kept as its own route so the live
+// homepage is untouched while this is being judged.
+//
+// `?screens=3` changes how much scrolling plays the clip (default 2 screens).
 import Brand from '../layouts/Brand.astro'
 import Top from '../components/landing/Top.astro'
 import Bottom from '../components/landing/Bottom.astro'
+import ScrubHero from '../components/landing/ScrubHero.astro'
+import ScrubTuner from '../components/landing/ScrubTuner.astro'
 import StoreMapInteractive from '../components/StoreMapInteractive'
 import { getBrand } from '../lib/api'
 import type { Located } from '../lib/stores'
@@ -9,9 +16,6 @@ import { fr as t } from '../i18n/fr'
 
 const brand = await getBrand()
 
-// Every B9 / Burger Nine spot, connected or not. The POC hardcoded these 16
-// cities as inert divs; the two live in brand.stores link to a real menu,
-// the rest show as upcoming so the map and grid read as the whole chain.
 const ALL_LOCATIONS: { slug: string; city: string; zipcode: string }[] = [
   { slug: 'b9-lyon-7', city: 'Lyon 7ᵉ', zipcode: '69007' },
   { slug: 'b9-tassin', city: 'Tassin-la-Demi-Lune', zipcode: '69160' },
@@ -50,19 +54,26 @@ const count = allStores.length
 <Brand
   title={`${brand.name} — ${t.brand.homeTitleSuffix}`}
   description={`Smash burgers, tacos, bowls & sandwichs. ${count} restaurant${count > 1 ? 's' : ''} en Auvergne-Rhône-Alpes.`}
-  canonical={brand.siteUrl ?? undefined}
 >
-  <Top storeCount={count} />
+  {/* An experiment should never outrank the real homepage in search. */}
+  <meta slot="head" name="robots" content="noindex" />
 
-  {/* Every B9 / Burger Nine spot. The two connected to GET /v1/brands/{brand}
-      link to a real menu; the rest of the chain shows as "bientôt". */}
+  {/* 4 screens of scrolling to play the 6s clip: 2 felt twitchy, every notch
+      of the wheel jumped several frames. */}
+  {/* `span` below 1 leaves the clip finished while the stage is still pinned.
+      The tail fills exactly that stretch, moving at true scroll speed so the
+      hold reads as a backdrop rather than as being stuck. */}
+  <ScrubHero screens={4} tail={ALL_LOCATIONS.map((l) => l.city)} />
+  {/* Dev only, `?tune` to open. Dropped entirely from production builds. */}
+  <ScrubTuner />
+  <Top storeCount={count} hero={false} />
+
   <section class="sec restos-sec" id="restos">
     <div class="wrap">
       <div class="sec-head rv">
         <div>
           <div class="overline">{t.restos.overline}</div>
-          <h2>{t.restos.title[0]}</h2>
-          <p class="restos-sub">{t.restos.title[1]}</p>
+          <h2>{t.restos.title[0]}<br />{t.restos.title[1]}</h2>
         </div>
       </div>
 
@@ -77,15 +88,6 @@ const count = allStores.length
 
 <style>
   .restos-sec { background: linear-gradient(180deg, var(--ink-800) 0%, var(--ink-900) 100%); }
-  .restos-sub {
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: clamp(16px, 1.8vw, 20px);
-    color: var(--muted);
-    margin-top: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
   .map-wrap {
     margin-bottom: var(--space-5);
     border-radius: 18px;
