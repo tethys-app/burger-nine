@@ -614,7 +614,12 @@
       .mosaic {
         display: grid;
         grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-        grid-template-rows: 250px 250px;
+        /* Rows are sized from m2/m3's own aspect-ratio rather than a fixed
+           px height, so the crop stays proportional as the fluid columns
+           change width — a fixed height here made the effective crop ratio
+           (and how tightly the two right-hand photos got cropped) drift
+           unpredictably across viewport widths. */
+        grid-template-rows: auto auto;
         gap: 20px;
       }
       .mosaic .m {
@@ -631,6 +636,13 @@
       }
       .mosaic .m1 {
         grid-row: 1/3;
+      }
+      /* Same ratio as the "La carte" cards (.card-img) — one consistent
+         photo-tile proportion across the two grids instead of a bespoke
+         one-off per section. */
+      .mosaic .m2,
+      .mosaic .m3 {
+        aspect-ratio: 4/3.4;
       }
       .mosaic .m1 img {
         object-position: 50% 40%;
@@ -951,10 +963,13 @@
         }
         .mosaic {
           grid-template-columns: minmax(0, 1fr);
-          grid-template-rows: 300px 210px 210px;
+          grid-template-rows: none;
         }
+        /* Single column here, so all three tiles read as one consistent
+           set rather than the desktop's tall-left/stacked-right split. */
         .mosaic .m1 {
           grid-row: auto;
+          aspect-ratio: 4/3.4;
         }
         .cta-row .btn {
           width: 100%;
