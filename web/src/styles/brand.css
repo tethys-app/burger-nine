@@ -988,11 +988,16 @@
       }
       .hero h1 {
         margin: 0;
+        font-family: var(--display);
+        font-weight: 800;
+        text-transform: uppercase;
         letter-spacing: -.03em;
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(10,2,6,.9), 0 3px 10px rgba(10,2,6,.75), 0 12px 30px rgba(10,2,6,.5);
       }
       .hl-frappe { color: var(--jazz-teal); }
       .hero-copy .hero-lede { max-width: 365px; margin: 24px 0 26px; font-size: 17px; line-height: 1.45; font-weight: 600; color: #fbd9eb; }
-      .hero-copy .hero-tagline { max-width: 420px; font-family: var(--display); font-weight: 700; line-height: 1.25; text-transform: uppercase; letter-spacing: .01em; color: #fbd9eb; opacity: .92; }
+      .hero-copy .hero-tagline { max-width: 420px; font-family: var(--display); font-weight: 800; line-height: 1.25; text-transform: uppercase; letter-spacing: 0; color: #f7d6ea; opacity: 1; text-shadow: 0 2px 3px rgba(0,0,0,.45), 0 5px 18px rgba(0,0,0,.25); }
       .hero-menu-link { color: #fff; font-size: 14px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
       .hero-menu-link span { display: inline-block; margin-left: 6px; color: var(--yellow); font-size: 18px; transition: transform .2s; }
       .hero-menu-link:hover span { transform: translateY(3px); }
@@ -1063,6 +1068,17 @@
           padding: 0;
           background: #0a0210;
         }
+        /* Localized readability gradient: darkens the copy region against the
+           dark/plum upper part of the portrait shot, then clears before the
+           bright city + billboard lower down. Does not touch the image itself. */
+        .hero::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+          background: linear-gradient(to bottom, rgba(20,7,20,.72) 0%, rgba(25,8,24,.52) 28%, rgba(30,8,28,.18) 48%, transparent 62%);
+        }
         .hero-copy {
           position: absolute;
           z-index: 2;
@@ -1070,12 +1086,12 @@
           left: 0;
           right: 0;
           justify-content: flex-start;
-          padding: clamp(72px, 15vh, 108px) 20px 0;
+          padding: clamp(60px, 12vh, 92px) 20px 0;
         }
         .hero h1 { max-width: 320px; margin-bottom: 0; font-size: clamp(32px, 9.5vw, 44px); }
-        .hero-copy .hero-tagline { margin: clamp(10px, 2.2vh, 16px) 0 0; font-size: clamp(15px, 4.4vw, 19px); }
+        .hero-copy .hero-tagline { margin: clamp(8px, 1.8vh, 13px) 0 0; font-size: clamp(15px, 4.4vw, 19px); }
         .hero-lede { display: none; }
-        .hero-act { width: 100%; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: clamp(20px, 4.5vh, 30px); margin-bottom: 4px; }
+        .hero-act { width: 100%; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: clamp(16px, 3.6vh, 24px); margin-bottom: 4px; }
         .hero .bn-cta { width: auto; min-width: 240px; min-height: 58px; padding: 0 34px 0 10px; }
         .hero-copy .hero-micro { display: none; }
         .bn-bar { transform: translateY(0); }
