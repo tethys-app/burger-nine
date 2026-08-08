@@ -5,6 +5,7 @@ export const fr = {
   nav: {
     carte: 'La carte',
     hits: 'Les hits',
+    spot: 'Le spot',
     restos: 'Nos restos',
     franchise: 'Franchise',
     carrieres: 'Carrières',
@@ -25,7 +26,7 @@ export const fr = {
   },
   carte: {
     overline: '01 · La carte',
-    title: 'À la une',
+    title: 'En vedette',
     catalogueLink: 'Voir le catalogue complet',
     items: {
       burgers: { name: 'Burgers', alt: 'Burger smashé Burger Nine' },
@@ -37,7 +38,7 @@ export const fr = {
   hits: {
     overline: '02 · Les hits',
     title: ['Commandez.', 'Recommandez.'],
-    side: 'Les recettes qui reviennent commande après commande.',
+    side: 'Des burgers gourmands, sandwichs bien garnis, tacos gratinés & plus encore. Oui, ça frappe toujours autant.',
     discover: 'Découvrir',
     items: {
       smashBowl: { alt: 'Le Smash Bowl signature' },
@@ -58,7 +59,7 @@ export const fr = {
   },
   restos: {
     overline: '04 · Nos restaurants',
-    title: ['Bientôt 20 spots en France !', 'Trouve ton Nine'],
+    title: ['Le Nine frappe à ta porte', 'Trouve ton Nine'],
   },
   footer: {
     tagline: "C'est vraiment de la frappe",
