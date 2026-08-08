@@ -1491,7 +1491,16 @@
       /* Landing hero: one immersive full-bleed city photograph behind the
          copy at every breakpoint — never a left-text/right-image split. */
       .hero {
+        /* Two much-earlier hero redesigns above (kept for history, both
+           fully superseded) still leave display:flex, flex-direction:column
+           and justify-content:space-between on this same selector with equal
+           specificity — cascade lets the last declaration of each property
+           win independently, so unless every layout property is restated
+           here explicitly, this rule silently inherits stray values from
+           them. flex-direction:column, in particular, flips which axis
+           align-items/justify-content each control. */
         position: relative;
+        display: block;
         overflow: hidden;
         background: linear-gradient(180deg, #030006 0%, #0a0210 22%, #260a1c 48%, #5c0d38 74%, #9c1560 100%);
       }
@@ -1524,6 +1533,8 @@
       @media (min-width: 761px) {
         .hero {
           display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
           align-items: center;
           height: clamp(640px, 46vw, 860px);
           /* Match the nav pill's own content inset exactly (left:14px +
