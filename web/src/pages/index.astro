@@ -61,7 +61,8 @@ const count = allStores.length
       <div class="sec-head rv">
         <div>
           <div class="overline">{t.restos.overline}</div>
-          <h2>{t.restos.title[0]}<br />{t.restos.title[1]}</h2>
+          <h2>{t.restos.title[0]}</h2>
+          <p class="restos-sub">{t.restos.title[1]}</p>
         </div>
       </div>
 
@@ -76,6 +77,15 @@ const count = allStores.length
 
 <style>
   .restos-sec { background: linear-gradient(180deg, var(--ink-800) 0%, var(--ink-900) 100%); }
+  .restos-sub {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(16px, 1.8vw, 20px);
+    color: var(--muted);
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
   .map-wrap {
     background: radial-gradient(circle at 50% 0%, rgba(255, 45, 158, 0.1), transparent 42%), var(--ink-900);
     border: 1px solid rgba(255, 255, 255, 0.15);
