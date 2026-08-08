@@ -60,10 +60,9 @@ const count = allStores.length
 
   {/* 4 screens of scrolling to play the 6s clip: 2 felt twitchy, every notch
       of the wheel jumped several frames. */}
-  {/* `span` below 1 leaves the clip finished while the stage is still pinned.
-      The tail fills exactly that stretch, moving at true scroll speed so the
-      hold reads as a backdrop rather than as being stuck. */}
-  <ScrubHero screens={4} tail={ALL_LOCATIONS.map((l) => l.city)} />
+  {/* No `tail`: the scrolling city list read badly over the storefront. The
+      component still supports it — pass `tail={...}` to bring it back. */}
+  <ScrubHero screens={4} />
   {/* Dev only, `?tune` to open. Dropped entirely from production builds. */}
   <ScrubTuner />
   <Top storeCount={count} hero={false} />
